@@ -61,14 +61,16 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* SECTION C: HERO BANNER */}
       <section className="w-full">
         <img 
-          src="/Hero Banner.png" 
+          src="/hero-banner.png" 
           alt="PyNotes Hero Banner" 
           className="w-full h-auto object-cover"
         />
       </section>
 
       {/* SECTION D: FEATURE STRIP */}
-      <FeatureStrip />
+      <div className="-mt-1">
+        <FeatureStrip />
+      </div>
 
       {/* SECTION E: FEATURED COLLECTION (3 Columns Grid) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
