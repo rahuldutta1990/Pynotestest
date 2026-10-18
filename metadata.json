@@ -1,0 +1,6 @@
+{
+  "name": "PyNotes - Printed Handwritten Coding Notes",
+  "description": "Learn. Write. Grow. Premium printed handwritten-style coding books and study bundles across India.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,118 @@
+:root {
+  --navy: #0B3561;
+  --teal: #12A5B0;
+  --ink: #071E38;
+  --mint: #DDF3F4;
+  --paper: #F7FAFC;
+  --highlight: #FFD54A;
+
+  /* Navy Tints */
+  --navy-80: #3C5D81;
+  --navy-60: #6D86A0;
+  --navy-40: #9DAEC0;
+  --navy-20: #CED7DF;
+  --navy-10: #E7EBEF;
+
+  /* Teal Tints */
+  --teal-80: #41B7C0;
+  --teal-60: #71C9D0;
+  --teal-40: #A0DBDF;
+  --teal-20: #D0EDEF;
+  --teal-10: #E7F6F7;
+
+  /* Utility */
+  --danger: #C0392B;
+  --success: #13834D;
+  --whatsapp: #25D366;
+
+  /* Font Families */
+  --font-display: 'Nunito', sans-serif;
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+/* Typography base rules */
+h1, .font-display-h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+}
+
+h2, h3, .font-heading {
+  font-family: var(--font-heading);
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--navy);
+  background-color: var(--paper);
+}
+
+.font-code {
+  font-family: var(--font-code);
+}
+
+/* Graphic System: Ruled paper background */
+.bg-ruled-paper {
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    rgba(11, 53, 97, 0.07) 31px,
+    rgba(11, 53, 97, 0.07) 32px
+  );
+  position: relative;
+}
+
+.bg-ruled-paper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: max(16px, calc((100vw - 1200px) / 2 + 24px));
+  width: 2px;
+  background-color: var(--teal);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Dot grid background */
+.bg-dot-grid {
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(11, 53, 97, 0.12) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Highlighter mark */
+.highlight-mark {
+  background-color: var(--highlight);
+  padding: 0 4px;
+  border-radius: 2px;
+  color: var(--ink);
+  font-weight: 700;
+  display: inline-block;
+}
+
+/* Focus Ring */
+*:focus-visible {
+  outline: 3px solid var(--teal) !important;
+  outline-offset: 2px !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--navy-40);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--navy-80);
+}
