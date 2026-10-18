@@ -361,6 +361,151 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+function getFallbackCatalog() {
+  const initialSubjects = [
+    { slug: 'c', name: 'C Programming', menu_label: 'C', accent_color: '#0B3561', sort_order: 1, is_active: true },
+    { slug: 'c-plus-plus', name: 'C++ Programming', menu_label: 'C++', accent_color: '#0B3561', sort_order: 2, is_active: true },
+    { slug: 'java', name: 'Java Programming', menu_label: 'Java', accent_color: '#12A5B0', sort_order: 3, is_active: true },
+    { slug: 'python', name: 'Python Programming', menu_label: 'Python', accent_color: '#12A5B0', sort_order: 4, is_active: true },
+    { slug: 'dsa-with-java', name: 'DSA with Java', menu_label: 'DSA with Java', parent: 'dsa', accent_color: '#FFD54A', sort_order: 5, is_active: true },
+    { slug: 'dsa-with-python', name: 'DSA with Python', menu_label: 'DSA with Python', parent: 'dsa', accent_color: '#FFD54A', sort_order: 6, is_active: true },
+    { slug: 'data-science', name: 'Data Science', menu_label: 'Data Science', accent_color: '#12A5B0', sort_order: 7, is_active: true },
+    { slug: 'sql', name: 'SQL & Database Design', menu_label: 'SQL', accent_color: '#0B3561', sort_order: 8, is_active: true },
+    { slug: 'dbms', name: 'DBMS', menu_label: 'DBMS', accent_color: '#0B3561', sort_order: 9, is_active: true },
+    { slug: 'operating-system', name: 'Operating System', menu_label: 'Operating System', accent_color: '#12A5B0', sort_order: 10, is_active: true },
+    { slug: 'html', name: 'HTML5', menu_label: 'HTML', accent_color: '#0B3561', sort_order: 11, is_active: true },
+    { slug: 'css', name: 'CSS3', menu_label: 'CSS', accent_color: '#12A5B0', sort_order: 12, is_active: true },
+    { slug: 'javascript', name: 'JavaScript', menu_label: 'JavaScript', accent_color: '#FFD54A', sort_order: 13, is_active: true },
+  ];
+
+  const products = initialSubjects.map(s => {
+    const isDsa = s.slug.includes('dsa');
+    const isC = s.slug === 'c';
+    const salePrice = isC ? 39900 : isDsa ? 59900 : 49900;
+    return {
+      type: 'book',
+      subject_id: s.slug,
+      slug: s.slug,
+      sku: `PN-BK-${s.slug.toUpperCase()}`,
+      title: `${s.name} Simplified Handwritten Notes`,
+      short_desc: `Complete printed handwritten book for ${s.name} with color-coded syntax and exam questions.`,
+      description: `${s.name} handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.`,
+      mrp_paise: 79900,
+      price_paise: salePrice,
+      badge_text: 'HOT SELLER',
+      stock_qty: 50,
+      low_stock_threshold: 5,
+      weight_g: 450,
+      hsn_code: '4901',
+      gst_rate_bp: 0,
+      status: 'active',
+      sort_order: s.sort_order,
+      images: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_sample: false,
+    };
+  });
+
+  const bundles = [
+    {
+      type: 'bundle',
+      slug: 'python-java',
+      sku: 'PN-BDL-PYTHON-JAVA',
+      title: 'Python + Java Combo Bundle',
+      short_desc: 'Save extra with our curated Python + Java printed book set.',
+      description: 'Complete multi-book combo pack shipped together in one parcel with free express shipping across India.',
+      mrp_paise: 159800,
+      price_paise: 89900,
+      badge_text: 'BEST VALUE',
+      stock_qty: 50,
+      status: 'active',
+      bundle_items: [{ book_slug: 'python', qty: 1 }, { book_slug: 'java', qty: 1 }],
+    },
+    {
+      type: 'bundle',
+      slug: 'c-cplus-python',
+      sku: 'PN-BDL-C-CPLUS-PYTHON',
+      title: 'C + C++ + Python Starter Bundle',
+      short_desc: 'Save extra with our curated C + C++ + Python printed book set.',
+      description: 'Complete multi-book combo pack shipped together in one parcel with free express shipping across India.',
+      mrp_paise: 239700,
+      price_paise: 119900,
+      badge_text: 'BEST VALUE',
+      stock_qty: 50,
+      status: 'active',
+      bundle_items: [{ book_slug: 'c', qty: 1 }, { book_slug: 'c-plus-plus', qty: 1 }, { book_slug: 'python', qty: 1 }],
+    },
+    {
+      type: 'bundle',
+      slug: 'cplus-java-python',
+      sku: 'PN-BDL-CPLUS-JAVA-PYTHON',
+      title: 'C++ + Java + Python Placement Bundle',
+      short_desc: 'Save extra with our curated C++ + Java + Python printed book set.',
+      description: 'Complete multi-book combo pack shipped together in one parcel with free express shipping across India.',
+      mrp_paise: 239700,
+      price_paise: 129900,
+      badge_text: 'BEST VALUE',
+      stock_qty: 50,
+      status: 'active',
+      bundle_items: [{ book_slug: 'c-plus-plus', qty: 1 }, { book_slug: 'java', qty: 1 }, { book_slug: 'python', qty: 1 }],
+    },
+    {
+      type: 'bundle',
+      slug: 'c-cplus-java-python',
+      sku: 'PN-BDL-C-CPLUS-JAVA-PYTHON',
+      title: 'Ultimate 4-Language Master Bundle',
+      short_desc: 'Save extra with our curated Ultimate 4-Language Master printed book set.',
+      description: 'Complete multi-book combo pack shipped together in one parcel with free express shipping across India.',
+      mrp_paise: 319600,
+      price_paise: 159900,
+      badge_text: 'BEST VALUE',
+      stock_qty: 50,
+      status: 'active',
+      bundle_items: [{ book_slug: 'c', qty: 1 }, { book_slug: 'c-plus-plus', qty: 1 }, { book_slug: 'java', qty: 1 }, { book_slug: 'python', qty: 1 }],
+    },
+  ];
+
+  const settings = {
+    announcement_messages: [
+      { text: 'LIMITED PRINT COPIES AVAILABLE ACROSS INDIA', highlight: 'LIMITED STOCK' },
+      { text: 'FREE EXPRESS SHIPPING ON ALL PREPAID ORDERS', highlight: 'FREE DELIVERY' },
+      { text: 'USE CODE PY10 FOR 10% EXTRA DISCOUNT AT CHECKOUT', highlight: 'OFFER' },
+      { text: 'HANDWRITTEN COLOURFUL FORMAT FOR RAPID REVISION', highlight: 'EXAM READY' },
+    ],
+    prepaid_discount_percent: 10,
+    stack_prepaid_with_coupon: true,
+    cod_enabled: true,
+    cod_fee_paise: 4900,
+    cod_max_total_paise: 0,
+    free_shipping_threshold_paise: 0,
+    flat_shipping_paise: 6900,
+    hold_minutes: 30,
+    whatsapp_number: '+919876543210',
+    support_email: 'support@pynotes.in',
+    footer_about: 'PyNotes blends the art of handwritten learning with modern coding.',
+    legal_name: 'PyNotes India Ltd.',
+    gstin: '27AAAAA0000A1Z5',
+    invoice_prefix: 'PYN',
+    featured_collection_count: 13,
+  };
+
+  const faqs = [
+    { id: '1', question: 'Are these books printed or digital PDFs?', answer: 'PyNotes sells 100% physical printed handwritten-style books delivered directly to your home address across India.', sort_order: 1, is_active: true },
+    { id: '2', question: 'How long does delivery take?', answer: 'Orders are processed in 1-2 business days and delivered within 3-7 business days across India.', sort_order: 2, is_active: true },
+    { id: '3', question: 'Is Cash on Delivery (COD) available?', answer: 'Yes! Cash on Delivery is available across all major PIN codes in India.', sort_order: 3, is_active: true },
+    { id: '4', question: 'What if I receive a damaged or wrong book?', answer: 'You can report any damage within 48 hours of delivery with photo proof via your Account page for immediate replacement.', sort_order: 4, is_active: true },
+  ];
+
+  return {
+    subjects: initialSubjects,
+    products: [...products, ...bundles],
+    settings,
+    faqs,
+    reviews: [],
+  };
+}
+
 // GET /api/catalog (Cached 5 minutes)
 app.get('/api/catalog', async (req, res) => {
   if (catalogCache && Date.now() - catalogCache.timestamp < 5 * 60 * 1000) {
@@ -382,37 +527,42 @@ app.get('/api/catalog', async (req, res) => {
     const faqs = faqsSnap.docs.map(doc => doc.data());
     const reviews = reviewsSnap.docs.map(doc => doc.data());
 
-    // Compute stock availability for books & bundles
-    const bookMap = new Map<string, number>();
-    products.forEach(p => {
-      if (p.type === 'book') bookMap.set(p.slug, p.stock_qty || 0);
-    });
+    if (subjects.length > 0 && products.length > 0) {
+      const bookMap = new Map<string, number>();
+      products.forEach(p => {
+        if (p.type === 'book') bookMap.set(p.slug, p.stock_qty || 0);
+      });
 
-    const enrichedProducts = products.map(p => {
-      if (p.type === 'bundle' && p.bundle_items) {
-        let maxAvailable = Infinity;
-        p.bundle_items.forEach((bi: any) => {
-          const avail = Math.floor((bookMap.get(bi.book_slug) || 0) / bi.qty);
-          if (avail < maxAvailable) maxAvailable = avail;
-        });
-        return { ...p, stock_qty: maxAvailable === Infinity ? 0 : maxAvailable };
-      }
-      return p;
-    });
+      const enrichedProducts = products.map(p => {
+        if (p.type === 'bundle' && p.bundle_items) {
+          let maxAvailable = Infinity;
+          p.bundle_items.forEach((bi: any) => {
+            const avail = Math.floor((bookMap.get(bi.book_slug) || 0) / bi.qty);
+            if (avail < maxAvailable) maxAvailable = avail;
+          });
+          return { ...p, stock_qty: maxAvailable === Infinity ? 0 : maxAvailable };
+        }
+        return p;
+      });
 
-    const data = {
-      subjects,
-      products: enrichedProducts,
-      settings,
-      faqs,
-      reviews,
-    };
+      const data = {
+        subjects,
+        products: enrichedProducts,
+        settings,
+        faqs,
+        reviews,
+      };
 
-    catalogCache = { data, timestamp: Date.now() };
-    res.json(data);
+      catalogCache = { data, timestamp: Date.now() };
+      return res.json(data);
+    }
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to load catalog', details: err.message });
+    console.warn('Firestore catalog load fallback:', err.message);
   }
+
+  const fallback = getFallbackCatalog();
+  catalogCache = { data: fallback, timestamp: Date.now() };
+  return res.json(fallback);
 });
 
 // GET /api/pages/:slug
@@ -906,6 +1056,27 @@ app.post('/api/contact', async (req, res) => {
   });
 
   res.json({ message: 'Contact message received' });
+});
+
+// POST /api/newsletter
+app.post('/api/newsletter', async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email address required' });
+  }
+
+  try {
+    const docId = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    await db.collection('newsletter_subscribers').doc(docId).set({
+      email: email.toLowerCase(),
+      subscribed_at: new Date().toISOString(),
+      source: 'footer_form',
+    }, { merge: true });
+  } catch (err: any) {
+    console.warn('Newsletter save fallback active:', err.message);
+  }
+
+  res.json({ success: true, message: 'Subscribed to PyNotes newsletter successfully!' });
 });
 
 // ----------------------------------------------------

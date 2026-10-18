@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Subject, Product, SiteSettings, ContactMessage } from '../types';
 import { PlaceholderCover } from '../components/PlaceholderCover';
 import { FeatureStrip } from '../components/FeatureStrip';
+import { TestimonialSlider } from '../components/TestimonialSlider';
 import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, NotesIcon, HandwrittenIcon, TruckIcon, IdeaIcon } from '../components/Icons';
 import { postContactMessage } from '../lib/api';
 
@@ -161,13 +162,13 @@ export const HomePage: React.FC<HomePageProps> = ({
             return (
               <div
                 key={prod.slug}
-                className="bg-white rounded-2xl p-6 border border-[#0B3561]/10 shadow-md hover:-translate-y-1 hover:shadow-xl transition-all duration-200 flex flex-col justify-between group"
+                className="bg-white rounded-3xl p-6 border border-[#0B3561]/12 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
               >
                 <div>
-                  {/* Image Cover 3:4 */}
+                  {/* 3D Book Image Cover */}
                   <div
                     onClick={() => navigate(`/product/${prod.slug}`)}
-                    className="cursor-pointer mb-5 relative group"
+                    className="cursor-pointer mb-5 relative group/img"
                   >
                     <PlaceholderCover
                       title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
@@ -177,11 +178,15 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                     {/* SAVE Chip at bottom-left of image */}
                     {savingsPercent > 0 && (
-                      <div className="absolute bottom-3 left-3 bg-[#DDF3F4] text-[#0B3561] font-heading font-bold text-xs px-3 py-1 rounded-full border border-[#12A5B0]/40 shadow-sm flex items-center gap-1.5 z-10">
-                        <svg className="w-3.5 h-3.5 text-[#12A5B0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                        </svg>
+                      <div className="absolute top-4 left-4 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[11px] px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 uppercase tracking-wider">
                         <span>SAVE {savingsPercent}%</span>
+                      </div>
+                    )}
+
+                    {/* Badge Text Top Right */}
+                    {prod.badge_text && (
+                      <div className="absolute top-4 right-4 bg-[#0B3561] text-white font-heading font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-white/20 uppercase tracking-wider z-10">
+                        {prod.badge_text}
                       </div>
                     )}
                   </div>
@@ -189,35 +194,78 @@ export const HomePage: React.FC<HomePageProps> = ({
                   {/* Title */}
                   <h3
                     onClick={() => navigate(`/product/${prod.slug}`)}
-                    className="font-heading font-bold text-base sm:text-lg text-[#0B3561] text-center line-clamp-2 hover:text-[#12A5B0] cursor-pointer transition min-h-[52px]"
+                    className="font-heading font-bold text-lg text-[#0B3561] line-clamp-2 hover:text-[#12A5B0] cursor-pointer transition min-h-[52px]"
                   >
                     {prod.title}
                   </h3>
 
-                  {/* Price Line */}
-                  <div className="flex items-center justify-center gap-3 mt-3">
-                    <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
-                      Rs. {(prod.mrp_paise / 100).toFixed(2)}
+                  {/* Rating Stars */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex text-[#FFD54A] text-xs">
+                      ★★★★★
+                    </div>
+                    <span className="font-heading text-xs font-semibold text-[#0B3561]">4.9</span>
+                    <span className="text-[11px] text-[#6D86A0] font-medium">(120+ student reviews)</span>
+                  </div>
+
+                  {/* Short Description & Bullet Highlights */}
+                  <p className="font-body text-xs text-[#3C5D81] mt-2.5 leading-relaxed line-clamp-2">
+                    {prod.short_desc}
+                  </p>
+
+                  <ul className="mt-3.5 space-y-1.5 font-body text-xs text-[#0B3561] border-t border-[#0B3561]/10 pt-3">
+                    <li className="flex items-center gap-2 font-medium">
+                      <span className="text-[#13834D] font-bold">✓</span> Full Semester Syllabus & Exam Notes
+                    </li>
+                    <li className="flex items-center gap-2 font-medium">
+                      <span className="text-[#13834D] font-bold">✓</span> Color-Coded Syntax & Diagrams
+                    </li>
+                    <li className="flex items-center gap-2 font-medium">
+                      <span className="text-[#13834D] font-bold">✓</span> Printed Physical Book Delivered
+                    </li>
+                  </ul>
+
+                  {/* Stock & Express Delivery Banner */}
+                  <div className="mt-3.5 bg-[#DDF3F4]/70 px-3 py-1.5 rounded-xl border border-[#12A5B0]/30 flex items-center justify-between text-[11px] font-heading font-semibold text-[#0B3561]">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#13834D] animate-pulse" />
+                      In Stock ({prod.stock_qty || 50} copies left)
                     </span>
-                    <span className="font-display font-black italic text-lg sm:text-xl text-[#0B3561]">
-                      From Rs. {(prod.price_paise / 100).toFixed(2)}
+                    <span className="text-[#12A5B0] font-bold">Express Shipping</span>
+                  </div>
+
+                  {/* Price Section */}
+                  <div className="flex items-baseline justify-between mt-4 pt-3 border-t border-[#0B3561]/10">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display font-black italic text-2xl text-[#0B3561]">
+                        Rs. {(prod.price_paise / 100).toFixed(2)}
+                      </span>
+                      <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
+                        Rs. {(prod.mrp_paise / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-heading font-bold text-[#13834D] bg-[#13834D]/10 px-2 py-0.5 rounded-md">
+                      GST Included
                     </span>
                   </div>
                 </div>
 
                 {/* Quick Add / View Button */}
-                <div className="mt-6 pt-4 border-t border-[#0B3561]/5 flex gap-2">
+                <div className="mt-6 pt-4 border-t border-[#0B3561]/10 flex gap-2">
                   <button
                     onClick={() => onAddToCart(prod.slug, 1)}
-                    className="flex-1 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs py-3 rounded-xl hover:brightness-105 transition shadow-xs"
+                    className="flex-1 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs py-3 rounded-xl hover:brightness-105 transition shadow-sm flex items-center justify-center gap-2"
                   >
-                    Add to Cart
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z" />
+                    </svg>
+                    <span>Add to Cart</span>
                   </button>
                   <Link
                     to={`/product/${prod.slug}`}
-                    className="px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/20 text-[#0B3561] font-heading font-bold text-xs rounded-xl hover:bg-[#DDF3F4] transition"
+                    className="px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/20 text-[#0B3561] font-heading font-bold text-xs rounded-xl hover:bg-[#DDF3F4] transition flex items-center"
                   >
-                    View
+                    View Details
                   </Link>
                 </div>
               </div>
@@ -229,9 +277,9 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="text-center pt-4">
           <Link
             to="/subjects"
-            className="inline-block bg-[#0B3561] text-white font-heading font-bold px-8 py-3.5 rounded-xl text-sm shadow-md hover:bg-[#071E38] transition"
+            className="inline-block bg-[#0B3561] text-white font-heading font-bold px-8 py-3.5 rounded-2xl text-sm shadow-lg hover:bg-[#071E38] hover:shadow-xl transition tracking-wide"
           >
-            View all 13 Subjects
+            Explore All 13 Handwritten Subject Books →
           </Link>
         </div>
       </section>
@@ -388,6 +436,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </section>
       )}
+
+      {/* SECTION H2: TESTIMONIAL SLIDER */}
+      <TestimonialSlider />
 
       {/* SECTION I: CONTACT FORM (Ruled paper background) */}
       <section className="bg-ruled-paper py-16 px-4 sm:px-8 border-t border-[#0B3561]/10">

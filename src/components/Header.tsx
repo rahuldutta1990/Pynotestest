@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from './Logo';
 import { SearchIcon, CartIcon, UserIcon, WhatsappIcon } from './Icons';
@@ -27,20 +27,42 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false);
 
-  // Filtering products & subjects for live search suggestions
-  const searchResults = searchQuery.trim()
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close search popup on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter subjects and products based on user search query
+  const matchingSubjects = searchQuery.trim()
+    ? subjects.filter(s =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.slug.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
+  const matchingProducts = searchQuery.trim()
     ? products.filter(p =>
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.short_desc.toLowerCase().includes(searchQuery.toLowerCase())
+        p.short_desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.slug.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : [];
 
   const isCurrent = (path: string) => location.pathname === path;
 
-  // Categorized subject definitions
+  // Categorized subject definitions for header dropdown
   const subjectCategories = [
     {
       category: 'Programming Languages',
@@ -80,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <header className="sticky top-0 z-40 bg-white border-b border-[#0B3561]/10 shadow-xs h-[72px] flex items-center px-4 sm:px-8 transition-all">
-        <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 sm:gap-6">
           
           {/* Mobile Hamburger Button */}
           <button
@@ -99,24 +121,24 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-2 xl:gap-3 font-heading text-[14px] font-semibold text-[#0B3561]">
+          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2.5 font-heading text-[14px] font-semibold text-[#0B3561]">
             <Link
               to="/"
-              className={`px-3.5 py-2 rounded-full transition-colors ${
+              className={`px-3 py-1.5 rounded-full transition-colors ${
                 isCurrent('/') ? 'bg-[#0B3561] text-white shadow-xs' : 'hover:bg-[#DDF3F4] hover:text-[#0B3561]'
               }`}
             >
               Home
             </Link>
 
-            {/* Subject Dropdown Menu with Category and Subcategories */}
+            {/* Subject Dropdown Menu */}
             <div
               className="relative"
               onMouseEnter={() => setSubjectDropdownOpen(true)}
               onMouseLeave={() => setSubjectDropdownOpen(false)}
             >
               <button
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
                   location.pathname.startsWith('/product') || location.pathname.startsWith('/subjects')
                     ? 'bg-[#0B3561] text-white'
                     : 'hover:bg-[#DDF3F4]'
@@ -173,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <Link
               to="/bundles"
-              className={`px-3.5 py-2 rounded-full transition-colors ${
+              className={`px-3 py-1.5 rounded-full transition-colors ${
                 isCurrent('/bundles') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
               }`}
             >
@@ -182,7 +204,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <Link
               to="/track"
-              className={`px-3.5 py-2 rounded-full transition-colors ${
+              className={`px-3 py-1.5 rounded-full transition-colors ${
                 isCurrent('/track') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
               }`}
             >
@@ -190,15 +212,117 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
           </nav>
 
-          {/* Right Action Icons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Search Icon */}
+          {/* INLINE HEADER SEARCH BAR (Desktop & Tablet) */}
+          <div ref={searchContainerRef} className="relative hidden md:block flex-1 max-w-xs xl:max-w-md mx-2">
+            <div className="relative flex items-center">
+              <SearchIcon className="w-4 h-4 text-[#0B3561]/60 absolute left-3.5 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search 13 books, Python, SQL, DSA..."
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value);
+                  setSearchFocused(true);
+                }}
+                onFocus={() => setSearchFocused(true)}
+                className="w-full pl-9 pr-8 py-2 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-full text-xs font-medium text-[#0B3561] placeholder:text-[#3C5D81]/70 focus:outline-none focus:border-[#12A5B0] focus:ring-2 focus:ring-[#12A5B0]/20 transition-all shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchFocused(false);
+                  }}
+                  className="absolute right-3 text-[#3C5D81] hover:text-[#0B3561] text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Instant Live Autocomplete Dropdown */}
+            {searchFocused && searchQuery.trim().length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-[#0B3561]/15 overflow-hidden z-50 animate-fadeIn">
+                <div className="max-h-80 overflow-y-auto divide-y divide-[#0B3561]/10">
+                  
+                  {/* Matching Subjects Section */}
+                  {matchingSubjects.length > 0 && (
+                    <div className="p-3 bg-[#DDF3F4]/30">
+                      <span className="text-[10px] font-bold text-[#12A5B0] uppercase tracking-wider block mb-2 px-1">
+                        Matching Subjects ({matchingSubjects.length})
+                      </span>
+                      <div className="space-y-1">
+                        {matchingSubjects.map(sub => (
+                          <div
+                            key={sub.slug}
+                            onClick={() => {
+                              setSearchQuery('');
+                              setSearchFocused(false);
+                              navigate(`/product/${sub.slug}`);
+                            }}
+                            className="p-2 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition text-xs font-semibold text-[#0B3561]"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sub.accent_color || '#12A5B0' }} />
+                              <span>{sub.name}</span>
+                            </div>
+                            <span className="text-[10px] text-[#12A5B0] font-bold">Explore Book →</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Matching Printed Books Section */}
+                  {matchingProducts.length > 0 && (
+                    <div className="p-3">
+                      <span className="text-[10px] font-bold text-[#0B3561] uppercase tracking-wider block mb-2 px-1">
+                        Printed Books & Bundles ({matchingProducts.length})
+                      </span>
+                      <div className="space-y-1">
+                        {matchingProducts.map(prod => (
+                          <div
+                            key={prod.slug}
+                            onClick={() => {
+                              setSearchQuery('');
+                              setSearchFocused(false);
+                              navigate(`/product/${prod.slug}`);
+                            }}
+                            className="p-2.5 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition"
+                          >
+                            <div className="space-y-0.5">
+                              <h4 className="font-heading font-bold text-xs text-[#0B3561] line-clamp-1">{prod.title}</h4>
+                              <p className="text-[10px] text-[#3C5D81] line-clamp-1">{prod.short_desc}</p>
+                            </div>
+                            <span className="font-display font-black italic text-xs text-[#0B3561] ml-2 flex-shrink-0">
+                              ₹{(prod.price_paise / 100).toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {matchingSubjects.length === 0 && matchingProducts.length === 0 && (
+                    <div className="p-6 text-center text-xs text-[#3C5D81]">
+                      No subjects or books found for "<span className="font-bold text-[#0B3561]">{searchQuery}</span>"
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Action Buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Mobile Search Toggle Button */}
             <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition"
+              onClick={() => setMobileSearchExpanded(!mobileSearchExpanded)}
+              className="md:hidden p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition"
               title="Search"
             >
-              <SearchIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+              <SearchIcon className="w-5 h-5" />
             </button>
 
             {/* Account Icon */}
@@ -227,70 +351,52 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* Search Modal Panel */}
-      {searchOpen && (
-        <div className="fixed inset-0 z-50 bg-[#071E38]/60 backdrop-blur-xs flex items-start justify-center pt-16 px-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-[#0B3561]/10 relative">
-            <div className="flex items-center justify-between pb-4 border-b border-[#0B3561]/10">
-              <h3 className="font-heading font-bold text-lg text-[#0B3561]">Search Handwritten Notes</h3>
+      {/* Expandable Search Input for Mobile View */}
+      {mobileSearchExpanded && (
+        <div className="md:hidden bg-white border-b border-[#0B3561]/10 p-3 animate-fadeIn">
+          <div className="relative flex items-center">
+            <SearchIcon className="w-4 h-4 text-[#0B3561]/60 absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              autoFocus
+              placeholder="Search Python, SQL, DSA..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-full text-xs font-medium text-[#0B3561] focus:outline-none focus:border-[#12A5B0]"
+            />
+            {searchQuery && (
               <button
-                onClick={() => setSearchOpen(false)}
-                className="p-1 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 text-[#3C5D81] text-xs font-bold"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ✕
               </button>
-            </div>
-
-            <div className="mt-4 relative">
-              <input
-                type="text"
-                autoFocus
-                placeholder="Type subject (e.g. Python, SQL, DSA)..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl focus:border-[#12A5B0] text-[#0B3561] font-medium"
-              />
-            </div>
-
-            {/* Suggestions list */}
-            <div className="mt-4 max-h-72 overflow-y-auto divide-y divide-[#0B3561]/5">
-              {searchQuery.trim() === '' ? (
-                <div className="py-4 text-center text-sm text-[#3C5D81]">
-                  Try searching for <span className="font-semibold text-[#0B3561]">Python</span>, <span className="font-semibold text-[#0B3561]">DSA</span>, or <span className="font-semibold text-[#0B3561]">SQL</span>
-                </div>
-              ) : searchResults.length === 0 ? (
-                <div className="py-6 text-center text-sm text-[#3C5D81]">
-                  No printed notes matching "{searchQuery}"
-                </div>
-              ) : (
-                searchResults.map(prod => (
-                  <div
-                    key={prod.slug}
-                    onClick={() => {
-                      setSearchOpen(false);
-                      setSearchQuery('');
-                      navigate(`/product/${prod.slug}`);
-                    }}
-                    className="p-3 hover:bg-[#DDF3F4] cursor-pointer rounded-lg flex items-center justify-between transition"
-                  >
-                    <div>
-                      <h4 className="font-heading font-semibold text-[#0B3561] text-sm">{prod.title}</h4>
-                      <p className="text-xs text-[#3C5D81]">{prod.short_desc}</p>
-                    </div>
-                    <span className="font-display font-bold text-[#0B3561] text-sm ml-2">
-                      ₹{(prod.price_paise / 100).toFixed(2)}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
+            )}
           </div>
+
+          {/* Mobile Search Results */}
+          {searchQuery.trim().length > 0 && (
+            <div className="mt-2 bg-white rounded-xl border border-[#0B3561]/15 max-h-60 overflow-y-auto divide-y divide-[#0B3561]/10 text-xs">
+              {matchingProducts.map(prod => (
+                <div
+                  key={prod.slug}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setMobileSearchExpanded(false);
+                    navigate(`/product/${prod.slug}`);
+                  }}
+                  className="p-2.5 hover:bg-[#DDF3F4] flex items-center justify-between"
+                >
+                  <span className="font-semibold text-[#0B3561]">{prod.title}</span>
+                  <span className="font-bold text-[#12A5B0]">₹{(prod.price_paise / 100).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Mobile Left Drawer Menu with Categorized Subjects */}
+      {/* Mobile Left Drawer Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
