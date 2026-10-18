@@ -58,82 +58,13 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="space-y-16 pb-16">
       
-      {/* SECTION C: HERO (Ruled paper background, teal margin rule) */}
-      <section className="bg-ruled-paper pt-12 pb-16 px-4 sm:px-8 border-b border-[#0B3561]/10 relative">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Left Column */}
-          <div className="space-y-6 z-10">
-            <span className="inline-block bg-[#DDF3F4] text-[#0B3561] font-heading font-bold text-xs uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-full border border-[#12A5B0]/30 shadow-xs">
-              LEARN . WRITE . GROW
-            </span>
-
-            <h1 className="font-display font-black italic text-4xl sm:text-5xl lg:text-6xl text-[#0B3561] leading-[1.1] tracking-tight">
-              Code, written the way you{' '}
-              <span className="relative inline-block text-[#12A5B0]">
-                learn
-                <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-              </span>{' '}
-              it.
-            </h1>
-
-            <p className="font-body text-base sm:text-lg text-[#3C5D81] max-w-lg leading-relaxed font-medium">
-              Simplified handwritten coding books printed on high-quality paper. Color-coded syntax, clear visual diagrams, and exam-focused notes delivered across India.
-            </p>
-
-            {/* 4 Icon Tiles Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              {[
-                { label: 'Handwritten Notes', icon: <HandwrittenIcon className="w-5 h-5 text-[#12A5B0]" /> },
-                { label: 'Easy to Understand', icon: <IdeaIcon className="w-5 h-5 text-[#12A5B0]" /> },
-                { label: 'Exam Focused', icon: <NotesIcon className="w-5 h-5 text-[#12A5B0]" /> },
-                { label: 'Printed & Delivered', icon: <TruckIcon className="w-5 h-5 text-[#12A5B0]" /> },
-              ].map((tile, i) => (
-                <div key={i} className="bg-white p-3 rounded-xl border border-[#0B3561]/10 shadow-xs flex flex-col items-center text-center gap-1.5">
-                  {tile.icon}
-                  <span className="font-heading font-semibold text-[11px] text-[#0B3561] leading-tight">
-                    {tile.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA Row */}
-            <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <Link
-                to="/bundles"
-                className="bg-[#0B3561] text-white font-heading font-bold px-8 py-4 rounded-2xl text-base shadow-xl hover:bg-[#071E38] hover:shadow-2xl transition tracking-wide flex items-center gap-3 group"
-              >
-                <span>SHOP BUNDLES</span>
-                <svg className="w-5 h-5 transform group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </Link>
-              <span className="text-xs text-[#3C5D81] font-heading font-medium">
-                ✓ Cash on Delivery Available across India
-              </span>
-            </div>
-          </div>
-
-          {/* Right Column: Hero Cover Fan Showcase */}
-          <div className="relative z-10 flex justify-center lg:justify-end">
-            <div className="w-full max-w-md aspect-[4/3] sm:aspect-[16/9] lg:aspect-[4/3] bg-[#DDF3F4] rounded-3xl p-6 border-2 border-[#12A5B0]/30 shadow-2xl relative overflow-hidden flex items-center justify-center">
-              {/* Fan of 3 placeholder covers */}
-              <div className="relative w-full h-full flex items-center justify-center">
-                <div className="absolute w-44 sm:w-52 transform -rotate-12 -translate-x-12 translate-y-2 opacity-90 transition hover:rotate-0 hover:z-30">
-                  <PlaceholderCover title="Python" accentColor="#12A5B0" />
-                </div>
-                <div className="absolute w-44 sm:w-52 transform rotate-12 translate-x-12 translate-y-2 opacity-90 transition hover:rotate-0 hover:z-30">
-                  <PlaceholderCover title="DSA" accentColor="#FFD54A" />
-                </div>
-                <div className="relative z-20 w-48 sm:w-56 shadow-2xl transform hover:scale-105 transition">
-                  <PlaceholderCover title="C & C++" accentColor="#0B3561" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+      {/* SECTION C: HERO BANNER */}
+      <section className="w-full">
+        <img 
+          src="/Hero Banner.png" 
+          alt="PyNotes Hero Banner" 
+          className="w-full h-auto object-cover"
+        />
       </section>
 
       {/* SECTION D: FEATURE STRIP */}
