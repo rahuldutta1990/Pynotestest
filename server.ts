@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import compression from 'compression';
 import helmet from 'helmet';
@@ -12,21 +13,24 @@ import Razorpay from 'razorpay';
 import nodemailer from 'nodemailer';
 import firebaseConfig from './firebase-applet-config.json';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Firebase Admin
-if (!getApps().length) {
-  initializeApp({
-    projectId: firebaseConfig.projectId,
-  });
-}
+// Initialize Firebase Admin with target database ID
+const adminApp = !getApps().length
+  ? initializeApp({
+      projectId: firebaseConfig.projectId,
+    })
+  : getApps()[0];
 
-const db = getFirestore();
-if (firebaseConfig.firestoreDatabaseId) {
-  db.settings({ databaseId: firebaseConfig.firestoreDatabaseId });
-}
-const adminAuth = getAuth();
+const db = getFirestore(
+  adminApp,
+  firebaseConfig.firestoreDatabaseId || undefined
+);
+const adminAuth = getAuth(adminApp);
 
 // Environment secrets
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || '';
