@@ -1,36 +1,70 @@
 import React from 'react';
-import { NotesIcon, HandwrittenIcon, TruckIcon, CheckCircleIcon, CodeIcon, IdeaIcon } from './Icons';
 
 export const FeatureStrip: React.FC = () => {
-  const items = [
-    { label: 'Premium Quality', icon: <CheckCircleIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Handwritten Notes', icon: <HandwrittenIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Beginner Friendly', icon: <IdeaIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Fully Colorful', icon: <NotesIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Printed Book', icon: <CodeIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Cash on Delivery', icon: <TruckIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Exam Ready', icon: <CheckCircleIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
-    { label: 'Fast Shipping', icon: <TruckIcon className="w-5 h-5 text-[#071E38]" navyColor="#071E38" tealColor="#0B3561" /> },
+  const trustItems = [
+    { label: 'Premium Print', sub: '100 GSM Cream Paper', icon: '✨' },
+    { label: 'Beginner-Friendly', sub: 'Visual Code Tracing', icon: '💡' },
+    { label: 'Fast Shipping', sub: '2–4 Days Across India', icon: '⚡' },
+    { label: 'Cash on Delivery', sub: 'Pay on Arrival', icon: '📦' },
+    { label: '100% Handwritten', sub: 'Zero Screen Fatigue', icon: '✍️' },
+    { label: 'Exam Ready', sub: 'Placement Interview Ready', icon: '🎯' },
   ];
 
   return (
-    <div className="bg-[#12A5B0] text-[#071E38] py-3.5 overflow-hidden select-none border-y border-[#0B3561]/10 shadow-xs">
-      <div className="flex whitespace-nowrap animate-stripMarquee hover:[animation-play-state:paused] w-full items-center">
-        {[...items, ...items, ...items].map((item, idx) => (
-          <div key={idx} className="inline-flex items-center gap-2 mx-8 font-heading font-bold text-xs sm:text-sm uppercase tracking-wider">
-            {item.icon}
-            <span>{item.label}</span>
-            <span className="mx-6 text-[#071E38]/30 font-black">•</span>
+    <div className="bg-[#FAF7F0] border-y border-[#0A192F]/8 py-3.5 select-none shadow-[inset_0_1px_3px_rgba(10,25,47,0.02)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        {/* Desktop 4-column trust strip */}
+        <div className="hidden md:grid grid-cols-4 gap-4 items-center divide-x divide-[#0A192F]/10">
+          <div className="flex items-center gap-3 px-3">
+            <span className="text-xl">✨</span>
+            <div>
+              <div className="text-xs font-heading font-bold text-[#0A192F] uppercase tracking-wide">Premium Print</div>
+              <div className="text-[11px] text-[#627D98]">100 GSM bleed-proof paper</div>
+            </div>
           </div>
-        ))}
+          <div className="flex items-center gap-3 px-3">
+            <span className="text-xl">💡</span>
+            <div>
+              <div className="text-xs font-heading font-bold text-[#0A192F] uppercase tracking-wide">Beginner-Friendly</div>
+              <div className="text-[11px] text-[#627D98]">Step-by-step visual logic</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-3">
+            <span className="text-xl">⚡</span>
+            <div>
+              <div className="text-xs font-heading font-bold text-[#0A192F] uppercase tracking-wide">Fast Shipping</div>
+              <div className="text-[11px] text-[#627D98]">Express dispatch to your door</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 px-3">
+            <span className="text-xl">📦</span>
+            <div>
+              <div className="text-xs font-heading font-bold text-[#0A192F] uppercase tracking-wide">Cash on Delivery</div>
+              <div className="text-[11px] text-[#627D98]">Available across India pincodes</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Smooth Marquee Strip */}
+        <div className="md:hidden overflow-hidden flex whitespace-nowrap animate-stripMarquee w-full items-center">
+          {[...trustItems, ...trustItems].map((item, idx) => (
+            <div key={idx} className="inline-flex items-center gap-2 mx-5 text-xs font-heading font-semibold text-[#0A192F]">
+              <span>{item.icon}</span>
+              <span className="font-bold">{item.label}</span>
+              <span className="text-[#627D98] text-[10px]">· {item.sub}</span>
+              <span className="mx-3 text-[#D97706]/40">•</span>
+            </div>
+          ))}
+        </div>
       </div>
+
       <style>{`
         @keyframes stripMarquee {
           0% { transform: translateX(0%); }
-          100% { transform: translateX(-33.333%); }
+          100% { transform: translateX(-50%); }
         }
         .animate-stripMarquee {
-          animation: stripMarquee 30s linear infinite;
+          animation: stripMarquee 20s linear infinite;
         }
         @media (prefers-reduced-motion: reduce) {
           .animate-stripMarquee {

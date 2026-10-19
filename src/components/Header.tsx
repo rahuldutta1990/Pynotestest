@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
   // Categorized subject definitions for header dropdown
   const subjectCategories = [
     {
-      category: 'Programming Languages',
+      category: 'Core Programming',
       items: [
         { slug: 'c', label: 'C Programming' },
         { slug: 'c-plus-plus', label: 'C++ Programming' },
@@ -83,16 +83,16 @@ export const Header: React.FC<HeaderProps> = ({
       ],
     },
     {
-      category: 'Databases & CS Core',
+      category: 'Databases & CS Systems',
       items: [
         { slug: 'sql', label: 'SQL & Database' },
-        { slug: 'dbms', label: 'DBMS' },
+        { slug: 'dbms', label: 'DBMS Architecture' },
         { slug: 'operating-system', label: 'Operating System' },
         { slug: 'data-science', label: 'Data Science' },
       ],
     },
     {
-      category: 'Web Development',
+      category: 'Web Technologies',
       items: [
         { slug: 'html', label: 'HTML5' },
         { slug: 'css', label: 'CSS3' },
@@ -103,31 +103,33 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white border-b border-[#0B3561]/10 shadow-xs h-[72px] flex items-center px-4 sm:px-8 transition-all">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#0A192F]/10 shadow-[0_2px_10px_-3px_rgba(10,25,47,0.05)] h-[70px] flex items-center px-4 sm:px-8 transition-all">
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-3 sm:gap-6">
           
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-lg transition"
-            aria-label="Open menu"
+            className="lg:hidden p-2 text-[#0A192F] hover:bg-[#FAF7F0] rounded-xl transition"
+            aria-label="Open navigation menu"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          {/* Logo Left */}
+          {/* Brand Logo */}
           <Link to="/" className="flex-shrink-0">
             <Logo variant="horizontal" surface="light" customUrl={customLogoUrl} size="md" />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2.5 font-heading text-[14px] font-semibold text-[#0B3561]">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 font-heading text-[13.5px] font-medium text-[#0A192F]">
             <Link
               to="/"
-              className={`px-3 py-1.5 rounded-full transition-colors ${
-                isCurrent('/') ? 'bg-[#0B3561] text-white shadow-xs' : 'hover:bg-[#DDF3F4] hover:text-[#0B3561]'
+              className={`px-3 py-1.5 rounded-full transition-all ${
+                isCurrent('/')
+                  ? 'bg-[#0A192F] text-white shadow-xs font-semibold'
+                  : 'hover:bg-[#FAF7F0] hover:text-[#0A192F]'
               }`}
             >
               Home
@@ -140,37 +142,37 @@ export const Header: React.FC<HeaderProps> = ({
               onMouseLeave={() => setSubjectDropdownOpen(false)}
             >
               <button
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
                   location.pathname.startsWith('/product') || location.pathname.startsWith('/subjects')
-                    ? 'bg-[#0B3561] text-white'
-                    : 'hover:bg-[#DDF3F4]'
+                    ? 'bg-[#0A192F] text-white font-semibold'
+                    : 'hover:bg-[#FAF7F0]'
                 }`}
               >
-                <span>Subject</span>
+                <span>Subjects</span>
                 <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${subjectDropdownOpen ? 'rotate-180' : ''}`}
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${subjectDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
 
               {/* Categorized Dropdown Panel */}
               {subjectDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-[560px] bg-white rounded-2xl shadow-2xl border border-[#0B3561]/15 p-5 z-50 animate-fadeIn grid grid-cols-2 gap-6">
+                <div className="absolute top-full left-0 mt-1.5 w-[580px] bg-white rounded-2xl shadow-2xl border border-[#0A192F]/10 p-5 z-50 animate-fadeIn grid grid-cols-2 gap-5">
                   {subjectCategories.map((cat, idx) => (
-                    <div key={idx} className="space-y-2">
-                      <div className="font-heading font-bold text-xs uppercase tracking-wider text-[#12A5B0] pb-1 border-b border-[#0B3561]/10">
+                    <div key={idx} className="space-y-1.5">
+                      <div className="font-heading font-bold text-[11px] uppercase tracking-wider text-[#D97706] pb-1 border-b border-[#0A192F]/10">
                         {cat.category}
                       </div>
-                      <ul className="space-y-1 text-xs">
+                      <ul className="space-y-0.5 text-xs">
                         {cat.items.map(item => (
                           <li key={item.slug}>
                             <Link
                               to={`/product/${item.slug}`}
-                              className="block py-1.5 px-2 rounded-lg text-[#0B3561] font-medium hover:bg-[#DDF3F4] hover:text-[#0B3561] transition"
+                              className="block py-1.5 px-2.5 rounded-lg text-[#0A192F] font-medium hover:bg-[#FAF7F0] hover:text-[#D97706] transition"
                               onClick={() => setSubjectDropdownOpen(false)}
                             >
                               {item.label}
@@ -181,11 +183,11 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   ))}
 
-                  <div className="col-span-2 pt-2 border-t border-[#0B3561]/10 flex justify-between items-center text-xs">
-                    <span className="text-[#3C5D81] font-medium">All 13 handwritten subject books printed in full color.</span>
+                  <div className="col-span-2 pt-3 border-t border-[#0A192F]/10 flex justify-between items-center text-xs">
+                    <span className="text-[#627D98] font-medium">All 13 handwritten subject books printed in rich color.</span>
                     <Link
                       to="/subjects"
-                      className="font-bold text-[#0B3561] hover:text-[#12A5B0] hover:underline"
+                      className="font-bold text-[#D97706] hover:text-[#B45309] hover:underline"
                       onClick={() => setSubjectDropdownOpen(false)}
                     >
                       View All Subjects →
@@ -197,8 +199,8 @@ export const Header: React.FC<HeaderProps> = ({
 
             <Link
               to="/bundles"
-              className={`px-3 py-1.5 rounded-full transition-colors ${
-                isCurrent('/bundles') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
+              className={`px-3 py-1.5 rounded-full transition-all ${
+                isCurrent('/bundles') ? 'bg-[#0A192F] text-white font-semibold' : 'hover:bg-[#FAF7F0]'
               }`}
             >
               Bundles
@@ -206,17 +208,17 @@ export const Header: React.FC<HeaderProps> = ({
 
             <Link
               to="/subscription"
-              className={`px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
-                isCurrent('/subscription') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
+              className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1 ${
+                isCurrent('/subscription') ? 'bg-[#0A192F] text-white font-semibold' : 'hover:bg-[#FAF7F0]'
               }`}
             >
-              <span>Subscriptions</span>
+              <span>Current Affairs</span>
             </Link>
 
             <Link
               to="/offers"
-              className={`px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
-                isCurrent('/offers') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
+              className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1 ${
+                isCurrent('/offers') ? 'bg-[#0A192F] text-white font-semibold' : 'hover:bg-[#FAF7F0]'
               }`}
             >
               <span>Offers</span>
@@ -224,8 +226,8 @@ export const Header: React.FC<HeaderProps> = ({
 
             <Link
               to="/track"
-              className={`px-3 py-1.5 rounded-full transition-colors ${
-                isCurrent('/track') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
+              className={`px-3 py-1.5 rounded-full transition-all ${
+                isCurrent('/track') ? 'bg-[#0A192F] text-white font-semibold' : 'hover:bg-[#FAF7F0]'
               }`}
             >
               Track Order
@@ -233,41 +235,47 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* HEADER ACTIONS */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Search Toggle Button */}
             <button
               onClick={() => {
                 setSearchVisible(!searchVisible);
                 if (!searchVisible) setTimeout(() => searchInputRef.current?.focus(), 100);
               }}
-              className={`p-2 rounded-full transition ${searchVisible ? 'bg-[#12A5B0] text-white shadow-md' : 'text-[#0B3561] hover:bg-[#DDF3F4]'}`}
+              className={`p-2.5 rounded-full transition ${
+                searchVisible
+                  ? 'bg-[#D97706] text-white shadow-md'
+                  : 'text-[#0A192F] hover:bg-[#FAF7F0]'
+              }`}
               aria-label="Toggle search"
             >
-              <SearchIcon className="w-5 h-5" />
+              <SearchIcon className="w-4.5 h-4.5" />
             </button>
 
+            {/* My Account Link */}
             <Link
               to={userEmail ? '/account' : '/auth?mode=login'}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs font-heading font-semibold ${
                 userEmail
-                  ? (isCurrent('/account') ? 'bg-[#0B3561] text-white shadow-md' : 'text-[#0B3561] hover:bg-[#DDF3F4]')
-                  : (isCurrent('/auth') ? 'bg-[#DDF3F4] text-[#0B3561] border border-[#0B3561]/30 font-bold shadow-xs' : 'text-[#0B3561] hover:bg-[#DDF3F4]')
+                  ? (isCurrent('/account') ? 'bg-[#0A192F] text-white shadow-xs' : 'text-[#0A192F] hover:bg-[#FAF7F0]')
+                  : (isCurrent('/auth') ? 'bg-[#FAF7F0] text-[#0A192F] border border-[#0A192F]/20' : 'text-[#0A192F] hover:bg-[#FAF7F0]')
               }`}
-              aria-label="User account"
-              title="User account"
+              aria-label="My Account"
+              title="My Account"
             >
-              <UserIcon className="w-5 h-5" showDot={!!userEmail} />
-              <span className="text-xs font-heading font-bold text-[#0B3561]">User account</span>
+              <UserIcon className="w-4.5 h-4.5" showDot={!!userEmail} />
+              <span className="hidden sm:inline">My Account</span>
             </Link>
 
+            {/* Cart Button */}
             <button
               onClick={onOpenCart}
-              className="relative p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition"
-              aria-label="View cart"
+              className="relative p-2.5 text-[#0A192F] hover:bg-[#FAF7F0] rounded-full transition cursor-pointer"
+              aria-label="View shopping cart"
             >
               <CartIcon className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#12A5B0] text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                <span className="absolute -top-1 -right-1 bg-[#D97706] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
                   {cartCount}
                 </span>
               )}
@@ -276,30 +284,30 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* EXPANDABLE AUTOMATED SEARCH BAR (1px Gap from Header) */}
+      {/* EXPANDABLE SEARCH BAR */}
       {searchVisible && (
-        <div className="sticky top-[72px] z-30 bg-white border-b border-[#0B3561]/10 shadow-lg animate-slideDown overflow-visible mt-[1px]">
-          <div ref={searchContainerRef} className="max-w-4xl mx-auto px-4 py-4 relative">
+        <div className="sticky top-[70px] z-30 bg-white border-b border-[#0A192F]/10 shadow-lg animate-slideDown overflow-visible">
+          <div ref={searchContainerRef} className="max-w-4xl mx-auto px-4 py-3.5 relative">
             <div className="relative flex items-center">
-              <SearchIcon className="w-5 h-5 text-[#0B3561]/60 absolute left-4 pointer-events-none" />
+              <SearchIcon className="w-4.5 h-4.5 text-[#627D98] absolute left-4 pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search subjects, books, Python, SQL, DSA..."
+                placeholder="Search handwritten notes: C++, Python, SQL, DSA, DBMS..."
                 value={searchQuery}
                 onChange={e => {
                   setSearchQuery(e.target.value);
                   setSearchFocused(true);
                 }}
                 onFocus={() => setSearchFocused(true)}
-                className="w-full pl-11 pr-12 py-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-2xl text-sm font-medium text-[#0B3561] placeholder:text-[#3C5D81]/70 focus:outline-none focus:border-[#12A5B0] focus:ring-4 focus:ring-[#12A5B0]/10 transition-all shadow-inner"
+                className="w-full pl-11 pr-12 py-2.5 bg-[#FAF7F0] border border-[#0A192F]/15 rounded-xl text-sm font-medium text-[#0A192F] placeholder:text-[#627D98] focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all shadow-inner"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 text-[#3C5D81] hover:text-[#0B3561] bg-white p-1 rounded-full shadow-sm"
+                  className="absolute right-3.5 text-[#627D98] hover:text-[#0A192F] bg-white p-1 rounded-full shadow-xs"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -308,13 +316,13 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Instant Live Autocomplete Dropdown */}
             {searchFocused && searchQuery.trim().length > 0 && (
-              <div className="absolute top-[calc(100%-8px)] left-4 right-4 bg-white rounded-b-2xl shadow-2xl border-x border-b border-[#0B3561]/15 overflow-hidden z-50 animate-fadeIn">
-                <div className="max-h-80 overflow-y-auto divide-y divide-[#0B3561]/10">
+              <div className="absolute top-[calc(100%-4px)] left-4 right-4 bg-white rounded-b-2xl shadow-2xl border-x border-b border-[#0A192F]/15 overflow-hidden z-50 animate-fadeIn">
+                <div className="max-h-80 overflow-y-auto divide-y divide-[#0A192F]/10">
                   
                   {/* Matching Subjects Section */}
                   {matchingSubjects.length > 0 && (
-                    <div className="p-4 bg-[#DDF3F4]/20">
-                      <span className="text-[10px] font-black text-[#12A5B0] uppercase tracking-widest block mb-3 px-1">
+                    <div className="p-3 bg-[#FAF7F0]/60">
+                      <span className="text-[10px] font-bold text-[#D97706] uppercase tracking-wider block mb-2 px-1">
                         Matching Subjects ({matchingSubjects.length})
                       </span>
                       <div className="space-y-1">
@@ -327,13 +335,13 @@ export const Header: React.FC<HeaderProps> = ({
                               setSearchVisible(false);
                               navigate(`/product/${sub.slug}`);
                             }}
-                            className="p-3 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition text-sm font-bold text-[#0B3561]"
+                            className="p-2.5 rounded-lg hover:bg-white cursor-pointer flex items-center justify-between transition text-xs font-bold text-[#0A192F] shadow-xs"
                           >
-                            <div className="flex items-center gap-3">
-                              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: sub.accent_color || '#12A5B0' }} />
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sub.accent_color || '#D97706' }} />
                               <span>{sub.name}</span>
                             </div>
-                            <span className="text-xs text-[#12A5B0] font-black italic">View Book →</span>
+                            <span className="text-xs text-[#D97706] font-semibold">View Book →</span>
                           </div>
                         ))}
                       </div>
@@ -343,8 +351,8 @@ export const Header: React.FC<HeaderProps> = ({
                   {/* Matching Printed Books Section */}
                   {matchingProducts.length > 0 && (
                     <div className="p-3">
-                      <span className="text-[10px] font-bold text-[#0B3561] uppercase tracking-wider block mb-2 px-1">
-                        Books & Bundles ({matchingProducts.length})
+                      <span className="text-[10px] font-bold text-[#0A192F] uppercase tracking-wider block mb-2 px-1">
+                        Books &amp; Bundles ({matchingProducts.length})
                       </span>
                       <div className="space-y-1">
                         {matchingProducts.map(prod => (
@@ -356,13 +364,13 @@ export const Header: React.FC<HeaderProps> = ({
                               setSearchVisible(false);
                               navigate(`/product/${prod.slug}`);
                             }}
-                            className="p-2.5 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition"
+                            className="p-2.5 rounded-lg hover:bg-[#FAF7F0] cursor-pointer flex items-center justify-between transition"
                           >
                             <div className="space-y-0.5">
-                              <h4 className="font-heading font-bold text-xs text-[#0B3561] line-clamp-1">{prod.title}</h4>
-                              <p className="text-[10px] text-[#3C5D81] line-clamp-1">{prod.short_desc}</p>
+                              <h4 className="font-heading font-semibold text-xs text-[#0A192F] line-clamp-1">{prod.title}</h4>
+                              <p className="text-[10px] text-[#627D98] line-clamp-1">{prod.short_desc}</p>
                             </div>
-                            <span className="font-display font-black italic text-xs text-[#0B3561] ml-2 flex-shrink-0">
+                            <span className="font-heading font-bold text-xs text-[#0A192F] ml-3 flex-shrink-0">
                               ₹{(prod.price_paise / 100).toFixed(2)}
                             </span>
                           </div>
@@ -372,8 +380,8 @@ export const Header: React.FC<HeaderProps> = ({
                   )}
 
                   {matchingSubjects.length === 0 && matchingProducts.length === 0 && (
-                    <div className="p-6 text-center text-xs text-[#3C5D81]">
-                      No results found for "<span className="font-bold text-[#0B3561]">{searchQuery}</span>"
+                    <div className="p-6 text-center text-xs text-[#627D98]">
+                      No results found for &quot;<span className="font-bold text-[#0A192F]">{searchQuery}</span>&quot;
                     </div>
                   )}
 
@@ -383,99 +391,55 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       )}
-      {/* Expandable Search Input for Mobile View */}
-      {mobileSearchExpanded && (
-        <div className="md:hidden bg-white border-b border-[#0B3561]/10 p-3 animate-fadeIn">
-          <div className="relative flex items-center">
-            <SearchIcon className="w-4 h-4 text-[#0B3561]/60 absolute left-3.5 pointer-events-none" />
-            <input
-              type="text"
-              autoFocus
-              placeholder="Search Python, SQL, DSA..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-full text-xs font-medium text-[#0B3561] focus:outline-none focus:border-[#12A5B0]"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 text-[#3C5D81] text-xs font-bold"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Mobile Search Results */}
-          {searchQuery.trim().length > 0 && (
-            <div className="mt-2 bg-white rounded-xl border border-[#0B3561]/15 max-h-60 overflow-y-auto divide-y divide-[#0B3561]/10 text-xs">
-              {matchingProducts.map(prod => (
-                <div
-                  key={prod.slug}
-                  onClick={() => {
-                    setSearchQuery('');
-                    setMobileSearchExpanded(false);
-                    navigate(`/product/${prod.slug}`);
-                  }}
-                  className="p-2.5 hover:bg-[#DDF3F4] flex items-center justify-between"
-                >
-                  <span className="font-semibold text-[#0B3561]">{prod.title}</span>
-                  <span className="font-bold text-[#12A5B0]">₹{(prod.price_paise / 100).toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Mobile Left Drawer Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
-            className="fixed inset-0 bg-[#071E38]/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-[#070F1E]/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          <div className="relative w-[86%] max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#0B3561]/10">
+          <div className="relative w-[86%] max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto p-5">
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#0A192F]/10">
               <Logo variant="horizontal" surface="light" customUrl={customLogoUrl} size="sm" />
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-lg"
+                className="p-2 text-[#0A192F] hover:bg-[#FAF7F0] rounded-lg"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <nav className="mt-6 flex flex-col gap-2 font-heading font-semibold text-sm text-[#0B3561]">
+            <nav className="mt-4 flex flex-col gap-1.5 font-heading font-semibold text-sm text-[#0A192F]">
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-4 py-2.5 rounded-xl transition ${isCurrent('/') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'}`}
+                className={`px-3.5 py-2.5 rounded-xl transition ${isCurrent('/') ? 'bg-[#0A192F] text-white' : 'hover:bg-[#FAF7F0]'}`}
               >
                 Home
               </Link>
 
               {/* Categorized Subjects Accordion for Mobile */}
-              <div className="py-2 border-y border-[#0B3561]/10 my-2 space-y-4">
-                <span className="text-[11px] font-bold text-[#3C5D81] uppercase tracking-wider px-4 block">
+              <div className="py-2 border-y border-[#0A192F]/10 my-1 space-y-3">
+                <span className="text-[10px] font-bold text-[#627D98] uppercase tracking-wider px-3 block">
                   Subject Categories
                 </span>
 
                 {subjectCategories.map((cat, idx) => (
-                  <div key={idx} className="px-4 space-y-1">
-                    <span className="text-xs font-bold text-[#12A5B0] uppercase block">
+                  <div key={idx} className="px-3 space-y-1">
+                    <span className="text-xs font-bold text-[#D97706] uppercase block">
                       {cat.category}
                     </span>
-                    <div className="pl-2 space-y-1 pt-1">
+                    <div className="pl-2 space-y-0.5 pt-0.5">
                       {cat.items.map(item => (
                         <Link
                           key={item.slug}
                           to={`/product/${item.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block py-1 text-xs text-[#0B3561] hover:text-[#12A5B0]"
+                          className="block py-1 text-xs text-[#0A192F] hover:text-[#D97706]"
                         >
                           • {item.label}
                         </Link>
@@ -487,7 +451,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   to="/subjects"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2 text-xs font-bold text-[#0B3561] hover:underline"
+                  className="block px-3 py-1.5 text-xs font-bold text-[#D97706] hover:underline"
                 >
                   View All 13 Subjects →
                 </Link>
@@ -496,15 +460,15 @@ export const Header: React.FC<HeaderProps> = ({
               <Link
                 to="/bundles"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
+                className="px-3.5 py-2 rounded-xl hover:bg-[#FAF7F0]"
               >
-                Book Bundles
+                Placement &amp; Semester Bundles
               </Link>
 
               <Link
                 to="/offers"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4] text-[#12A5B0] font-bold"
+                className="px-3.5 py-2 rounded-xl hover:bg-[#FAF7F0] text-[#D97706] font-bold"
               >
                 Special Offers 🏷️
               </Link>
@@ -512,15 +476,15 @@ export const Header: React.FC<HeaderProps> = ({
               <Link
                 to="/subscription"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
+                className="px-3.5 py-2 rounded-xl hover:bg-[#FAF7F0]"
               >
-                Subscriptions (Pro)
+                Current Affairs Subscription
               </Link>
 
               <Link
                 to="/track"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
+                className="px-3.5 py-2 rounded-xl hover:bg-[#FAF7F0]"
               >
                 Track Order
               </Link>
@@ -528,18 +492,18 @@ export const Header: React.FC<HeaderProps> = ({
               <Link
                 to="/account"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
+                className="px-3.5 py-2 rounded-xl hover:bg-[#FAF7F0]"
               >
-                User account
+                My Account
               </Link>
 
               <a
                 href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-xl font-bold shadow-md hover:brightness-105"
+                className="mt-4 flex items-center justify-center gap-2 bg-[#25D366] text-white py-2.5 rounded-xl text-xs font-bold shadow-sm hover:brightness-105"
               >
-                <WhatsappIcon className="w-5 h-5" />
+                <WhatsappIcon className="w-4 h-4" />
                 <span>WhatsApp Support</span>
               </a>
             </nav>

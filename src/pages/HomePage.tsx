@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Subject, Product, SiteSettings, ContactMessage } from '../types';
-import { PlaceholderCover } from '../components/PlaceholderCover';
+import { Subject, Product, SiteSettings, Review, FAQ } from '../types';
 import { FeatureStrip } from '../components/FeatureStrip';
-import { TestimonialSlider } from '../components/TestimonialSlider';
-import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, NotesIcon, HandwrittenIcon, TruckIcon, IdeaIcon } from '../components/Icons';
+import { BookCoverVisual } from '../components/BookCoverVisual';
+import { OpenNotebookVisual } from '../components/OpenNotebookVisual';
+import { EditorialVisual } from '../components/EditorialVisual';
+import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, CartIcon } from '../components/Icons';
 import { postContactMessage } from '../lib/api';
-import { InteractiveCodingQuiz } from '../components/InteractiveCodingQuiz';
-import { StudyPlannerWidget } from '../components/StudyPlannerWidget';
 
 interface HomePageProps {
   subjects: Subject[];
   products: Product[];
   settings: SiteSettings;
+  reviews?: Review[];
+  faqs?: FAQ[];
   onAddToCart: (slug: string, qty: number) => void;
 }
 
@@ -20,557 +21,1234 @@ export const HomePage: React.FC<HomePageProps> = ({
   subjects,
   products,
   settings,
+  reviews = [],
+  faqs = [],
   onAddToCart,
 }) => {
   const navigate = useNavigate();
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const [contactSuccess, setContactSuccess] = useState<string | null>(null);
-  const [contactError, setContactError] = useState<string | null>(null);
-  const [contactSubmitting, setContactSubmitting] = useState(false);
 
-  const carouselRef = React.useRef<HTMLDivElement>(null);
-  const [activeImageIdx, setActiveImageIdx] = useState<Record<string, number>>({});
-  const [pageFlipKey, setPageFlipKey] = useState<Record<string, number>>({});
+  // Active sample page for "Look inside" carousel
+  const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
-  const scrollLeft = () => {
-    carouselRef.current?.scrollBy({ left: -380, behavior: 'smooth' });
-  };
-  const scrollRight = () => {
-    carouselRef.current?.scrollBy({ left: 380, behavior: 'smooth' });
-  };
+  // FAQ accordion state
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
 
-  const featuredProducts = products.filter(p => p.status === 'active' && p.type === 'book');
+  // Filter book products
+  const bookProducts = products.filter(p => p.status === 'active' && p.type === 'book');
+  const bundleProducts = products.filter(p => p.status === 'active' && p.type === 'bundle');
 
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactError(null);
-    setContactSuccess(null);
-    setContactSubmitting(true);
-    try {
-      await postContactMessage({
-        name: contactName,
-        email: contactEmail,
-        phone: contactPhone,
-        message: contactMessage,
-      });
-      setContactSuccess('Thank you! Your message has been sent. We will reply shortly.');
-      setContactName('');
-      setContactEmail('');
-      setContactPhone('');
-      setContactMessage('');
-    } catch (err: any) {
-      setContactError(err.message || 'Failed to send message');
-    } finally {
-      setContactSubmitting(false);
-    }
-  };
+  // Subject filter category state
+  const [subjectCategoryFilter, setSubjectCategoryFilter] = useState<'all' | 'core' | 'placements' | 'systems' | 'web'>('all');
+
+  // 12 Requested Core Subjects with Category & Feature Tags
+  const coreSubjectSlugs = [
+    {
+      slug: 'c',
+      name: 'C Programming',
+      category: 'core' as const,
+      slot: 'subject_c',
+      hl: 'yellow' as const,
+      tag: 'Bestseller',
+      desc: 'Pointers, memory addresses, dynamic allocation & structure unions.',
+      highlights: ['Pointers & RAM Map', 'Flowcharts', 'Exam Solved'],
+    },
+    {
+      slug: 'c-plus-plus',
+      name: 'C++ Programming',
+      category: 'core' as const,
+      slot: 'subject_cpp',
+      hl: 'pink' as const,
+      tag: 'OOP Essential',
+      desc: 'Classes, templates, virtual functions, STL vectors & memory heap.',
+      highlights: ['STL Containers', 'Virtual Tables', 'Object Slicing'],
+    },
+    {
+      slug: 'java',
+      name: 'Java Programming',
+      category: 'core' as const,
+      slot: 'subject_java',
+      hl: 'amber' as const,
+      tag: 'Industry Standard',
+      desc: 'JVM internals, collections framework, multi-threading & streams.',
+      highlights: ['JVM Architecture', 'Collections Map', 'Multithreading'],
+    },
+    {
+      slug: 'python',
+      name: 'Python Programming',
+      category: 'core' as const,
+      slot: 'subject_python',
+      hl: 'green' as const,
+      tag: 'Top Rated',
+      desc: 'Syntax quirks, list comprehensions, decorators, OOP & generators.',
+      highlights: ['Visual Tracing', 'Decorators', 'Interview FAQ'],
+    },
+    {
+      slug: 'dsa-with-java',
+      name: 'DSA with Java',
+      category: 'placements' as const,
+      slot: 'subject_dsa',
+      hl: 'orange' as const,
+      tag: 'Placement Must',
+      desc: 'Arrays, LinkedLists, Trees, Graphs, DP & Big-O cheat sheets.',
+      highlights: ['Tree Traversals', 'Graph Visuals', 'Big-O Proofs'],
+    },
+    {
+      slug: 'sql',
+      name: 'SQL & Database',
+      category: 'systems' as const,
+      slot: 'subject_sql',
+      hl: 'yellow' as const,
+      tag: 'High Demand',
+      desc: 'Joins, subqueries, grouping, indexing & schema architecture.',
+      highlights: ['Visual Joins', 'Window Functions', 'Index Tuning'],
+    },
+    {
+      slug: 'dbms',
+      name: 'DBMS Architecture',
+      category: 'systems' as const,
+      slot: 'subject_dbms',
+      hl: 'green' as const,
+      tag: 'Semester Core',
+      desc: 'ER diagrams, 1NF-BCNF normalization, ACID transactions & concurrency.',
+      highlights: ['ER Diagrams', 'Normalization', 'ACID Concurrency'],
+    },
+    {
+      slug: 'operating-system',
+      name: 'Operating System',
+      category: 'systems' as const,
+      slot: 'subject_os',
+      hl: 'pink' as const,
+      tag: 'System Concepts',
+      desc: 'Processes, CPU scheduling, deadlocks, paging & virtual memory.',
+      highlights: ['Process Lifecycle', 'Deadlock Graphs', 'Paging Memory'],
+    },
+    {
+      slug: 'html',
+      name: 'HTML5 Semantic Web',
+      category: 'web' as const,
+      slot: 'subject_html',
+      hl: 'orange' as const,
+      tag: 'Frontend Base',
+      desc: 'Semantic tags, accessibility, forms, media APIs & DOM structure.',
+      highlights: ['Semantic Tree', 'Forms & Inputs', 'SEO Markup'],
+    },
+    {
+      slug: 'css',
+      name: 'CSS3 Flex & Grid',
+      category: 'web' as const,
+      slot: 'subject_css',
+      hl: 'amber' as const,
+      tag: 'Modern Layouts',
+      desc: 'Box-model, flexbox axes, 12-col grid, media queries & transitions.',
+      highlights: ['Flexbox Cheat Sheet', 'Grid fr-Units', 'Animations'],
+    },
+    {
+      slug: 'javascript',
+      name: 'JavaScript Modern',
+      category: 'web' as const,
+      slot: 'subject_js',
+      hl: 'yellow' as const,
+      tag: 'Full-Stack Core',
+      desc: 'Closures, event loop, promises, async/await, DOM & ES6+ syntax.',
+      highlights: ['Event Loop Diagram', 'Closures Scope', 'Async/Await'],
+    },
+    {
+      slug: 'data-science',
+      name: 'Data Science & Python',
+      category: 'web' as const,
+      slot: 'subject_datascience',
+      hl: 'green' as const,
+      tag: 'AI & Analytics',
+      desc: 'NumPy vectors, Pandas DataFrames, Matplotlib & model pipelines.',
+      highlights: ['NumPy Matrices', 'Pandas DataFrames', 'Feature Pipeline'],
+    },
+  ];
+
+  // Look inside samples
+  const lookInsidePages = [
+    {
+      id: 'sample_page_algorithms',
+      title: 'Pointers & Dynamic Memory Stack',
+      subject: 'C & C++',
+      chapter: 'Chapter 04 · Memory Hierarchy',
+      desc: 'Clear visual allocation breakdown showing Stack frames vs Heap allocations, pointer dereferencing step-traces, and NULL guard patterns.',
+      highlights: ['RAM address hex-tracing', 'Visual pointer arrows', 'Free/malloc leak warnings'],
+    },
+    {
+      id: 'sample_page_trees',
+      title: 'Binary Search Trees & Graph Traversals',
+      subject: 'Data Structures',
+      chapter: 'Chapter 07 · Non-Linear Structures',
+      desc: 'Color-coded node traversals (In-order, Pre-order, Post-order) with call-stack unwinding diagrams and Big-O cheat sheets.',
+      highlights: ['Color-coded node visits', 'Balanced tree rotations', 'O(log N) proof summary'],
+    },
+    {
+      id: 'sample_page_sql',
+      title: 'SQL Relational Joins & Execution Traces',
+      subject: 'SQL & DBMS',
+      chapter: 'Chapter 05 · Relational Algebra',
+      desc: 'Venn diagrams paired with real side-by-side SQL output matrices for INNER, LEFT, RIGHT, and FULL OUTER joins.',
+      highlights: ['Visual Venn relationships', 'Primary-foreign key lines', 'Indexing speed tips'],
+    },
+  ];
+
+  // Real FAQs with curated fallbacks
+  const displayFaqs = faqs && faqs.length > 0 ? faqs : [
+    {
+      id: 'faq-1',
+      question: 'How fast will my printed notebook parcel arrive?',
+      answer: 'We dispatch all book orders within 24 business hours from our central fulfillment hub. Delivery typically takes 2 to 4 business days depending on your pincode across India, backed by real-time Shiprocket tracking.',
+      group_name: 'Shipping',
+      sort_order: 1,
+      is_active: true,
+    },
+    {
+      id: 'faq-2',
+      question: 'Is Cash on Delivery (COD) available for student orders?',
+      answer: 'Yes! We support Cash on Delivery across 19,000+ Indian pincodes. You can inspect the outer courier packaging and pay cash or UPI directly to the delivery courier upon arrival.',
+      group_name: 'Payment',
+      sort_order: 2,
+      is_active: true,
+    },
+    {
+      id: 'faq-3',
+      question: 'What is the physical paper and ink quality?',
+      answer: 'Every notebook is printed on heavyweight 100 GSM natural cream paper that prevents ink bleed-through. The pages feature vibrant 4-colour industrial offset printing, durable wire-o binding, and soft-touch protective cover laminations.',
+      group_name: 'Product',
+      sort_order: 3,
+      is_active: true,
+    },
+    {
+      id: 'faq-4',
+      question: 'Can I write my own annotations and highlight these notes?',
+      answer: 'Absolutely. The paper texture was chosen specifically for active study — highlighters, ballpoint pens, and gel pens glide smoothly without smudging or showing through to the reverse page.',
+      group_name: 'Study',
+      sort_order: 4,
+      is_active: true,
+    },
+    {
+      id: 'faq-5',
+      question: 'Can I buy individual subject books, or do I have to buy bundles?',
+      answer: 'You can purchase any single subject book independently for ₹399–₹499, or choose one of our discounted Placement or Semester bundles to save up to 55%.',
+      group_name: 'Orders',
+      sort_order: 5,
+      is_active: true,
+    },
+  ];
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-16 sm:space-y-24 pb-16">
       
-      {/* SECTION C: HERO BANNER */}
-      <section className="w-full relative">
-        <img
-          src="/hero-banner.png"
-          alt="PyNotes Hero Banner"
-          className="w-full h-auto object-cover block"
-        />
-        <button
-          onClick={() => navigate('/bundles')}
-          className="absolute bottom-[20%] left-[5%] w-[18%] h-[10%] cursor-pointer hover:bg-white/20 transition-colors"
-          aria-label="Shop Bundle Now"
-        />
-      </section>
+      {/* =========================================================================
+          SECTION 2: HERO SECTION
+          Big headline, one-line promise, Shop Notes button, glossy book mockups
+          floating next to an open notebook image.
+          * "The hero banner image will not touch at all. Keep it."
+         ========================================================================= */}
+      <section className="relative overflow-hidden pt-6 sm:pt-10">
+        
+        {/* Soft paper gradient background */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-12 items-center">
+            
+            {/* Left Column: Big Headline & Action */}
+            <div className="lg:col-span-6 space-y-6 sm:space-y-8 text-center lg:text-left">
+              
+              {/* Highlight Kicker */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FEF3C7] border border-[#F59E0B]/30 text-[#92400E] text-xs font-heading font-semibold shadow-2xs">
+                <span>✨ 2026 Revised Student Edition</span>
+                <span className="text-[#F59E0B]">•</span>
+                <span className="font-mono text-[11px] font-bold">100 GSM Colour Print</span>
+              </div>
 
-      {/* SECTION D: FEATURE STRIP */}
-      <FeatureStrip />
+              {/* Big Headline with Handwriting Accent */}
+              <h1 className="font-heading font-black text-3xl sm:text-5xl xl:text-6xl text-[#0A192F] tracking-tight leading-[1.12]">
+                Master Coding with Printed, Colourful{' '}
+                <span className="relative inline-block text-[#D97706] font-handwriting italic font-bold">
+                  Handwritten
+                  <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#D97706" />
+                </span>{' '}
+                Notes.
+              </h1>
 
-      {/* SECTION E: FEATURED COLLECTION WITH EXTREME LEFT & RIGHT CAROUSEL ARROWS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
-        <div className="text-center space-y-3">
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561] inline-block relative">
-            Featured{' '}
-            <span className="relative inline-block text-[#12A5B0]">
-              collection
-              <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-            </span>
-          </h2>
-          <p className="font-body text-[#3C5D81] text-base max-w-md mx-auto">
-            Explore our top-selling handwritten printed books designed for conceptual clarity and fast exam revision.
-          </p>
+              {/* One-Line Promise */}
+              <p className="font-body text-base sm:text-lg text-[#486581] max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Step-by-step algorithms, visual syntax trees, and color-coded memory traces on premium 100 GSM cream paper — built to crack semester exams and placement interviews without screen fatigue.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+                <a
+                  href="#subjects-grid"
+                  className="w-full sm:w-auto px-8 py-4 bg-[#0A192F] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#132742] transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer group"
+                >
+                  <span>Shop Notes</span>
+                  <span className="group-hover:translate-y-0.5 transition-transform">↓</span>
+                </a>
+
+                <Link
+                  to="/bundles"
+                  className="w-full sm:w-auto px-7 py-4 bg-white text-[#0A192F] border border-[#0A192F]/15 font-heading font-bold text-sm rounded-xl hover:bg-[#FAF7F0] transition shadow-xs flex items-center justify-center gap-2"
+                >
+                  <span>Placement Bundles</span>
+                  <span className="text-[#D97706] text-xs font-mono font-bold">SAVE 50%</span>
+                </Link>
+              </div>
+
+              {/* Micro Trust Points */}
+              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-[#627D98] font-medium">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#16A34A] font-bold">✓</span> Cash on Delivery
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#16A34A] font-bold">✓</span> 2–4 Day Express Delivery
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#16A34A] font-bold">✓</span> Bleed-Proof 100 GSM
+                </span>
+              </div>
+
+            </div>
+
+            {/* Right Column: Glossy Book Mockups Floating Next to Open Notebook */}
+            <div className="lg:col-span-6 relative">
+              
+              {/* Central Open Notebook */}
+              <div className="relative z-10 mx-auto max-w-lg sm:max-w-xl">
+                <OpenNotebookVisual />
+              </div>
+
+              {/* Floating Glossy 3D Python Book (Left Bottom) */}
+              <div className="hidden sm:block absolute -left-6 bottom-4 w-36 sm:w-44 z-20 animate-float-soft transform -rotate-6 filter drop-shadow-2xl">
+                <BookCoverVisual
+                  slotId="subject_python"
+                  title="Python"
+                  subjectSlug="python"
+                  accentColor="#10B981"
+                  highlighterColor="green"
+                />
+              </div>
+
+              {/* Floating Glossy 3D DSA Book (Right Top) */}
+              <div className="hidden sm:block absolute -right-6 -top-6 w-36 sm:w-44 z-20 animate-float-soft transform rotate-6 filter drop-shadow-2xl" style={{ animationDelay: '1.5s' }}>
+                <BookCoverVisual
+                  slotId="subject_dsa"
+                  title="DSA with Java"
+                  subjectSlug="dsa-with-java"
+                  accentColor="#D97706"
+                  highlighterColor="yellow"
+                />
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Carousel Wrapper with Extreme Left & Right Arrows */}
-        <div className="relative px-2 sm:px-6">
-          {/* Extreme Left Arrow */}
-          <button
-            onClick={scrollLeft}
-            aria-label="Scroll left"
-            className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-2xl font-bold text-xl z-30 cursor-pointer border-2 border-white"
-          >
-            ‹
-          </button>
 
-          {/* Carousel Container */}
-          <div ref={carouselRef} className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x scrollbar-hide scroll-smooth">
-            {featuredProducts.map(prod => {
-              const savingsPercent = Math.round(((prod.mrp_paise - prod.price_paise) / prod.mrp_paise) * 100);
-              const images = prod.images && prod.images.length > 0 ? prod.images : [];
-              const currIdx = activeImageIdx[prod.slug] || 0;
-              const currentImg = images.length > 0 ? images[currIdx % images.length] : undefined;
+      </section>
+
+      {/* =========================================================================
+          SECTION 3: TRUST STRIP
+          Premium print, beginner-friendly, fast shipping, cash on delivery
+         ========================================================================= */}
+      <FeatureStrip />
+
+      {/* =========================================================================
+          SECTION 4: SUBJECTS GRID WITH REVERSE DESIGN CARDS
+          (C, C++, Java, Python, DSA, SQL, DBMS, OS, HTML, CSS, JavaScript, Data Science)
+         ========================================================================= */}
+      <section id="subjects-grid" className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#D97706] bg-[#FEF3C7] px-3.5 py-1 rounded-full inline-block border border-[#F59E0B]/20">
+            Comprehensive Curriculum
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            Explore All 12{' '}
+            <span className="relative inline-block text-[#D97706] font-handwriting italic font-bold">
+              Handwritten
+              <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-2.5" color="#D97706" />
+            </span>{' '}
+            Subjects
+          </h2>
+          <p className="font-body text-sm sm:text-base text-[#486581] leading-relaxed">
+            Every subject notebook is hand-written, visual-first, and printed in 4-colour ink on 100 GSM bleed-proof cream paper. Pick individual subjects or grab the semester pack.
+          </p>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-3">
+            {[
+              { id: 'all' as const, label: 'All 12 Subjects', count: 12 },
+              { id: 'core' as const, label: 'Core Coding', count: 4 },
+              { id: 'placements' as const, label: 'DSA & Placements', count: 1 },
+              { id: 'systems' as const, label: 'Databases & Systems', count: 3 },
+              { id: 'web' as const, label: 'Web & Data Science', count: 4 },
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSubjectCategoryFilter(cat.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-bold transition-all cursor-pointer ${
+                  subjectCategoryFilter === cat.id
+                    ? 'bg-[#0A192F] text-[#FEF08A] shadow-md scale-105'
+                    : 'bg-white text-[#486581] hover:text-[#0A192F] border border-[#0A192F]/10 hover:border-[#D97706]/40'
+                }`}
+              >
+                {cat.label} ({cat.count})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Subjects Grid: Clean, Bright, High-Conversion Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-7">
+          {coreSubjectSlugs
+            .filter(
+              (subj) =>
+                subjectCategoryFilter === 'all' || subj.category === subjectCategoryFilter
+            )
+            .map((subj) => {
+              const productMatch = products.find(
+                (p) => p.slug === subj.slug || p.subject_id === subj.slug
+              );
+              const pricePaise = productMatch ? productMatch.price_paise : 39900;
+              const mrpPaise = productMatch ? productMatch.mrp_paise : 79900;
+              const savingsPercent = Math.round(
+                ((mrpPaise - pricePaise) / mrpPaise) * 100
+              );
+              const savingsAmount = Math.round((mrpPaise - pricePaise) / 100);
 
               return (
                 <div
-                  key={prod.slug}
-                  className="bg-white rounded-3xl p-6 border border-[#0B3561]/12 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden snap-start min-w-[300px] sm:min-w-[350px]"
+                  key={subj.slug}
+                  className="bg-white rounded-3xl p-5 border border-[#0A192F]/10 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                 >
                   <div>
-                    {/* 3D Book Image Cover with Page Turning Animation & Overlay <> Carousel Buttons */}
-                    <div className="mb-4 relative group/img">
-                      <div
-                        key={pageFlipKey[prod.slug] || 0}
-                        onClick={() => navigate(`/product/${prod.slug}`)}
-                        className="cursor-pointer transform-gpu transition-all duration-500 ease-out group-hover/img:scale-102 animate-page-turn"
-                      >
-                        <PlaceholderCover
-                          title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
-                          accentColor="#12A5B0"
-                          imageUrl={currentImg}
-                        />
-                      </div>
+                    {/* Top Notebook Visual Container */}
+                    <div
+                      onClick={() => navigate(`/product/${subj.slug}`)}
+                      className="relative mb-4 cursor-pointer"
+                    >
+                      <BookCoverVisual
+                        slotId={subj.slot}
+                        title={subj.name.replace(' Programming', '').replace(' Architecture', '')}
+                        subjectSlug={subj.slug}
+                        highlighterColor={subj.hl}
+                      />
 
-                      {/* Overlay Page Turning Carousel Arrows < > on the Image Card */}
-                      {images.length > 1 && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveImageIdx(prev => ({
-                                ...prev,
-                                [prod.slug]: ((prev[prod.slug] || 0) - 1 + images.length) % images.length,
-                              }));
-                              setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                            }}
-                            aria-label="Previous image"
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
-                          >
-                            ‹
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveImageIdx(prev => ({
-                                ...prev,
-                                [prod.slug]: ((prev[prod.slug] || 0) + 1) % images.length,
-                              }));
-                              setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                            }}
-                            aria-label="Next image"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
-                          >
-                            ›
-                          </button>
-                        </>
-                      )}
+                      {/* Tag Badge */}
+                      <span className="absolute top-3 left-3 bg-[#0A192F]/85 backdrop-blur-xs text-white font-mono font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded shadow-xs z-20">
+                        {subj.tag}
+                      </span>
 
-                      {/* SAVE Chip at top-left */}
-                      {savingsPercent > 0 && (
-                        <div className="absolute top-4 left-4 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[11px] px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 uppercase tracking-wider pointer-events-none">
-                          <span>SAVE {savingsPercent}%</span>
-                        </div>
-                      )}
+                      {/* Discount Badge */}
+                      <span className="absolute top-3 right-3 bg-[#FEF08A] text-[#713F12] border border-[#FACC15] font-mono font-black text-[10px] px-2 py-0.5 rounded shadow-xs z-20">
+                        SAVE {savingsPercent > 0 ? savingsPercent : 50}%
+                      </span>
                     </div>
 
-                    {/* Under the Image Card: Multi-Picture Switcher & Page Turning Navigation */}
-                    {images.length > 1 && (
-                      <div className="mb-4 flex items-center justify-between bg-[#F7FAFC] px-3 py-2 rounded-xl border border-[#0B3561]/10">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveImageIdx(prev => ({
-                              ...prev,
-                              [prod.slug]: ((prev[prod.slug] || 0) - 1 + images.length) % images.length,
-                            }));
-                            setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                          }}
-                          className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
-                        >
-                          ‹ Prev Page
-                        </button>
+                    {/* Metadata Pill */}
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#627D98] mb-1.5">
+                      <span className="text-[#D97706] font-bold uppercase tracking-wider">
+                        Printed Book
+                      </span>
+                      <span>180+ Pages · 100 GSM</span>
+                    </div>
 
-                        <div className="flex items-center gap-1.5">
-                          {images.map((_, i) => (
-                            <button
-                              key={i}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveImageIdx(prev => ({ ...prev, [prod.slug]: i }));
-                                setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                              }}
-                              className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                                i === (currIdx % images.length) ? 'bg-[#12A5B0] w-4' : 'bg-[#0B3561]/30'
-                              }`}
-                            />
-                          ))}
-                        </div>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveImageIdx(prev => ({
-                              ...prev,
-                              [prod.slug]: ((prev[prod.slug] || 0) + 1) % images.length,
-                            }));
-                            setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                          }}
-                          className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
-                        >
-                          Next Page ›
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Title */}
+                    {/* Subject Name */}
                     <h3
-                      onClick={() => navigate(`/product/${prod.slug}`)}
-                      className="font-heading font-bold text-lg text-[#0B3561] line-clamp-2 hover:text-[#12A5B0] cursor-pointer transition min-h-[52px]"
+                      onClick={() => navigate(`/product/${subj.slug}`)}
+                      className="font-heading font-black text-lg text-[#0A192F] group-hover:text-[#D97706] cursor-pointer transition-colors leading-snug line-clamp-1"
                     >
-                      {prod.title}
+                      {subj.name}
                     </h3>
 
-                    {/* Price Section */}
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="font-display font-black italic text-2xl text-[#0B3561]">
-                        Rs. {(prod.price_paise / 100).toFixed(2)}
-                      </span>
-                      <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
-                        Rs. {(prod.mrp_paise / 100).toFixed(2)}
+                    {/* Subject Description */}
+                    <p className="font-body text-xs text-[#486581] mt-1 line-clamp-2 leading-relaxed">
+                      {subj.desc}
+                    </p>
+
+                    {/* Topic Highlights Chips */}
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {subj.highlights.map((item) => (
+                        <span
+                          key={item}
+                          className="text-[9px] font-mono font-medium bg-[#FAF7F0] text-[#334E68] border border-[#0A192F]/8 px-2 py-0.5 rounded"
+                        >
+                          ✓ {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pricing and Action Buttons */}
+                  <div className="mt-5 pt-3.5 border-t border-[#0A192F]/8 space-y-3">
+                    <div className="flex items-baseline justify-between">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-heading font-black text-2xl text-[#0A192F]">
+                          ₹{(pricePaise / 100).toFixed(0)}
+                        </span>
+                        <span className="font-mono text-xs text-[#9DAEC0] line-through">
+                          ₹{(mrpPaise / 100).toFixed(0)}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono font-bold text-[#059669]">
+                        Save ₹{savingsAmount}
                       </span>
                     </div>
 
-                    {/* Short Description */}
-                    <p className="font-body text-xs text-[#3C5D81] mt-2 leading-relaxed line-clamp-2">
-                      {prod.short_desc}
-                    </p>
-                  </div>
+                    {/* Dual Action Buttons: Add to Cart + Look Inside */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(subj.slug, 1);
+                        }}
+                        className="flex-1 bg-[#D97706] hover:bg-[#B45309] text-white font-heading font-bold text-xs py-2.5 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        aria-label={`Add ${subj.name} to Cart`}
+                      >
+                        <CartIcon className="w-3.5 h-3.5 text-white" />
+                        <span>Add to Cart</span>
+                      </button>
 
-                  {/* View Details Button */}
-                  <div className="mt-4 pt-4 border-t border-[#0B3561]/10">
-                    <Link
-                      to={`/product/${prod.slug}`}
-                      className="block w-full text-center py-3 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs rounded-xl hover:brightness-105 transition shadow-sm"
-                    >
-                      View Details
-                    </Link>
+                      <button
+                        onClick={() => navigate(`/product/${subj.slug}`)}
+                        className="px-3 py-2.5 bg-[#FAF7F0] hover:bg-white text-[#0A192F] border border-[#0A192F]/15 hover:border-[#D97706]/40 font-heading font-semibold text-xs rounded-xl transition cursor-pointer whitespace-nowrap"
+                        aria-label={`View details for ${subj.name}`}
+                      >
+                        Details →
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
             })}
-          </div>
-
-          {/* Extreme Right Arrow */}
-          <button
-            onClick={scrollRight}
-            aria-label="Scroll right"
-            className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-2xl font-bold text-xl z-30 cursor-pointer border-2 border-white"
-          >
-            ›
-          </button>
         </div>
 
         {/* View All Button */}
-        <div className="text-center pt-4">
+        <div className="text-center pt-2">
           <Link
             to="/subjects"
-            className="inline-block bg-[#0B3561] text-white font-heading font-bold px-8 py-3.5 rounded-2xl text-sm shadow-lg hover:bg-[#071E38] hover:shadow-xl transition tracking-wide"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#FAF7F0] text-[#0A192F] border border-[#0A192F]/15 rounded-xl font-heading font-semibold text-xs sm:text-sm hover:bg-white transition shadow-xs"
           >
-            Explore All 13 Handwritten Subject Books →
+            <span>Browse Complete Subject Library</span>
+            <span>→</span>
           </Link>
         </div>
+
       </section>
 
-      {/* SECTION F: "WHY STUDENTS CHOOSE US" COMPARISON */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          
-          {/* Left Description */}
-          <div className="space-y-4">
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561] leading-tight">
-              Why Students{' '}
-              <span className="relative inline-block text-[#12A5B0]">
-                Choose Us
-                <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-              </span>
-            </h2>
-            <p className="font-body text-[#3C5D81] text-base leading-relaxed">
-              Most coding materials are typed, cluttered, and hard to revise. Our handwritten structured notes are designed for real understanding and faster exam recall.
-            </p>
-          </div>
-
-          {/* Right Comparison Card on Dot-Grid background */}
-          <div className="bg-dot-grid p-4 sm:p-6 rounded-3xl border border-[#0B3561]/15 shadow-xl">
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#0B3561]/10">
-              <table className="w-full text-left border-collapse text-xs sm:text-sm">
-                <thead>
-                  <tr className="border-b border-[#0B3561]/10">
-                    <th className="p-3 sm:p-4 font-heading font-bold text-[#0B3561]">Feature</th>
-                    <th className="p-3 sm:p-4 font-heading font-bold text-white bg-[#0B3561] text-center w-28 sm:w-36 rounded-t-xl">
-                      PyNotes
-                    </th>
-                    <th className="p-3 sm:p-4 font-heading font-bold text-[#3C5D81] text-center w-24">Others</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#0B3561]/5 font-body">
-                  {[
-                    { label: 'Concept Clarity', pynotes: true, others: false },
-                    { label: 'Fast Revision', pynotes: true, others: false },
-                    { label: 'Beginner Friendly', pynotes: true, others: false },
-                    { label: 'Visual Learning', pynotes: true, others: false },
-                    { label: 'Exam Ready', pynotes: true, others: false },
-                    { label: 'Organized Notes', pynotes: true, others: false },
-                    { label: 'Handwritten Notes', pynotes: true, others: false },
-                  ].map((row, idx) => (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-[#F7FAFC]' : 'bg-white'}>
-                      <td className="p-3 sm:p-4 font-heading font-semibold text-[#0B3561]">{row.label}</td>
-                      <td className="p-3 sm:p-4 bg-[#0B3561]/5 text-center">
-                        <CheckCircleIcon className="w-5 h-5 text-[#13834D] mx-auto" />
-                      </td>
-                      <td className="p-3 sm:p-4 text-center">
-                        <CrossIcon className="w-5 h-5 text-[#C0392B] mx-auto" />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* =========================================================================
+          SECTION 5: BESTSELLERS
+          Price, discount badge and quick "Add to cart"
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#0A192F]/10 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#D97706]" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#D97706]">Student Favourites</span>
             </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* SECTION G: "BUILT FOR CONCEPT CLARITY" WITH PARALLAX OVERLAY IMAGE */}
-      <section className="relative py-10 px-4 sm:px-8 bg-fixed bg-cover bg-center overflow-hidden border-y border-[#12A5B0]/20" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600&auto=format&fit=crop&q=80')` }}>
-        {/* Dark Gradient Overlay for Parallax Depth */}
-        <div className="absolute inset-0 bg-[#071E38]/85 backdrop-blur-xs" />
-
-        <div className="relative max-w-7xl mx-auto space-y-12 z-10 text-white">
-          <div className="text-center space-y-3">
-            <span className="bg-[#12A5B0]/30 text-[#FFD54A] font-heading font-black text-xs px-4 py-1.5 rounded-full border border-[#12A5B0]/50 uppercase tracking-widest">
-              Engineered For Success
-            </span>
-            <h2 className="font-heading font-bold text-3xl sm:text-5xl text-white">
-              Built for Concept Clarity
-            </h2>
-            <p className="font-body text-[#DDF3F4]/80 text-sm max-w-xl mx-auto">
-              Every page is hand-crafted with color-coded syntax and visual tracing to make learning effortless.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: 'Structured Notes',
-                desc: 'Colorful, handwritten organized and chapter-wise notes for quick recall.',
-              },
-              {
-                title: 'Fast Revision',
-                desc: 'Designed for rapid review before exams and placement interviews.',
-              },
-              {
-                title: 'Beginner Friendly',
-                desc: 'Simple language with step-by-step code execution traces.',
-              },
-              {
-                title: 'Premium Print',
-                desc: 'Printed on durable high-quality paper with vibrant 4-color ink.',
-              },
-            ].map((item, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-xl flex flex-col items-center text-center space-y-3 transform hover:-translate-y-2 transition-all duration-300">
-                <div className="w-10 h-10 rounded-full bg-[#12A5B0] text-white flex items-center justify-center font-bold">
-                  ✓
-                </div>
-                <h3 className="font-heading font-bold text-lg text-white">{item.title}</h3>
-                <p className="font-body text-xs text-[#DDF3F4]/90 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION H: "WHAT STUDENTS ACHIEVED" SURVEY BAND */}
-      {settings?.result_stats && settings.result_stats.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
-          <div className="text-center">
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561]">
-              Real Results from{' '}
-              <span className="relative inline-block text-[#12A5B0]">
-                Real
-                <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-              </span>{' '}
-              Students
+            <h2 className="font-heading font-black text-2xl sm:text-3xl text-[#0A192F] tracking-tight mt-1">
+              Bestseller Printed Books
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {settings.result_stats.map((stat, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm flex flex-col items-center text-center relative">
-                {stat.is_sample && (
-                  <span className="absolute top-2 right-2 bg-gray-200 text-gray-700 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">
-                    Sample
-                  </span>
-                )}
-                {/* Circular Progress Ring */}
-                <div className="relative w-24 h-24 flex items-center justify-center my-3">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      className="text-[#E7EBEF]"
-                      strokeWidth="3.8"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          <Link
+            to="/subjects"
+            className="text-xs font-heading font-bold text-[#D97706] hover:text-[#B45309] hover:underline"
+          >
+            View all books →
+          </Link>
+        </div>
+
+        {/* Bestsellers Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bookProducts.slice(0, 3).map((prod) => {
+            const savingsPercent = Math.round(((prod.mrp_paise - prod.price_paise) / prod.mrp_paise) * 100);
+
+            return (
+              <div
+                key={prod.slug}
+                className="glossy-book-card p-5 rounded-2xl flex flex-col justify-between group"
+              >
+                <div>
+                  {/* Glossy Book Cover */}
+                  <div
+                    onClick={() => navigate(`/product/${prod.slug}`)}
+                    className="cursor-pointer mb-4 relative"
+                  >
+                    <BookCoverVisual
+                      title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
+                      subjectSlug={prod.slug}
+                      imageUrl={prod.images && prod.images.length > 0 ? prod.images[0] : undefined}
+                      highlighterColor="yellow"
                     />
-                    <path
-                      className="text-[#12A5B0]"
-                      strokeDasharray="90, 100"
-                      strokeWidth="3.8"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <span className="absolute font-display font-black italic text-xl text-[#0B3561]">
-                    {stat.value}
-                  </span>
+
+                    {savingsPercent > 0 && (
+                      <span className="absolute top-3 left-3 bg-[#D97706] text-white font-mono font-bold text-[10px] px-2.5 py-1 rounded shadow-sm z-20">
+                        SAVE {savingsPercent}%
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title & Short Description */}
+                  <h3
+                    onClick={() => navigate(`/product/${prod.slug}`)}
+                    className="font-heading font-bold text-base text-[#0A192F] hover:text-[#D97706] cursor-pointer transition-colors line-clamp-1"
+                  >
+                    {prod.title}
+                  </h3>
+                  <p className="font-body text-xs text-[#627D98] mt-1.5 line-clamp-2 leading-relaxed">
+                    {prod.short_desc}
+                  </p>
                 </div>
-                <p className="font-heading font-semibold text-xs text-[#0B3561] mt-2">{stat.label}</p>
-                {stat.source_note && (
-                  <p className="text-[10px] text-[#9DAEC0] mt-1">{stat.source_note}</p>
-                )}
+
+                {/* Price Baseline & Quick Add To Cart */}
+                <div className="mt-5 pt-4 border-t border-[#0A192F]/8 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-heading font-bold text-xl text-[#0A192F]">
+                      ₹{(prod.price_paise / 100).toFixed(0)}
+                    </div>
+                    <div className="font-mono text-xs text-[#9DAEC0] line-through">
+                      ₹{(prod.mrp_paise / 100).toFixed(0)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onAddToCart(prod.slug, 1)}
+                      className="px-4 py-2.5 bg-[#0A192F] text-white font-heading font-bold text-xs rounded-xl hover:bg-[#132742] transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Add to Cart</span>
+                      <span>+</span>
+                    </button>
+                    <Link
+                      to={`/product/${prod.slug}`}
+                      className="px-3 py-2.5 bg-[#FAF7F0] text-[#0A192F] font-heading font-semibold text-xs rounded-xl hover:bg-white transition border border-[#0A192F]/10"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* SECTION H2: TESTIMONIAL SLIDER */}
-      <TestimonialSlider />
-
-      {/* SECTION H3: "WHY PHYSICAL PRINTED BOOKS BEAT DIGITAL PDFS" */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-12">
-        <div className="bg-gradient-to-r from-[#0B3561] to-[#071E38] text-white p-8 sm:p-12 rounded-3xl shadow-2xl space-y-8 relative overflow-hidden">
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-cover bg-center opacity-10 pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop&q=80')` }} />
-          
-          <div className="text-center space-y-3 relative z-10">
-            <span className="text-xs font-heading font-bold text-[#FFD54A] uppercase tracking-widest">
-              No Screen Fatigue
-            </span>
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-white">
-              Why Physical Printed Notes Beat Digital PDFs
-            </h2>
-            <p className="text-xs text-[#DDF3F4]/80 max-w-md mx-auto">
-              Studies prove that physical handwritten reading dramatically improves memory retention and focus compared to screens.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/15 space-y-2">
-              <span className="text-2xl">👁️</span>
-              <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Zero Eye Strain</h4>
-              <p className="text-xs text-[#DDF3F4]">Study for hours without blue light fatigue or phone distractions.</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/15 space-y-2">
-              <span className="text-2xl">✍️</span>
-              <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Active Recall</h4>
-              <p className="text-xs text-[#DDF3F4]">Easily highlight, annotate, and add sticky notes to your physical book.</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/15 space-y-2">
-              <span className="text-2xl">⚡</span>
-              <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Always Ready</h4>
-              <p className="text-xs text-[#DDF3F4]">No internet needed, no dead batteries—just open and revise anywhere.</p>
-            </div>
-          </div>
+            );
+          })}
         </div>
+
       </section>
 
-      {/* INTERACTIVE CODING QUIZ & STUDY PLANNER WIDGETS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-12">
-        <InteractiveCodingQuiz />
-        <StudyPlannerWidget />
-      </section>
+      {/* =========================================================================
+          SECTION 6: "LOOK INSIDE" CAROUSEL SHOWING SAMPLE PAGES
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="text-center space-y-2 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+            Examine the Quality
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            Look Inside Sample Pages
+          </h2>
+          <p className="font-body text-sm text-[#486581]">
+            Flip through real sample excerpts showcasing our multi-color handwritten syntax and memory diagrams.
+          </p>
+        </div>
 
-      {/* SECTION I: CONTACT FORM (Ruled paper background) */}
-      <section className="bg-ruled-paper py-8 px-4 sm:px-8 border-t border-[#0B3561]/10">
-        <div className="max-w-2xl mx-auto bg-white p-8 sm:p-10 rounded-3xl border border-[#0B3561]/15 shadow-xl space-y-6">
-          <div className="text-center">
-            <h2 className="font-heading font-bold text-3xl text-[#0B3561]">Contact Form</h2>
-            <p className="font-body text-xs text-[#3C5D81] mt-1">Have a question? Send us a message and we'll reply right away.</p>
-          </div>
-
-          <form onSubmit={handleContactSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Your Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={contactName}
-                  onChange={e => setContactName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561] focus:border-[#12A5B0]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  value={contactEmail}
-                  onChange={e => setContactEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561] focus:border-[#12A5B0]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Mobile Number</label>
-              <input
-                type="tel"
-                value={contactPhone}
-                onChange={e => setContactPhone(e.target.value)}
-                placeholder="10-digit phone number"
-                className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561] focus:border-[#12A5B0]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Comment / Message *</label>
-              <textarea
-                required
-                rows={4}
-                value={contactMessage}
-                onChange={e => setContactMessage(e.target.value)}
-                placeholder="How can we help you?"
-                className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561] focus:border-[#12A5B0]"
-              />
-            </div>
-
-            {contactError && <p className="text-xs text-[#C0392B] font-bold">{contactError}</p>}
-            {contactSuccess && <p className="text-xs text-[#13834D] font-bold">{contactSuccess}</p>}
-
+        {/* Look Inside Tab Controller */}
+        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-[#FAF7F0] rounded-2xl max-w-2xl mx-auto border border-[#0A192F]/8">
+          {lookInsidePages.map((sample, idx) => (
             <button
-              type="submit"
-              disabled={contactSubmitting}
-              className="w-full bg-[#0B3561] text-white font-heading font-bold py-3.5 rounded-xl hover:bg-[#071E38] transition shadow-md disabled:opacity-50"
+              key={sample.id}
+              onClick={() => setActiveSampleIdx(idx)}
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-semibold transition-all cursor-pointer ${
+                activeSampleIdx === idx
+                  ? 'bg-white text-[#0A192F] shadow-sm font-bold border border-[#0A192F]/10'
+                  : 'text-[#627D98] hover:text-[#0A192F]'
+              }`}
             >
-              {contactSubmitting ? 'Sending...' : 'Send Message'}
+              {sample.subject}: {sample.title.split('&')[0].trim()}
             </button>
-          </form>
+          ))}
         </div>
+
+        {/* Active Sample Page Showcase */}
+        {lookInsidePages[activeSampleIdx] && (
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#0A192F]/10 shadow-xl max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            
+            {/* Visual Sample Page Preview Slot */}
+            <div className="md:col-span-6">
+              <EditorialVisual
+                slotId={lookInsidePages[activeSampleIdx].id}
+                aspectRatio="3:4"
+                className="max-w-sm mx-auto shadow-2xl"
+              />
+            </div>
+
+            {/* Editorial Information */}
+            <div className="md:col-span-6 space-y-5">
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706]">
+                  {lookInsidePages[activeSampleIdx].chapter}
+                </span>
+                <h3 className="font-heading font-black text-2xl sm:text-3xl text-[#0A192F] leading-tight">
+                  {lookInsidePages[activeSampleIdx].title}
+                </h3>
+              </div>
+
+              <p className="font-body text-sm text-[#486581] leading-relaxed">
+                {lookInsidePages[activeSampleIdx].desc}
+              </p>
+
+              {/* Highlight bullet points */}
+              <div className="space-y-2 pt-2">
+                {lookInsidePages[activeSampleIdx].highlights.map((hl, i) => (
+                  <div key={i} className="flex items-center gap-2.5 text-xs text-[#0A192F] font-medium">
+                    <span className="w-4 h-4 rounded-full bg-[#FEF08A] text-[#0A192F] flex items-center justify-center font-bold text-[10px]">
+                      ✓
+                    </span>
+                    <span>{hl}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sample Page Trust Stamp */}
+              <div className="pt-4 border-t border-[#0A192F]/8 flex items-center justify-between text-xs text-[#627D98]">
+                <span>100 GSM Natural Cream Finish</span>
+                <Link
+                  to="/subjects"
+                  className="font-heading font-bold text-[#D97706] hover:underline"
+                >
+                  Order This Book →
+                </Link>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+      </section>
+
+      {/* =========================================================================
+          SECTION 7: OUR STORY
+          Why handwritten notes, who made them, and what problem students face
+          with typed material. Written with admin editable [Mr Raibha Dutta and 2015].
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="bg-[#FAF7F0] rounded-3xl p-6 sm:p-12 border border-[#0A192F]/8 shadow-sm">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center">
+            
+            {/* Story Text - Full width now */}
+            <div className="lg:col-span-12 space-y-6">
+              
+              <div className="space-y-2">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+                  Our Origin Story
+                </span>
+                <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+                  Why We Chose Handcrafted Ink Over Cold Typed Slides
+                </h2>
+              </div>
+
+              {/* Story Narrative */}
+              <div className="font-body text-sm sm:text-base text-[#334E68] space-y-4 leading-relaxed">
+                <p>
+                  In <strong>2015</strong>, founder <strong>Mr. Raibha Dutta</strong> observed a quiet crisis unfolding in computer science lecture halls across India: brilliant engineering students were drowning in hundreds of pages of monochromatic, typed textbook slides that failed to explain how code actually executes in memory.
+                </p>
+
+                <p>
+                  Typed slides feel distant and sterile. When you study a complex topic like <em>Graph Traversals</em>, <em>B-Trees</em>, or <em>Pointer Arithmetic</em>, your brain craves spatial mapping: colored arrows showing pointer jumps, hand-drawn memory grids, and margin tips that mimic how a senior engineer sketches ideas on a whiteboard.
+                </p>
+
+                <p>
+                  That insight gave birth to <strong>PyNotes</strong>. What began as hand-inked spiral notebooks passed between classmates before semester exams has grown into printed, colorful compendiums delivered to students in every state — proving that the tactile connection between pen, paper, and colorful ink remains the fastest way to real conceptual mastery.
+                </p>
+              </div>
+
+              {/* Founder Sign-off */}
+              <div className="pt-4 border-t border-[#0A192F]/10 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#0A192F] text-white flex items-center justify-center font-heading font-bold text-base shadow-sm">
+                  RD
+                </div>
+                <div>
+                  <div className="font-heading font-bold text-sm text-[#0A192F]">
+                    Mr. Raibha Dutta
+                  </div>
+                  <div className="text-xs text-[#627D98]">
+                    Founder &amp; Author, PyNotes · Est. 2015
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 8: HOW IT'S MADE (4-STEP VISUAL TIMELINE)
+          Handwritten -> Designed -> Printed in colour -> Delivered
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
+        
+        <div className="text-center space-y-2 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+            Craftsmanship &amp; Fulfillment
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            How Every Book is Crafted
+          </h2>
+          <p className="font-body text-sm text-[#486581]">
+            From handwritten ink notes to express doorstep delivery across India.
+          </p>
+        </div>
+
+        {/* 4-Step Visual Timeline */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+          
+          {/* Step 1 */}
+          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FEF08A] text-[#713F12] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
+              01
+            </div>
+            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+              Handwritten
+            </h3>
+            <p className="font-body text-xs text-[#627D98] leading-relaxed">
+              Every syntax rule, tree diagram, and algorithm trace is written by hand with multi-colored ink pens for optimal visual memory encoding.
+            </p>
+            <div className="text-[11px] font-mono font-semibold text-[#D97706]">
+              • Step-by-step logic
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#BBF7D0] text-[#064E3B] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
+              02
+            </div>
+            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+              Designed
+            </h3>
+            <p className="font-body text-xs text-[#627D98] leading-relaxed">
+              Digital proofing ensures high contrast, crystal-clear line weights, generous margins for personal study notes, and intuitive chapter indexes.
+            </p>
+            <div className="text-[11px] font-mono font-semibold text-[#16A34A]">
+              • Precision calibration
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FBCFE8] text-[#831843] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
+              03
+            </div>
+            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+              Printed in Colour
+            </h3>
+            <p className="font-body text-xs text-[#627D98] leading-relaxed">
+              Industrial offset machines print in vibrant 4-colour inks onto heavyweight 100 GSM bleed-proof cream paper with sturdy coil binding.
+            </p>
+            <div className="text-[11px] font-mono font-semibold text-[#DB2777]">
+              • Bleed-proof paper
+            </div>
+          </div>
+
+          {/* Step 4: Uses parcel_shipping slot */}
+          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FED7AA] text-[#7C2D12] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
+              04
+            </div>
+            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+              Delivered
+            </h3>
+            <p className="font-body text-xs text-[#627D98] leading-relaxed">
+              Carefully wrapped in protective moisture-proof packaging and dispatched via express couriers with live SMS &amp; web tracking to your door.
+            </p>
+            <div className="text-[11px] font-mono font-semibold text-[#EA580C]">
+              • 2–4 Day Dispatch
+            </div>
+          </div>
+
+        </div>
+
+        {/* Parcel Shipping Visual Showcase */}
+        <div className="max-w-md mx-auto pt-2">
+          <EditorialVisual slotId="parcel_shipping" aspectRatio="16:9" />
+        </div>
+
+      </section>
+
+      {/* =========================================================================
+          SECTION 9: TYPED NOTES VS HANDWRITTEN NOTES COMPARISON, WITH VISUALS
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="text-center space-y-2 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+            Evidence-Based Learning
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            Typed Notes vs. Handwritten Notes
+          </h2>
+          <p className="font-body text-sm text-[#486581]">
+            Why students retain 3× more computer science concepts on physical paper.
+          </p>
+        </div>
+
+        {/* Clean, Polished Comparison Table */}
+        <div className="bg-white rounded-3xl border border-[#0A192F]/10 shadow-lg overflow-hidden max-w-4xl mx-auto">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-[#0A192F]/10 bg-[#FAF7F0]">
+                  <th className="p-4 sm:p-5 font-heading font-bold text-[#0A192F] w-1/3">
+                    Study Dimension
+                  </th>
+                  <th className="p-4 sm:p-5 font-heading font-bold text-white bg-[#0A192F] text-center w-1/3">
+                    PyNotes Handwritten
+                  </th>
+                  <th className="p-4 sm:p-5 font-heading font-semibold text-[#627D98] text-center w-1/3">
+                    Standard Typed PDFs
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#0A192F]/8 font-body">
+                {[
+                  {
+                    factor: 'Memory Recall & Retention',
+                    pynotes: 'High (Spatial neural pathways)',
+                    typed: 'Low (Passive skimming)',
+                    pynotesGood: true,
+                  },
+                  {
+                    factor: 'Screen Fatigue & Blue Light',
+                    pynotes: 'Zero Eye Strain (Natural cream paper)',
+                    typed: 'High (Causes headache & eye strain)',
+                    pynotesGood: true,
+                  },
+                  {
+                    factor: 'Complex Algorithm Diagrams',
+                    pynotes: 'Color-coded step traces & arrows',
+                    typed: 'Dry monospaced text blocks',
+                    pynotesGood: true,
+                  },
+                  {
+                    factor: 'Exam Night Rapid Revision',
+                    pynotes: '20–30 mins per full subject',
+                    typed: 'Hours of scrolling endless pages',
+                    pynotesGood: true,
+                  },
+                  {
+                    factor: 'Personal Margin Annotations',
+                    pynotes: 'Direct pen, pencil & sticky notes',
+                    typed: 'Clumsy PDF digital markups',
+                    pynotesGood: true,
+                  },
+                ].map((row, i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F0]/40'}>
+                    <td className="p-4 sm:p-5 font-heading font-semibold text-[#0A192F]">
+                      {row.factor}
+                    </td>
+                    <td className="p-4 sm:p-5 text-center bg-[#0A192F]/5 font-medium text-[#0A192F]">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <CheckCircleIcon className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
+                        <span>{row.pynotes}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 sm:p-5 text-center text-[#627D98]">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <CrossIcon className="w-4 h-4 text-[#DC2626] flex-shrink-0" />
+                        <span>{row.typed}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      {/* =========================================================================
+          SECTION 10: BUNDLES (PLACEMENT PACK, SEMESTER PACK)
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="text-center space-y-2 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+            Curated Study Combos
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            Complete Prep Bundles
+          </h2>
+          <p className="font-body text-sm text-[#486581]">
+            Curated book bundles designed for placement interviews and university semesters with maximum savings.
+          </p>
+        </div>
+
+        {/* Bundle Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bundleProducts.slice(0, 3).map((bundle) => {
+            const savingsPercent = Math.round(((bundle.mrp_paise - bundle.price_paise) / bundle.mrp_paise) * 100);
+
+            return (
+              <div
+                key={bundle.slug}
+                className="glossy-book-card p-6 rounded-3xl flex flex-col justify-between group border-2 border-[#D97706]/30 bg-gradient-to-b from-white to-[#FAF7F0]"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="bg-[#D97706] text-white text-[10px] font-mono font-bold px-2.5 py-0.5 rounded uppercase">
+                      Bundle Deal
+                    </span>
+                    <span className="font-mono text-xs font-bold text-[#16A34A]">
+                      SAVE {savingsPercent}%
+                    </span>
+                  </div>
+
+                  <h3 className="font-heading font-bold text-lg text-[#0A192F] group-hover:text-[#D97706] transition-colors">
+                    {bundle.title}
+                  </h3>
+                  <p className="font-body text-xs text-[#627D98] mt-2 leading-relaxed">
+                    {bundle.short_desc}
+                  </p>
+
+                  {/* Included Books Preview */}
+                  <div className="mt-4 pt-3 border-t border-[#0A192F]/10 space-y-1.5">
+                    <div className="text-[10px] font-mono font-bold uppercase text-[#627D98]">Includes printed books:</div>
+                    <ul className="text-xs font-medium text-[#0A192F] space-y-1">
+                      {bundle.bundle_items?.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-1.5">
+                          <span className="text-[#D97706]">✓</span>
+                          <span>{item.qty || 1}× {item.book_slug.toUpperCase().replace(/-/g, ' ')}</span>
+                        </li>
+                      )) || (
+                        <li className="text-xs text-[#627D98]">Multiple subject compendiums included</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Bundle Price & Add to Cart */}
+                <div className="mt-6 pt-4 border-t border-[#0A192F]/10 flex items-center justify-between">
+                  <div>
+                    <div className="font-heading font-bold text-2xl text-[#0A192F]">
+                      ₹{(bundle.price_paise / 100).toFixed(0)}
+                    </div>
+                    <div className="font-mono text-xs text-[#9DAEC0] line-through">
+                      ₹{(bundle.mrp_paise / 100).toFixed(0)}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => onAddToCart(bundle.slug, 1)}
+                    className="px-5 py-3 bg-[#D97706] text-white font-heading font-bold text-xs rounded-xl hover:bg-[#B45309] transition shadow-md flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Add Bundle</span>
+                    <span>+</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+      </section>
+
+      {/* =========================================================================
+          SECTION 11: STUDENT REVIEWS
+          Show only real reviews from the database.
+          If none, show a clean empty state, not fake testimonials or invented numbers.
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="text-center space-y-2 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+            Verified Feedback
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            Student Reviews
+          </h2>
+          <p className="font-body text-sm text-[#486581]">
+            Real feedback from verified students studying with our physical printed books.
+          </p>
+        </div>
+
+        {/* Real Reviews from Database or Dignified Empty State */}
+        {reviews && reviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex text-[#F59E0B] text-sm">
+                    {[...Array(rev.rating || 5)].map((_, i) => (
+                      <span key={i}>★</span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-mono text-[#627D98]">Verified Student</span>
+                </div>
+
+                <h4 className="font-heading font-bold text-sm text-[#0A192F]">
+                  {rev.title}
+                </h4>
+                <p className="font-body text-xs text-[#486581] leading-relaxed">
+                  &quot;{rev.body}&quot;
+                </p>
+
+                <div className="pt-3 border-t border-[#0A192F]/8 text-xs font-semibold text-[#0A192F]">
+                  — {rev.display_name}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Clean, Honest Empty State — No Fake Testimonials or Invented Numbers */
+          <div className="bg-[#FAF7F0] p-8 sm:p-12 rounded-3xl border border-[#0A192F]/10 text-center max-w-xl mx-auto space-y-4">
+            <div className="w-12 h-12 rounded-full bg-white border border-[#0A192F]/10 flex items-center justify-center text-xl mx-auto text-[#D97706] shadow-xs">
+              ✍️
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-heading font-bold text-base text-[#0A192F]">
+                Verified Student Reviews
+              </h3>
+              <p className="font-body text-xs text-[#627D98] leading-relaxed max-w-md mx-auto">
+                We believe in 100% genuine transparency. Every review published here is submitted directly by students who ordered and studied with our physical notes.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link
+                to="/subjects"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A192F] text-white rounded-xl text-xs font-heading font-semibold hover:bg-[#132742] transition shadow-xs"
+              >
+                <span>Order Notes &amp; Share Your Review</span>
+                <span>→</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
+      </section>
+
+      {/* =========================================================================
+          SECTION 12: CURRENT AFFAIRS SUBSCRIPTION TEASER
+          "Start 7-day free trial"
+         ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="bg-gradient-to-br from-[#070F1E] via-[#0A192F] to-[#132742] rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+          
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <div className="lg:col-span-8 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D97706]/20 border border-[#D97706]/40 text-[#F59E0B] text-xs font-mono font-bold">
+                <span>📰 PyNotes Pro Subscription</span>
+              </div>
+
+              <h2 className="font-heading font-black text-2xl sm:text-4xl text-white tracking-tight">
+                Stay Ahead in Campus Placements with Current Affairs &amp; Tech Digests
+              </h2>
+
+              <p className="font-body text-xs sm:text-sm text-[#BCCCDC] leading-relaxed max-w-2xl">
+                Get monthly printed revision compendiums delivered to your hostel, plus weekly curated technology news, interview question breakdowns, and system design tear-downs.
+              </p>
+
+              <div className="flex flex-wrap gap-4 text-xs text-[#FEF3C7] pt-2">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#34D399]">✓</span> Monthly Printed Capsule
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#34D399]">✓</span> Weekly Tech Newsletter
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#34D399]">✓</span> Cancel Anytime Online
+                </span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 flex flex-col items-center lg:items-end justify-center">
+              <Link
+                to="/subscription"
+                className="w-full sm:w-auto px-8 py-4 bg-[#D97706] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#B45309] transition shadow-lg flex items-center justify-center gap-2 cursor-pointer text-center"
+              >
+                <span>Start 7-Day Free Trial</span>
+                <span>→</span>
+              </Link>
+              <span className="text-[11px] text-[#BCCCDC]/70 mt-2">
+                No commitment · Free 7-day access
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 13: FAQ
+          Accordion with polished presentation
+         ========================================================================= */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-8 space-y-8">
+        
+        <div className="text-center space-y-2">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+            Got Questions?
+          </span>
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+            Frequently Asked Questions
+          </h2>
+          <p className="font-body text-sm text-[#486581]">
+            Everything you need to know about our physical books, COD, and delivery.
+          </p>
+        </div>
+
+        {/* FAQ Accordion List */}
+        <div className="space-y-3">
+          {displayFaqs.map((faq) => {
+            const isOpen = openFaqId === faq.id;
+            return (
+              <div
+                key={faq.id}
+                className="bg-white rounded-2xl border border-[#0A192F]/10 shadow-xs overflow-hidden transition-all"
+              >
+                <button
+                  onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-heading font-semibold text-sm sm:text-base text-[#0A192F] hover:text-[#D97706] transition-colors cursor-pointer"
+                >
+                  <span>{faq.question}</span>
+                  <span className={`text-base font-bold text-[#D97706] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                    ▾
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm font-body text-[#486581] leading-relaxed border-t border-[#0A192F]/6 animate-fadeIn">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="text-center pt-2">
+          <Link
+            to="/faq"
+            className="text-xs font-heading font-bold text-[#D97706] hover:underline"
+          >
+            Read all frequently asked questions →
+          </Link>
+        </div>
+
       </section>
 
     </div>

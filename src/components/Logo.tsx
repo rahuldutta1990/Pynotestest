@@ -29,12 +29,12 @@ export const Logo: React.FC<LogoProps> = ({
   }
 
   // Define colors based on surface rules:
-  // light: full color (Navy #0B3561, Teal #12A5B0)
+  // light: Navy (var(--navy)), Teal (var(--teal))
   // dark: mono white
-  // highlight: navy
-  let pyColor = surface === 'dark' ? '#FFFFFF' : '#0B3561';
-  let notesColor = surface === 'dark' ? '#FFFFFF' : surface === 'highlight' ? '#0B3561' : '#12A5B0';
-  let taglineColor = surface === 'dark' ? '#DDF3F4' : surface === 'highlight' ? '#071E38' : '#3C5D81';
+  // highlight: Navy
+  let pyColor = surface === 'dark' ? '#FFFFFF' : 'var(--navy)';
+  let notesColor = surface === 'dark' ? '#FFFFFF' : surface === 'highlight' ? 'var(--navy)' : 'var(--teal)';
+  let taglineColor = surface === 'dark' ? 'var(--margin-mint)' : surface === 'highlight' ? 'var(--ink-night)' : '#3C5D81';
 
   // SVG Icon mark
   const IconMark = (

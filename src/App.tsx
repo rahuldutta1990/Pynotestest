@@ -219,6 +219,8 @@ export default function App() {
                         subjects={subjects}
                         products={products}
                         settings={settings!}
+                        reviews={reviews}
+                        faqs={faqs}
                         onAddToCart={handleAddToCart}
                       />
                     }

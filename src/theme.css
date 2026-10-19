@@ -1,180 +1,48 @@
 :root {
+  /* Brand Palette */
   --navy: #0B3561;
   --teal: #12A5B0;
-  --ink: #071E38;
-  --mint: #DDF3F4;
-  --paper: #F7FAFC;
-  --highlight: #FFD54A;
+  --ink-night: #071E38;
+  --margin-mint: #DDF3F4;
+  --paper-white: #FFFFFF;
+  --highlighter: #FFD54A;
 
-  /* Navy Tints */
-  --navy-80: #3C5D81;
-  --navy-60: #6D86A0;
-  --navy-40: #9DAEC0;
-  --navy-20: #CED7DF;
-  --navy-10: #E7EBEF;
-
-  /* Teal Tints */
-  --teal-80: #41B7C0;
-  --teal-60: #71C9D0;
-  --teal-40: #A0DBDF;
-  --teal-20: #D0EDEF;
-  --teal-10: #E7F6F7;
-
-  /* Utility */
-  --danger: #C0392B;
-  --success: #13834D;
-  --whatsapp: #25D366;
+  /* Backgrounds - Strict White/Teal Palette */
+  --bg-main: #F0F9FA;
+  --bg-card: #FFFFFF;
 
   /* Font Families */
-  --font-display: 'Nunito', sans-serif;
-  --font-heading: 'Montserrat', sans-serif;
-  --font-body: 'Nunito', sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-display: 'Nunito', system-ui, -apple-system, sans-serif;
   --font-code: 'JetBrains Mono', monospace;
-}
-
-/* Typography base rules */
-h1, .font-display-h1 {
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-style: italic;
-}
-
-h2, h3, .font-heading {
-  font-family: var(--font-heading);
 }
 
 body {
   font-family: var(--font-body);
-  color: var(--navy);
-  background-color: var(--paper);
+  color: var(--ink-night);
+  background-color: var(--bg-main);
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
 }
 
 .font-code {
   font-family: var(--font-code);
 }
 
-/* Graphic System: Ruled paper background */
-.bg-ruled-paper {
-  background-color: var(--paper);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 31px,
-    rgba(11, 53, 97, 0.07) 31px,
-    rgba(11, 53, 97, 0.07) 32px
-  );
+/* Glossy Book Card Styling */
+.glossy-book-card {
   position: relative;
+  background: var(--paper-card);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(11, 53, 97, 0.1), 0 2px 4px -2px rgba(11, 53, 97, 0.05);
+  transition: all 0.3s ease;
 }
 
-.bg-ruled-paper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: max(16px, calc((100vw - 1200px) / 2 + 24px));
-  width: 2px;
-  background-color: var(--teal);
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-/* Dot grid background */
-.bg-dot-grid {
-  background-color: var(--paper);
-  background-image: radial-gradient(rgba(11, 53, 97, 0.12) 1.5px, transparent 1.5px);
-  background-size: 20px 20px;
-}
-
-/* Highlighter mark */
-.highlight-mark {
-  background-color: var(--highlight);
-  padding: 0 4px;
-  border-radius: 2px;
-  color: var(--ink);
-  font-weight: 700;
-  display: inline-block;
-}
-
-/* Focus Ring */
-*:focus-visible {
-  outline: 3px solid var(--teal) !important;
-  outline-offset: 2px !important;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--paper);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--navy-40);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--navy-80);
-}
-
-@keyframes pageTurnover {
-  0% {
-    transform: translateX(-15px) scale(0.97);
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-page-turn {
-  animation: pageTurnover 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes pulseSlow {
-  0%, 100% { opacity: 0.25; }
-  50% { opacity: 0.45; }
-}
-
-.animate-pulse-slow {
-  animation: pulseSlow 5s ease-in-out infinite;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-
-
-
-@keyframes slideDown {
-  0% { transform: translateY(-10px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-.animate-slideDown {
-  animation: slideDown 0.3s ease-out forwards;
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.2s ease-out forwards;
+.glossy-book-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(11, 53, 97, 0.15), 0 10px 10px -5px rgba(11, 53, 97, 0.04);
 }
