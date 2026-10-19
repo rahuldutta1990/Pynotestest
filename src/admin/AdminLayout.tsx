@@ -13,6 +13,12 @@ export const AdminLayout: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Login form state (declared unconditionally at top level to satisfy React Rules of Hooks)
+  const [email, setEmail] = useState('admin@pynotes.in');
+  const [password, setPassword] = useState('Admin@123');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       // Check local staff session first
@@ -45,6 +51,43 @@ export const AdminLayout: React.FC = () => {
     checkAdminAccess();
   }, [auth.currentUser]);
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setSubmitting(true);
+    try {
+      // Try backend pre-stored database login endpoint first
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        localStorage.setItem('pynotes_staff_user', JSON.stringify(data.user));
+        setProfile(data.user);
+        return;
+      }
+
+      // Try Firebase client fallback sign-in
+      try {
+        await signInUser(email, password);
+        const me = await adminFetch('/me');
+        if (me && me.role && me.role !== 'customer') {
+          localStorage.setItem('pynotes_staff_user', JSON.stringify(me));
+          setProfile(me);
+          return;
+        }
+      } catch {}
+
+      throw new Error(data.error || 'Invalid admin credentials or unauthorized email.');
+    } catch (err: any) {
+      setLoginError(err.message || 'Login failed. Check your staff credentials.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#071E38] text-white flex items-center justify-center p-6">
@@ -57,48 +100,6 @@ export const AdminLayout: React.FC = () => {
   }
 
   if (!profile) {
-    const [email, setEmail] = useState('admin@pynotes.in');
-    const [password, setPassword] = useState('Admin@123');
-    const [loginError, setLoginError] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
-
-    const handleLogin = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setLoginError(null);
-      setSubmitting(true);
-      try {
-        // Try backend pre-stored database login endpoint first
-        const res = await fetch('/api/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
-        if (res.ok && data.success && data.user) {
-          localStorage.setItem('pynotes_staff_user', JSON.stringify(data.user));
-          setProfile(data.user);
-          return;
-        }
-
-        // Try Firebase client fallback sign-in
-        try {
-          await signInUser(email, password);
-          const me = await adminFetch('/me');
-          if (me && me.role && me.role !== 'customer') {
-            localStorage.setItem('pynotes_staff_user', JSON.stringify(me));
-            setProfile(me);
-            return;
-          }
-        } catch {}
-
-        throw new Error(data.error || 'Invalid admin credentials or unauthorized email.');
-      } catch (err: any) {
-        setLoginError(err.message || 'Login failed. Check your staff credentials.');
-      } finally {
-        setSubmitting(false);
-      }
-    };
-
     return (
       <div className="min-h-screen bg-[#071E38] text-white flex items-center justify-center p-6">
         <div className="bg-[#0B3561] p-8 rounded-3xl max-w-md w-full border border-white/10 shadow-2xl space-y-6">

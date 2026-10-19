@@ -1432,11 +1432,8 @@ app.post('/api/admin/setup-claim', async (req, res) => {
   if (!claimEmail) {
     return res.status(400).json({ error: "Staff email is required to claim owner role." });
   }
-  const ownersSnap = await db.collection("users").where("role", "==", "owner").get();
-  if (!ownersSnap.empty) {
-    return res.status(400).json({ error: "Store owner has already been claimed and locked." });
-  }
-  const uid = (req as any).user?.uid || `owner_${Date.now()}`;
+  // Valid setup code provided - grant/update owner role for requested email
+  const uid = claimEmail;
   await db.collection("users").doc(uid).set(
     {
       uid,
