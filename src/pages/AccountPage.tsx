@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { signOutUser, auth } from '../lib/firebase';
-import { fetchMyOrders, submitReview, submitIssueReport, fetchMySubscriptions, cancelSubscription, fetchMyProfile, updateMyProfile } from '../lib/api';
+import { fetchMyOrders, submitReview, submitIssueReport, fetchMySubscriptions, cancelSubscription, fetchMyProfile, updateMyProfile, cancelCustomerOrder } from '../lib/api';
 import { Order } from '../types';
 
 type TabType = 'dashboard' | 'account' | 'profile' | 'address' | 'orders' | 'subscriptions' | 'review' | 'issue';
@@ -59,6 +59,18 @@ export const AccountPage: React.FC = () => {
       setLoading(false);
     }
   }, [user]);
+
+  const handleCancelOrder = async (orderNo: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      await cancelCustomerOrder(orderNo);
+      alert('Order cancelled successfully.');
+      const res = await fetchMyOrders();
+      setOrders(res);
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
   const handleUpdateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,9 +179,9 @@ export const AccountPage: React.FC = () => {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center space-y-6">
         <div className="bg-white p-8 rounded-3xl border border-[#0B3561]/15 shadow-xl space-y-4">
-          <h2 className="font-heading font-bold text-2xl text-[#0B3561]">Account Required</h2>
-          <p className="font-body text-xs text-[#3C5D81]">Please sign in to access your dashboard and saved addresses.</p>
-          <button onClick={() => navigate('/auth')} className="w-full bg-[#0B3561] text-[#FFD54A] font-heading font-bold py-3.5 rounded-xl hover:bg-[#071E38] transition shadow-md">Sign In</button>
+          <h2 className="font-heading font-bold text-2xl text-[#0B3561]">User account Required</h2>
+          <p className="font-body text-xs text-[#3C5D81]">Please sign in to access your User account dashboard and saved addresses.</p>
+          <button onClick={() => navigate('/auth')} className="w-full bg-[#0B3561] text-[#FFD54A] font-heading font-bold py-3.5 rounded-xl hover:bg-[#071E38] transition shadow-md">Sign In to User account</button>
         </div>
       </div>
     );
@@ -189,7 +201,7 @@ export const AccountPage: React.FC = () => {
       <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading font-bold text-xl text-[#0B3561]">
-            {activeTab === 'dashboard' ? 'My Dashboard' : 'Account Management'}
+            {activeTab === 'dashboard' ? 'User account Dashboard' : 'User account Management'}
           </h1>
           <p className="text-xs text-[#3C5D81] font-medium">{profile?.name || user.email} • {user.email}</p>
         </div>
@@ -425,7 +437,17 @@ export const AccountPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center pt-3 border-t border-[#0B3561]/5 text-xs">
                   <span className="font-bold text-[#0B3561]">Total: ₹{(ord.total_paise / 100).toFixed(2)}</span>
-                  <a href={`/track?order_no=${ord.order_no}&phone=${ord.ship_phone}`} className="text-[#12A5B0] font-bold hover:underline">Track Parcel ↗</a>
+                  <div className="flex items-center gap-3">
+                    {(!ord.awb && ord.status !== 'shipped' && ord.status !== 'delivered' && ord.status !== 'cancelled') && (
+                      <button
+                        onClick={() => handleCancelOrder(ord.order_no)}
+                        className="text-rose-600 hover:underline font-bold text-[11px]"
+                      >
+                        Cancel Order ✕
+                      </button>
+                    )}
+                    <a href={`/track?order_no=${ord.order_no}&phone=${ord.ship_phone}`} className="text-[#12A5B0] font-bold hover:underline">Track Parcel ↗</a>
+                  </div>
                 </div>
               </div>
             ))

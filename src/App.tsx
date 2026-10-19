@@ -39,6 +39,9 @@ import { AdminProducts } from './admin/AdminProducts';
 import { AdminInventory } from './admin/AdminInventory';
 import { AdminSystemCheck } from './admin/AdminSystemCheck';
 import { AdminCMS } from './admin/AdminCMS';
+import { AdminStatusMappings } from './admin/AdminStatusMappings';
+import { AdminWebhookLogs } from './admin/AdminWebhookLogs';
+import { AdminLogisticsReports } from './admin/AdminLogisticsReports';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -162,6 +165,9 @@ export default function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="status-mappings" element={<AdminStatusMappings />} />
+          <Route path="logistics-reports" element={<AdminLogisticsReports />} />
+          <Route path="courier-webhooks" element={<AdminWebhookLogs />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="inventory" element={<AdminInventory />} />
           <Route path="subjects" element={<AdminCMS section="subjects" />} />
@@ -268,6 +274,7 @@ export default function App() {
                      <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
                      <Route path="/offers" element={<OfferPage settings={settings!} />} />
                      <Route path="/auth" element={<AuthPage />} />
+                     <Route path="/user-account" element={<AuthPage />} />
                      <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/contact" element={<ContactPage settings={settings!} />} />

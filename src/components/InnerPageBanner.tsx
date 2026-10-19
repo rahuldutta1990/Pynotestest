@@ -29,7 +29,7 @@ export const InnerPageBanner: React.FC<InnerPageBannerProps> = ({
   const pathnames = location.pathname.split('/').filter(x => x);
 
   const matchedBg = backgroundImage || PAGE_BACKGROUNDS[location.pathname] || 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1600&auto=format&fit=crop&q=80';
-  const displayTitle = title || (pathnames.length > 0 ? pathnames[pathnames.length - 1].replace(/-/g, ' ') : 'Store');
+  const displayTitle = title || (pathnames.length > 0 ? (pathnames[pathnames.length - 1] === 'auth' ? 'User account' : pathnames[pathnames.length - 1].replace(/-/g, ' ')) : 'Store');
 
   return (
     <div className="relative overflow-hidden text-white py-24 px-4 sm:px-8 border-b-4 border-[#12A5B0] shadow-2xl bg-[#071E38]">
@@ -52,7 +52,7 @@ export const InnerPageBanner: React.FC<InnerPageBannerProps> = ({
                   <React.Fragment key={name}>
                     <span>/</span>
                     <Link to={routeTo} className="hover:underline capitalize text-[#12A5B0]">
-                      {name === 'auth' ? 'Create Account' : name.replace(/-/g, ' ')}
+                      {name === 'auth' ? 'User account' : name.replace(/-/g, ' ')}
                     </Link>
                   </React.Fragment>
                 );

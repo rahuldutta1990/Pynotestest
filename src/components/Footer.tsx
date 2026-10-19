@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
 import { SiteSettings } from '../types';
 import { subscribeNewsletter } from '../lib/api';
+import { UPIIcon, GooglePayIcon, PhonePeIcon, VisaIcon, MastercardIcon, RuPayIcon } from './PaymentIcons';
 
 interface FooterProps {
   settings?: SiteSettings;
@@ -182,19 +183,25 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
             <span className="font-heading font-medium text-[11px] uppercase tracking-wider">
               Secured Payments:
             </span>
-            <div className="flex items-center gap-3 flex-wrap">
-              {[
-                { name: 'UPI', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/512px-UPI-Logo-vector.svg.png' },
-                { name: 'Google Pay', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png' },
-                { name: 'PhonePe', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/512px-PhonePe_Logo.svg.png' },
-                { name: 'Visa', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/512px-Visa_Inc._logo.svg.png' },
-                { name: 'Mastercard', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/512px-Mastercard-logo.svg.png' },
-                { name: 'RuPay', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/RuPay.svg/512px-RuPay.svg.png' },
-              ].map(payment => (
-                <div key={payment.name} className="bg-white p-1.5 rounded-lg flex items-center justify-center border border-white/20 shadow-sm h-8 w-12 overflow-hidden">
-                  <img src={payment.logo} alt={payment.name} className="max-h-full max-w-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300" title={payment.name} />
-                </div>
-              ))}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center border border-white/20 shadow-xs h-7 hover:scale-105 transition-transform" title="UPI">
+                <UPIIcon className="h-4 w-auto" />
+              </div>
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center border border-white/20 shadow-xs h-7 hover:scale-105 transition-transform" title="Google Pay">
+                <GooglePayIcon className="h-4 w-auto" />
+              </div>
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center border border-white/20 shadow-xs h-7 hover:scale-105 transition-transform" title="PhonePe">
+                <PhonePeIcon className="h-4 w-auto" />
+              </div>
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center border border-white/20 shadow-xs h-7 hover:scale-105 transition-transform" title="Visa">
+                <VisaIcon className="h-4 w-auto" />
+              </div>
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center border border-white/20 shadow-xs h-7 hover:scale-105 transition-transform" title="Mastercard">
+                <MastercardIcon className="h-4 w-auto" />
+              </div>
+              <div className="bg-white px-2 py-1 rounded-lg flex items-center justify-center border border-white/20 shadow-xs h-7 hover:scale-105 transition-transform" title="RuPay">
+                <RuPayIcon className="h-4 w-auto" />
+              </div>
             </div>
           </div>
 

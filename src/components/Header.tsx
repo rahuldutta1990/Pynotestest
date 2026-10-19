@@ -247,12 +247,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <Link
-              to={userEmail ? '/account' : '/auth'}
-              className={`p-2 rounded-full transition ${isCurrent('/account') || isCurrent('/auth') ? 'bg-[#0B3561] text-white shadow-md' : 'text-[#0B3561] hover:bg-[#DDF3F4]'}`}
-              aria-label={userEmail ? 'Account' : 'Sign In'}
-              title={userEmail ? 'Account' : 'Sign In'}
+              to={userEmail ? '/account' : '/auth?mode=login'}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all ${
+                userEmail
+                  ? (isCurrent('/account') ? 'bg-[#0B3561] text-white shadow-md' : 'text-[#0B3561] hover:bg-[#DDF3F4]')
+                  : (isCurrent('/auth') ? 'bg-[#DDF3F4] text-[#0B3561] border border-[#0B3561]/30 font-bold shadow-xs' : 'text-[#0B3561] hover:bg-[#DDF3F4]')
+              }`}
+              aria-label="User account"
+              title="User account"
             >
               <UserIcon className="w-5 h-5" showDot={!!userEmail} />
+              <span className="text-xs font-heading font-bold text-[#0B3561]">User account</span>
             </Link>
 
             <button
@@ -525,7 +530,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setMobileMenuOpen(false)}
                 className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
               >
-                {userEmail ? 'My Account' : 'Sign In'}
+                User account
               </Link>
 
               <a

@@ -181,6 +181,81 @@ export interface Order {
   items: OrderItemSnapshot[];
   show_name_publicly?: boolean;
   events?: OrderEvent[];
+  is_exception?: boolean;
+  exception_reason?: string;
+  shipment_ids?: string[];
+}
+
+export interface ShipmentItem {
+  slug: string;
+  title: string;
+  sku: string;
+  qty: number;
+  unit_price_paise: number;
+}
+
+export interface Shipment {
+  id: string;
+  order_id: string;
+  order_no: string;
+  items: ShipmentItem[];
+  shiprocket_order_id?: string | number;
+  shiprocket_shipment_id?: string | number;
+  awb: string;
+  courier_name: string;
+  label_url?: string;
+  status: string;
+  internal_status_rank: number;
+  pickup_scheduled_at?: string;
+  expected_delivery_date?: string;
+  delivered_at?: string;
+  rto_status?: string;
+  pod_status?: string;
+  last_event_at?: string;
+  created_at: string;
+}
+
+export interface TrackingEvent {
+  id: string;
+  shipment_id: string;
+  order_id?: string;
+  awb: string;
+  raw_status: string;
+  raw_status_id?: string | number;
+  internal_status: string;
+  location?: string;
+  activity?: string;
+  event_time: string;
+  source: 'webhook' | 'poll' | 'admin';
+  dedupe_key: string;
+  created_at: string;
+}
+
+export interface StatusMapping {
+  id?: string;
+  raw_status: string;
+  internal_status: string;
+  notify_customer: boolean;
+  is_exception: boolean;
+}
+
+export interface WebhookLog {
+  id: string;
+  received_at: string;
+  headers_ok: boolean;
+  payload: any;
+  processed: boolean;
+  error?: string;
+}
+
+export interface OrderStatusAudit {
+  id: string;
+  order_id: string;
+  old_status: string;
+  new_status: string;
+  changed_by: string;
+  reason?: string;
+  time: string;
 }
 
 export interface QuoteRequest {

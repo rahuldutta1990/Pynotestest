@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { signInUser, registerUser, auth, resetPassword, sendVerification } from '../lib/firebase';
 import { sendEmailVerification, signOut } from 'firebase/auth';
-import { InnerPageBanner } from '../components/InnerPageBanner';
+import { SEO } from '../components/SEO';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +11,17 @@ export const AuthPage: React.FC = () => {
   const isVerify = searchParams.get('mode') === 'verify';
   const [isLogin, setIsLogin] = useState(isLoginParam || isVerify);
   const [showForgot, setShowForgot] = useState(false);
+
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'signup') {
+      setIsLogin(false);
+      setShowForgot(false);
+    } else if (mode === 'login' || mode === 'verify') {
+      setIsLogin(true);
+      setShowForgot(false);
+    }
+  }, [searchParams]);
 
   // Form State
   const [email, setEmail] = useState('');
@@ -123,46 +134,83 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  const bannerTitle = isVerify ? 'Activate Profile' : (isLogin ? 'Sign In' : 'Create Account');
-
   return (
-    <div className="min-h-screen bg-[#F7FAFC]">
-      <InnerPageBanner 
-        title={bannerTitle} 
-        subtitle={isLogin ? "Welcome back to the PyNotes family." : "Join thousands of students learning through handwritten notes."} 
+    <div className="min-h-screen bg-[#F7FAFC] flex flex-col justify-center items-center py-12 px-4 sm:px-6">
+      <SEO 
+        title={showForgot ? "Reset Password | PyNotes" : "User account | PyNotes"} 
+        description="Sign in or register for your User account on PyNotes to access handwritten notes, practice quizzes, and manage your orders." 
       />
 
-      <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col items-center">
-        <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-[2.5rem] border border-[#0B3561]/10 shadow-2xl space-y-8 animate-fadeIn">
-          <div className="text-center space-y-2">
-            <h2 className="font-heading font-black text-2xl text-[#0B3561]">
-              {showForgot ? 'Forgot Password?' : (isVerify ? 'Activate Your Account' : (isLogin ? 'Welcome Back' : 'Join PyNotes'))}
-            </h2>
-            <p className="font-body text-sm text-[#3C5D81]">
-              {showForgot 
-                ? 'Enter your email to receive a secure reset link.' 
-                : (isVerify ? 'You need to verify your email to continue.' : (isLogin ? 'Sign in to access your notes and orders' : 'Create an account to start your learning journey'))}
-            </p>
+      <div className="max-w-md w-full mb-6 text-center">
+        <Link to="/" className="inline-flex items-center gap-2 mb-2 group">
+          <span className="font-heading font-black text-2xl tracking-tight text-[#0B3561]">
+            Py<span className="text-[#12A5B0]">Notes</span>
+          </span>
+          <span className="text-[10px] bg-[#FFD54A] text-[#0B3561] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+            India
+          </span>
+        </Link>
+        <div>
+          <span className="inline-block text-xs font-heading font-bold text-[#0B3561] bg-[#0B3561]/5 px-3 py-1 rounded-full uppercase tracking-wider mt-1">
+            User account
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-[2.5rem] border border-[#0B3561]/10 shadow-2xl space-y-6 animate-fadeIn">
+        {/* Prominent Tab Switcher between Sign In and Sign Up */}
+        {!isVerify && !showForgot && (
+          <div className="flex bg-[#F7FAFC] p-1.5 rounded-2xl border border-[#0B3561]/10">
+            <button
+              type="button"
+              onClick={() => { setIsLogin(true); setShowForgot(false); setError(null); setSuccessMsg(null); }}
+              className={`flex-1 py-3 text-xs font-heading font-black rounded-xl transition-all ${
+                isLogin ? 'bg-[#0B3561] text-[#FFD54A] shadow-md' : 'text-[#3C5D81] hover:text-[#0B3561]'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsLogin(false); setShowForgot(false); setError(null); setSuccessMsg(null); }}
+              className={`flex-1 py-3 text-xs font-heading font-black rounded-xl transition-all ${
+                !isLogin ? 'bg-[#0B3561] text-[#FFD54A] shadow-md' : 'text-[#3C5D81] hover:text-[#0B3561]'
+              }`}
+            >
+              Create Account (Sign Up)
+            </button>
           </div>
+        )}
 
-          {isVerify && !successMsg && !error && (
-            <div className="bg-yellow-50 text-yellow-700 p-6 rounded-2xl text-xs font-bold border border-yellow-100 text-center space-y-3">
-              <p>Account Activation Required</p>
-              <p className="font-medium text-[10px]">We've sent a link to your email. Please click it to activate your profile and access this page.</p>
-              <button 
-                onClick={() => navigate('/auth?mode=login')}
-                className="text-[#0B3561] underline"
-              >
-                Already verified? Sign In
-              </button>
-            </div>
-          )}
+        <div className="text-center space-y-1">
+          <h2 className="font-heading font-black text-2xl text-[#0B3561]">
+            {showForgot ? 'Forgot Password?' : (isVerify ? 'Activate Your Account' : (isLogin ? 'Welcome Back' : 'Join PyNotes'))}
+          </h2>
+          <p className="font-body text-xs text-[#3C5D81]">
+            {showForgot 
+              ? 'Enter your email to receive a secure reset link.' 
+              : (isVerify ? 'You need to verify your email to continue.' : (isLogin ? 'Sign in to access your notes, quizzes, and orders' : 'Create an account to start your learning journey'))}
+          </p>
+        </div>
 
-          {successMsg && (
-            <div className="bg-green-50 text-green-700 p-4 rounded-2xl text-xs font-bold border border-green-100 text-center">
-              {successMsg}
-            </div>
-          )}
+        {isVerify && !successMsg && !error && (
+          <div className="bg-yellow-50 text-yellow-700 p-6 rounded-2xl text-xs font-bold border border-yellow-100 text-center space-y-3">
+            <p className="font-heading font-black text-sm">Account Activation Required</p>
+            <p className="font-medium text-[11px] leading-relaxed">We've sent a verification link to your email. Please click it to activate your profile, then sign in below.</p>
+            <button 
+              onClick={() => { setIsLogin(true); setShowForgot(false); }}
+              className="text-[#0B3561] font-black underline text-xs block mx-auto"
+            >
+              Already activated? Sign In here
+            </button>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="bg-green-50 text-green-700 p-4 rounded-2xl text-xs font-bold border border-green-100 text-center">
+            {successMsg}
+          </div>
+        )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && !showForgot && (
@@ -331,6 +379,5 @@ export const AuthPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };

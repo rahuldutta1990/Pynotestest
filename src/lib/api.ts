@@ -337,11 +337,11 @@ export async function fetchOrderDetails(orderNo: string, token: string): Promise
   return res.json();
 }
 
-export async function trackOrder(orderNo: string, phone: string): Promise<Order> {
-  const res = await fetch(`/api/orders/track?order_no=${encodeURIComponent(orderNo)}&phone=${encodeURIComponent(phone)}`);
+export async function trackOrder(orderNo: string, contact: string): Promise<any> {
+  const res = await fetch(`/api/orders/track?order_no=${encodeURIComponent(orderNo)}&contact=${encodeURIComponent(contact)}`);
   if (!res.ok) {
-    const data = await res.json().catch(() => ({ error: 'Order not found' }));
-    throw new Error(data.error || 'Order tracking failed');
+    const data = await res.json().catch(() => ({ error: 'Invalid order number or contact details' }));
+    throw new Error(data.error || 'Invalid order number or contact details');
   }
   return res.json();
 }
@@ -499,4 +499,18 @@ export async function deleteAdminPage(slug: string) {
   return adminFetch(`/pages/${slug}`, {
     method: 'DELETE'
   });
+}
+
+export async function cancelCustomerOrder(orderNo: string, reason?: string) {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`/api/orders/${orderNo}/cancel-customer`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to cancel order');
+  }
+  return res.json();
 }
