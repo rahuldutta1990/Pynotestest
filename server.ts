@@ -26,7 +26,7 @@ const adminApp = !getApps().length
     })
   : getApps()[0];
 
-const db = getFirestore(adminApp);
+const db = getFirestore(adminApp, firebaseConfig.firestoreDatabaseId);
 const adminAuth = getAuth(adminApp);
 
 // Environment secrets
@@ -42,6 +42,122 @@ const SMTP_PASS = process.env.SMTP_PASS || '';
 const MAIL_FROM = process.env.MAIL_FROM || 'PyNotes <noreply@pynotes.in>';
 const ORDER_TOKEN_SECRET = process.env.ORDER_TOKEN_SECRET || 'pynotes-fallback-token-secret-2026';
 const OWNER_SETUP_CODE = process.env.OWNER_SETUP_CODE || 'pynotes-admin-setup';
+const TRIAL_DAYS = Number(process.env.TRIAL_DAYS || 7);
+const GRACE_DAYS = Number(process.env.GRACE_DAYS || 3);
+const CANCELLATION_ACCESS = process.env.CANCELLATION_ACCESS || 'until_end'; // 'until_end' or 'immediately'
+
+// Background task to sweep expired reservations (every 5 mins)
+setInterval(async () => {
+  try {
+    const now = new Date().toISOString();
+    const expiredSnap = await db.collection('orders')
+      .where('status', '==', 'pending_payment')
+      .where('reserved_until', '<', now)
+      .get();
+
+    for (const doc of expiredSnap.docs) {
+      const ord = doc.data();
+      // Restore stock
+      for (const item of ord.items) {
+        const bookSlug = item.slug;
+        const ledgerId = `${ord.order_no}_${bookSlug}_expired_restore`;
+        const ledgerRef = db.collection('stock_ledger').doc(ledgerId);
+        const lDoc = await ledgerRef.get();
+
+        if (!lDoc.exists) {
+          await ledgerRef.set({
+            order_no: ord.order_no,
+            book_slug: bookSlug,
+            delta: item.qty,
+            reason: 'expired_reservation',
+            at: new Date().toISOString(),
+            actor: 'system_sweep',
+          });
+
+          await db.collection('products').doc(bookSlug).update({
+            stock_qty: FieldValue.increment(item.qty),
+          });
+        }
+      }
+      await doc.ref.update({ status: 'cancelled', cancelled_at: now, cancel_reason: 'Reservation expired' });
+    }
+  } catch (err) {
+    console.error('Sweep error:', err);
+  }
+}, 5 * 60 * 1000);
+
+// Background task for Subscription Renewal Notifications (runs every 12 hours)
+async function checkUpcomingRenewals() {
+  try {
+    const now = new Date();
+    const targetDate = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days from now
+    const targetDateStr = targetDate.toISOString().split('T')[0];
+
+    const activeSubsSnap = await db.collection('subscriptions')
+      .where('status', '==', 'active')
+      .get();
+
+    for (const subDoc of activeSubsSnap.docs) {
+      const sub = subDoc.data();
+      if (!sub.current_end) continue;
+
+      const endAt = new Date(sub.current_end);
+      const endAtStr = endAt.toISOString().split('T')[0];
+
+      // Check if renewal is 2 days away and hasn't been notified for this specific end date
+      if (endAtStr === targetDateStr && sub.last_renewal_notified_for !== sub.current_end) {
+        const userDoc = await db.collection('users').doc(sub.user_id).get();
+        const userData = userDoc.exists ? userDoc.data() : null;
+        const email = sub.email || userData?.email;
+        const phone = userData?.phone;
+        const name = userData?.name || 'Student';
+
+        const renewalDate = endAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        // 1. Send Email
+        if (mailTransporter && email) {
+          try {
+            await mailTransporter.sendMail({
+              from: MAIL_FROM,
+              to: email,
+              subject: 'Upcoming Subscription Renewal - PyNotes',
+              html: `
+                <div style="font-family: sans-serif; color: #0B3561; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 15px;">
+                  <h2 style="color: #12A5B0;">Subscription Renewal Notice</h2>
+                  <p>Hi ${name},</p>
+                  <p>This is a friendly reminder that your <strong>PyNotes Subscription</strong> is scheduled for automatic renewal on <strong>${renewalDate}</strong>.</p>
+                  <p>Your saved payment method will be charged for the next billing cycle. No action is required from your side to continue your access to premium handwritten notes and quizzes.</p>
+                  <p style="font-size: 12px; color: #666; margin-top: 30px;">If you wish to cancel or manage your subscription, please visit your <a href="https://pynotes.in/account" style="color: #12A5B0;">My Account</a> page before the renewal date.</p>
+                  <p>Best Regards,<br/>Team PyNotes</p>
+                </div>
+              `
+            });
+          } catch (e: any) {
+            console.error('Renewal email failed:', e.message);
+          }
+        }
+
+        // 2. Send WhatsApp Placeholder (Requires official API integration)
+        if (phone) {
+          console.log(`[WHATSAPP NOTIFICATION] To: ${phone}, Msg: Hi ${name}, your PyNotes subscription renews on ${renewalDate}. Manage at pynotes.in/account`);
+          // Implementation for Interakt, Twilio, or Meta API would go here
+        }
+
+        // Mark as notified
+        await subDoc.ref.update({
+          last_renewal_notified_for: sub.current_end,
+          last_notified_at: new Date().toISOString()
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Renewal check error:', err);
+  }
+}
+
+// Run immediately on start, then every 12 hours
+checkUpcomingRenewals();
+setInterval(checkUpcomingRenewals, 12 * 60 * 60 * 1000);
 
 async function getRazorpayClient() {
   let keyId = RAZORPAY_KEY_ID;
@@ -119,7 +235,7 @@ async function authenticateUser(req: express.Request, res: express.Response, nex
 }
 
 // Helper: Role Authorization Middleware
-async function requireRole(roles: string[]) {
+function requireRole(roles: string[]) {
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const uid = (req as any).user?.uid;
     if (!uid) return res.status(401).json({ error: 'Unauthorized' });
@@ -139,7 +255,8 @@ async function requireRole(roles: string[]) {
 // Default Seed Function if Firestore is empty
 async function seedDefaultCatalogIfNeeded() {
   const subjectsSnap = await db.collection('subjects').get();
-  if (!subjectsSnap.empty) return;
+  const pagesSnap = await db.collection('pages').get();
+  if (!subjectsSnap.empty && !pagesSnap.empty) return;
 
   console.log('Seeding default PyNotes catalog into Firestore...');
 
@@ -325,11 +442,36 @@ async function seedDefaultCatalogIfNeeded() {
 
   // Seed Policy Draft Pages
   const policies = [
-    { slug: 'privacy-policy', title: 'Privacy Policy', body_md: 'Draft Privacy Policy: PyNotes respects your privacy. We collect shipping details solely to deliver your orders.' },
-    { slug: 'terms-of-service', title: 'Terms of Service', body_md: 'Draft Terms of Service: By placing an order on PyNotes, you agree to our fulfilment and delivery terms.' },
-    { slug: 'refund-policy', title: 'Return & Refund Policy', body_md: 'Draft Refund Policy: Damaged or wrong items reported within 48 hours of delivery are eligible for replacement or refund.' },
-    { slug: 'shipping-policy', title: 'Shipping Policy', body_md: 'Draft Shipping Policy: We ship across India via express couriers with tracking provided.' },
-    { slug: 'contact-info', title: 'Contact Information', body_md: 'Contact PyNotes support at support@pynotes.in or WhatsApp.' },
+    { 
+      slug: 'privacy-policy', 
+      title: 'Privacy Policy', 
+      body_md: '# Privacy Policy\n\nAt PyNotes, we are committed to protecting your privacy. This policy explains how we collect, use, and safeguard your information.\n\n### Information We Collect\nWe collect your name, email address, phone number, and shipping address when you place an order. We also collect usage data through cookies to improve our website.\n\n### How We Use Your Information\nYour information is used solely to process your orders, provide support, and send updates about our services.\n\n### Data Security\nWe use industry-standard security measures to protect your data. Your payment information is handled securely by Razorpay and is never stored on our servers.' 
+    },
+    { 
+      slug: 'terms-of-service', 
+      title: 'Terms of Service', 
+      body_md: '# Terms of Service\n\nWelcome to PyNotes. By using our website, you agree to comply with the following terms and conditions.\n\n### Use of Service\nYou agree to use PyNotes for lawful purposes and in a way that does not infringe the rights of others.\n\n### Intellectual Property\nAll content on this site, including handwritten notes, images, and logos, is the property of PyNotes and is protected by copyright laws.\n\n### Limitation of Liability\nPyNotes is not liable for any damages arising from the use of our products or website.' 
+    },
+    { 
+      slug: 'refund-policy', 
+      title: 'Return & Refund Policy', 
+      body_md: '# Return & Refund Policy\n\nWe want you to be satisfied with your purchase. If you receive a damaged or incorrect book, please follow these guidelines.\n\n### Returns\nYou can request a return within 48 hours of delivery for damaged or wrong items. Please provide photo proof through your account dashboard.\n\n### Refunds\nOnce your return is verified, we will initiate a refund to your original payment method. Razorpay refunds typically take 5-7 working days.' 
+    },
+    { 
+      slug: 'shipping-policy', 
+      title: 'Shipping Policy', 
+      body_md: '# Shipping Policy\n\nWe ship our printed books across India using express courier partners like Shiprocket and Bluedart.\n\n### Processing Time\nOrders are processed within 1-2 business days. You will receive a tracking ID via email once shipped.\n\n### Delivery Time\nStandard delivery takes 3-7 business days depending on your location. Prepaid orders get priority express shipping.' 
+    },
+    { 
+      slug: 'cancellation-policy', 
+      title: 'Cancellation Policy', 
+      body_md: '# Cancellation Policy\n\n### One-time Orders\nYou can cancel your book order anytime before it is shipped. Once shipped, the order cannot be cancelled.\n\n### Subscriptions\nYou can cancel your subscription anytime through the \'My Account\' page. If you cancel during the 7-day free trial, you will not be charged. Post-trial cancellations will stop the next recurring debit.' 
+    },
+    { 
+      slug: 'contact-info', 
+      title: 'Contact Information', 
+      body_md: '# Contact Information\n\nIf you have any questions or need support, please reach out to us.\n\n**Email:** support@pynotes.in\n**WhatsApp:** +91 98765 43210\n**Address:** PyNotes India Ltd, Tech Park, Mumbai, Maharashtra.' 
+    },
   ];
 
   for (const p of policies) {
@@ -1144,6 +1286,35 @@ app.get('/api/me', authenticateUser, async (req, res) => {
   res.json(userDoc.data());
 });
 
+app.post('/api/me', authenticateUser, async (req, res) => {
+  const uid = (req as any).user.uid;
+  const { name, phone, shipping_address, addresses } = req.body;
+  
+  const userRef = db.collection('users').doc(uid);
+  const userDoc = await userRef.get();
+
+  const data: any = {
+    uid,
+    email: (req as any).user.email || '',
+    updated_at: new Date().toISOString()
+  };
+
+  if (name !== undefined) data.name = name;
+  if (phone !== undefined) data.phone = phone;
+  if (shipping_address !== undefined) data.shipping_address = shipping_address;
+  if (addresses !== undefined) data.addresses = addresses;
+
+  if (!userDoc.exists) {
+    data.role = 'customer';
+    data.created_at = new Date().toISOString();
+    await userRef.set(data);
+    return res.json(data);
+  }
+
+  await userRef.update(data);
+  res.json({ ...userDoc.data(), ...data });
+});
+
 app.get('/api/me/orders', authenticateUser, async (req, res) => {
   const email = (req as any).user.email;
   const snap = await db.collection('orders').where('email', '==', email).get();
@@ -1354,7 +1525,7 @@ app.post('/api/admin/orders/:no/cancel', authenticateUser, async (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/admin/orders/:no/refund', authenticateUser, async (req, res) => {
+app.post('/api/admin/orders/:no/refund', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
   const orderNo = req.params.no;
   const { restock } = req.body;
 
@@ -1363,6 +1534,22 @@ app.post('/api/admin/orders/:no/refund', authenticateUser, async (req, res) => {
 
   const ord = orderDoc.data()!;
 
+  // 1. Issue Razorpay Refund if applicable
+  if (ord.razorpay_payment_id) {
+    const rzpInfo = await getRazorpayClient();
+    if (rzpInfo.client) {
+      try {
+        await rzpInfo.client.payments.refund(ord.razorpay_payment_id, {
+          amount: ord.total_paise,
+          notes: { reason: 'Admin requested refund' }
+        });
+      } catch (err: any) {
+        console.warn('Razorpay refund error (might already be refunded):', err.message);
+      }
+    }
+  }
+
+  // 2. Restock Inventory
   if (restock) {
     for (const item of ord.items) {
       const bookSlug = item.slug;
@@ -1387,9 +1574,11 @@ app.post('/api/admin/orders/:no/refund', authenticateUser, async (req, res) => {
     }
   }
 
+  // 3. Update Order Status
   await db.collection('orders').doc(orderNo).update({
     status: 'refunded',
     payment_status: 'refunded',
+    refunded_at: new Date().toISOString(),
   });
 
   clearCatalogCache();
@@ -1523,8 +1712,485 @@ app.post('/api/admin/system-check', authenticateUser, async (req, res) => {
     { id: 9, title: 'Payment after hold expiry: flags attention if stock gone', pass: true, details: 'Verified attention flag.' },
     { id: 10, title: 'Stock reconcile shows zero differences', pass: true, details: 'Verified stock_qty == ledger sum.' },
   ];
+  res.json(tests);
+});
 
-  res.json({ tests });
+// ----------------------------------------------------
+// RAZORPAY SUBSCRIPTIONS & PLANS API
+// ----------------------------------------------------
+
+// Admin: Create Plan
+app.post('/api/admin/plans', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const { name, category, amount_paise, period, interval, trial_days, features } = req.body;
+  const rzpInfo = await getRazorpayClient();
+  if (!rzpInfo.client) return res.status(500).json({ error: 'Razorpay not configured' });
+
+  try {
+    // Create Razorpay Plan
+    const rzpPlan = await rzpInfo.client.plans.create({
+      period: period || 'monthly', // daily, weekly, monthly, quarterly, yearly
+      interval: interval || 1,
+      item: {
+        name,
+        amount: amount_paise,
+        currency: 'INR',
+        description: features ? features.join(', ') : '',
+      },
+    });
+
+    const planData = {
+      name,
+      category,
+      amount_paise,
+      period: period || 'monthly',
+      interval: interval || 1,
+      trial_days: trial_days || TRIAL_DAYS,
+      features: features || [],
+      active: true,
+      archived: false,
+      razorpay_plan_id: rzpPlan.id,
+      created_at: new Date().toISOString(),
+    };
+
+    await db.collection('plans').doc(rzpPlan.id).set(planData);
+    res.json(planData);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to create plan' });
+  }
+});
+
+app.get('/api/admin/plans', authenticateUser, requireRole(['owner', 'manager', 'editor']), async (req, res) => {
+  const snap = await db.collection('plans').get();
+  res.json(snap.docs.map(d => d.data()));
+});
+
+// Student: List active plans
+app.get('/api/plans', async (req, res) => {
+  const snap = await db.collection('plans').where('active', '==', true).where('archived', '==', false).get();
+  res.json(snap.docs.map(d => d.data()));
+});
+
+// Student: Start Subscription
+app.post('/api/subscriptions/start', authenticateUser, async (req, res) => {
+  const { plan_id } = req.body;
+  const userId = (req as any).user.uid;
+  const email = (req as any).user.email;
+
+  if (!plan_id) return res.status(400).json({ error: 'Plan ID required' });
+
+  // 1. Block second trial
+  const existingTrials = await db.collection('subscriptions')
+    .where('user_id', '==', userId)
+    .where('status', 'in', ['trialling', 'active', 'past_due'])
+    .get();
+  
+  if (!existingTrials.empty) {
+    return res.status(400).json({ error: 'You already have an active subscription or have used your trial.' });
+  }
+
+  // 2. Read plan from DB
+  const planDoc = await db.collection('plans').doc(plan_id).get();
+  if (!planDoc.exists) return res.status(404).json({ error: 'Plan not found' });
+  const plan = planDoc.data()!;
+
+  const rzpInfo = await getRazorpayClient();
+  if (!rzpInfo.client) return res.status(500).json({ error: 'Razorpay not configured' });
+
+  try {
+    const trialDays = plan.trial_days || TRIAL_DAYS;
+    const startAt = Math.floor(Date.now() / 1000) + (trialDays * 24 * 60 * 60);
+
+    // Create Subscription
+    const rzpSubscription = await rzpInfo.client.subscriptions.create({
+      plan_id: plan.razorpay_plan_id,
+      total_count: plan.period === 'yearly' ? 10 : 60, // Arbitrary high number for recurring
+      customer_notify: 1,
+      start_at: startAt,
+      notes: {
+        user_id: userId,
+        plan_id: plan_id,
+      },
+    });
+
+    const subData = {
+      user_id: userId,
+      email: email,
+      plan_id: plan_id,
+      razorpay_subscription_id: rzpSubscription.id,
+      status: 'created',
+      trial_start: new Date().toISOString(),
+      trial_end: new Date(startAt * 1000).toISOString(),
+      first_charge_date: new Date(startAt * 1000).toISOString(),
+      created_at: new Date().toISOString(),
+    };
+
+    await db.collection('subscriptions').doc(rzpSubscription.id).set(subData);
+    
+    res.json({
+      subscription_id: rzpSubscription.id,
+      razorpay_key_id: rzpInfo.keyId,
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to start subscription' });
+  }
+});
+
+// Student: Cancel Subscription
+app.post('/api/subscriptions/:id/cancel', authenticateUser, async (req, res) => {
+  const subId = req.params.id;
+  const userId = (req as any).user.uid;
+  const { reason } = req.body;
+
+  const subDoc = await db.collection('subscriptions').doc(subId).get();
+  if (!subDoc.exists) return res.status(404).json({ error: 'Subscription not found' });
+  const sub = subDoc.data()!;
+
+  if (sub.user_id !== userId) return res.status(403).json({ error: 'Unauthorized' });
+
+  const rzpInfo = await getRazorpayClient();
+  if (!rzpInfo.client) return res.status(500).json({ error: 'Razorpay not configured' });
+
+  try {
+    const isInTrial = sub.status === 'trialling' || sub.status === 'created';
+    
+    // Cancel in Razorpay
+    await rzpInfo.client.subscriptions.cancel(subId, isInTrial ? 0 : 1);
+
+    const update = {
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+      cancelled_by: 'student',
+      cancel_reason: reason || '',
+      was_in_trial: isInTrial,
+    };
+
+    await db.collection('subscriptions').doc(subId).update(update);
+    await db.collection('cancellations').add({
+      subscription_id: subId,
+      user_id: userId,
+      date: new Date().toISOString(),
+      cancelled_by: 'student',
+      reason: reason || '',
+      was_in_trial: isInTrial,
+      refund_flag: false,
+    });
+
+    res.json({ success: true, message: 'Subscription cancelled successfully' });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to cancel subscription' });
+  }
+});
+
+app.get('/api/subscriptions/me', authenticateUser, async (req, res) => {
+  const userId = (req as any).user.uid;
+  const snap = await db.collection('subscriptions').where('user_id', '==', userId).get();
+  res.json(snap.docs.map(d => d.data()));
+});
+
+// ----------------------------------------------------
+// RAZORPAY WEBHOOKS (Source of Truth)
+// ----------------------------------------------------
+app.post('/api/webhooks/razorpay', async (req, res) => {
+  const signature = req.headers['x-razorpay-signature'] as string;
+  const secret = RAZORPAY_WEBHOOK_SECRET;
+
+  if (!signature || !secret) {
+    return res.status(400).json({ error: 'Missing signature or secret' });
+  }
+
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(JSON.stringify(req.body))
+    .digest('hex');
+
+  if (expectedSignature !== signature) {
+    return res.status(400).json({ error: 'Invalid webhook signature' });
+  }
+
+  const event = req.body;
+  const eventId = event.id;
+
+  // Idempotency check
+  const eventDoc = await db.collection('webhook_events').doc(eventId).get();
+  if (eventDoc.exists) {
+    return res.json({ status: 'already_processed' });
+  }
+
+  await db.collection('webhook_events').doc(eventId).set({
+    event_id: eventId,
+    processed_at: new Date().toISOString(),
+    payload: event,
+  });
+
+  try {
+    const eventType = event.event;
+    const payload = event.payload;
+
+    // Handle Subscriptions
+    if (eventType.startsWith('subscription.')) {
+      const rzpSub = payload.subscription.entity;
+      const subId = rzpSub.id;
+      const subRef = db.collection('subscriptions').doc(subId);
+      const subDoc = await subRef.get();
+
+      if (subDoc.exists) {
+        const oldStatus = subDoc.data()?.status;
+        let newStatus = oldStatus;
+
+        switch (eventType) {
+          case 'subscription.authenticated':
+            newStatus = 'trialling';
+            break;
+          case 'subscription.activated':
+          case 'subscription.resumed':
+            newStatus = 'active';
+            break;
+          case 'subscription.charged':
+            newStatus = 'active';
+            // Log payment
+            await db.collection('payments').add({
+              target_id: subId,
+              target_type: 'subscription',
+              razorpay_payment_id: payload.payment.entity.id,
+              amount_paise: payload.payment.entity.amount,
+              method: payload.payment.entity.method,
+              status: 'captured',
+              captured: true,
+              created_at: new Date().toISOString(),
+            });
+            break;
+          case 'subscription.pending':
+            newStatus = 'past_due';
+            break;
+          case 'subscription.halted':
+            newStatus = 'halted';
+            break;
+          case 'subscription.cancelled':
+            newStatus = 'cancelled';
+            break;
+          case 'subscription.completed':
+            newStatus = 'completed';
+            break;
+          case 'subscription.paused':
+            newStatus = 'paused';
+            break;
+        }
+
+        if (newStatus !== oldStatus) {
+          await subRef.update({ 
+            status: newStatus,
+            current_start: rzpSub.current_start ? new Date(rzpSub.current_start * 1000).toISOString() : null,
+            current_end: rzpSub.current_end ? new Date(rzpSub.current_end * 1000).toISOString() : null,
+          });
+          
+          await db.collection('subscription_events').add({
+            subscription_id: subId,
+            time: new Date().toISOString(),
+            old_status: oldStatus,
+            new_status: newStatus,
+            event_id: eventId,
+            source: 'razorpay',
+          });
+        }
+      }
+    }
+
+    // Handle One-time Payments
+    if (eventType === 'payment.captured' || eventType === 'order.paid') {
+      const rzpOrder = payload.order ? payload.order.entity : null;
+      const rzpPayment = payload.payment.entity;
+      const orderId = rzpOrder ? rzpOrder.id : rzpPayment.order_id;
+
+      if (orderId) {
+        const orderSnap = await db.collection('orders').where('razorpay_order_id', '==', orderId).get();
+        if (!orderSnap.empty) {
+          const orderDoc = orderSnap.docs[0];
+          await orderDoc.ref.update({
+            status: 'processing',
+            payment_status: 'paid',
+            paid_at: new Date().toISOString(),
+            razorpay_payment_id: rzpPayment.id,
+            payment_method: rzpPayment.method,
+          });
+          
+          // Log payment
+          await db.collection('payments').doc(rzpPayment.id).set({
+            target_id: orderDoc.id,
+            target_type: 'order',
+            razorpay_payment_id: rzpPayment.id,
+            razorpay_order_id: orderId,
+            amount_paise: rzpPayment.amount,
+            method: rzpPayment.method,
+            status: 'captured',
+            captured: true,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
+    }
+
+    if (eventType === 'payment.failed') {
+       // Log failed payment if needed
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('Webhook processing error:', err);
+    res.status(500).json({ error: 'Webhook processing failed' });
+  }
+});
+
+// Admin: Subscriptions List
+app.get('/api/admin/subscriptions', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const { status, plan_id } = req.query;
+  let q: any = db.collection('subscriptions');
+  if (status) q = q.where('status', '==', status);
+  if (plan_id) q = q.where('plan_id', '==', plan_id);
+  
+  const snap = await q.get();
+  const subs = snap.docs.map((d: any) => d.data());
+  subs.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  res.json(subs);
+});
+
+// Admin: Subscription Details
+app.get('/api/admin/subscriptions/:id', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const subId = req.params.id;
+  const subDoc = await db.collection('subscriptions').doc(subId).get();
+  if (!subDoc.exists) return res.status(404).json({ error: 'Subscription not found' });
+  
+  const sub = subDoc.data()!;
+  
+  const [eventsSnap, paymentsSnap] = await Promise.all([
+    db.collection('subscription_events').where('subscription_id', '==', subId).get(),
+    db.collection('payments').where('target_id', '==', subId).get(),
+  ]);
+
+  res.json({
+    ...sub,
+    events: eventsSnap.docs.map((d: any) => d.data()).sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime()),
+    payments: paymentsSnap.docs.map((d: any) => d.data()).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+  });
+});
+
+// Admin: Dashboard Metrics
+app.get('/api/admin/subscription-metrics', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const [subsSnap, cancelsSnap] = await Promise.all([
+    db.collection('subscriptions').get(),
+    db.collection('cancellations').get(),
+  ]);
+
+  const subs = subsSnap.docs.map((d: any) => d.data());
+  const cancels = cancelsSnap.docs.map((d: any) => d.data());
+
+  const trialsStarted = subs.filter(s => s.status === 'trialling' || s.status === 'active' || s.status === 'cancelled').length;
+  const activeSubscribers = subs.filter(s => s.status === 'active').length;
+  const trialCancellations = cancels.filter(c => c.was_in_trial).length;
+  
+  // Failed payments from webhook events or payments collection
+  const failedPaymentsSnap = await db.collection('webhook_events').where('payload.event', '==', 'subscription.pending').get();
+  const failedCount = failedPaymentsSnap.size;
+
+  // MRR Calculation
+  const activeSubs = subs.filter(s => s.status === 'active');
+  let mrrPaise = 0;
+  for (const s of activeSubs) {
+    const planDoc = await db.collection('plans').doc(s.plan_id).get();
+    if (planDoc.exists) {
+      const p = planDoc.data()!;
+      let monthly = p.amount_paise;
+      if (p.period === 'yearly') monthly = p.amount_paise / 12;
+      if (p.period === 'quarterly') monthly = p.amount_paise / 3;
+      mrrPaise += monthly;
+    }
+  }
+
+  res.json({
+    trials_started: trialsStarted,
+    active_subscribers: activeSubscribers,
+    trial_cancellations: trialCancellations,
+    mrr_paise: Math.round(mrrPaise),
+    failed_payments: failedCount,
+    trial_to_paid_conversion: trialsStarted > 0 ? ((activeSubscribers / trialsStarted) * 100).toFixed(1) : 0,
+  });
+});
+
+// POST /api/admin/subscriptions/:id/sync
+app.post('/api/admin/subscriptions/:id/sync', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const subId = req.params.id;
+  const rzpInfo = await getRazorpayClient();
+  if (!rzpInfo.client) return res.status(500).json({ error: 'Razorpay not configured' });
+
+  try {
+    const rzpSub = await rzpInfo.client.subscriptions.fetch(subId);
+    
+    // Map status
+    let status = 'created';
+    if (rzpSub.status === 'authenticated') status = 'trialling';
+    if (rzpSub.status === 'active') status = 'active';
+    if (rzpSub.status === 'pending') status = 'past_due';
+    if (rzpSub.status === 'halted') status = 'halted';
+    if (rzpSub.status === 'cancelled') status = 'cancelled';
+    if (rzpSub.status === 'completed') status = 'completed';
+
+    await db.collection('subscriptions').doc(subId).update({
+      status,
+      current_start: rzpSub.current_start ? new Date(rzpSub.current_start * 1000).toISOString() : null,
+      current_end: rzpSub.current_end ? new Date(rzpSub.current_end * 1000).toISOString() : null,
+    });
+
+    res.json({ success: true, status });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Admin: Cancellations Export
+app.get('/api/admin/cancellations', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const snap = await db.collection('cancellations').get();
+  res.json(snap.docs.map(d => d.data()));
+});
+
+// Admin: Refund Payment
+app.post('/api/admin/payments/:id/refund', authenticateUser, requireRole(['owner']), async (req, res) => {
+  const paymentId = req.params.id;
+  const { amount_paise, reason } = req.body;
+  const rzpInfo = await getRazorpayClient();
+  if (!rzpInfo.client) return res.status(500).json({ error: 'Razorpay not configured' });
+
+  try {
+    const rzpRefund = await rzpInfo.client.payments.refund(paymentId, {
+      amount: amount_paise,
+      notes: { reason: reason || 'Admin refund' },
+    });
+
+    const refundData = {
+      payment_id: paymentId,
+      razorpay_refund_id: rzpRefund.id,
+      amount_paise: amount_paise,
+      status: 'processed',
+      reason: reason || 'Admin refund',
+      created_at: new Date().toISOString(),
+    };
+
+    await db.collection('refunds').doc(rzpRefund.id).set(refundData);
+    
+    // Update payment record if exists
+    const paySnap = await db.collection('payments').where('razorpay_payment_id', '==', paymentId).get();
+    if (!paySnap.empty) {
+      await paySnap.docs[0].ref.update({ status: 'refunded' });
+      
+      const p = paySnap.docs[0].data();
+      if (p.target_type === 'order') {
+        await db.collection('orders').doc(p.target_id).update({ payment_status: 'refunded' });
+        // Restore stock logic would go here
+      }
+    }
+
+    res.json(refundData);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Admin Test Razorpay Live API
@@ -1653,3 +2319,37 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
+// Admin: Webhook Events
+app.get('/api/admin/webhook-events', authenticateUser, requireRole(['owner']), async (req, res) => {
+  const snap = await db.collection('webhook_events').orderBy('processed_at', 'desc').limit(100).get();
+  res.json(snap.docs.map(d => d.data()));
+});
+// Admin: Pages List
+app.get('/api/admin/pages', authenticateUser, requireRole(['owner', 'manager', 'editor']), async (req, res) => {
+  const snap = await db.collection('pages').get();
+  res.json(snap.docs.map(d => d.data()));
+});
+
+// Admin: Create/Update Page
+app.post('/api/admin/pages', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  const { slug, title, body_md, is_draft } = req.body;
+  if (!slug || !title) return res.status(400).json({ error: 'Slug and title required' });
+  
+  const pageData = {
+    slug: slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    title,
+    body_md: body_md || '',
+    is_draft: !!is_draft,
+    updated_at: new Date().toISOString()
+  };
+
+  await db.collection('pages').doc(pageData.slug).set(pageData, { merge: true });
+  res.json(pageData);
+});
+
+// Admin: Delete Page
+app.delete('/api/admin/pages/:slug', authenticateUser, requireRole(['owner']), async (req, res) => {
+  await db.collection('pages').doc(req.params.slug).delete();
+  res.json({ success: true });
+});

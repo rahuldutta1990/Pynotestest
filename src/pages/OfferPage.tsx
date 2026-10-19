@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AbstractShapes } from '../components/AbstractShapes';
 import { Link } from 'react-router-dom';
 import { SiteSettings } from '../types';
+import { SEO } from '../components/SEO';
 
 interface OfferPageProps {
   settings: SiteSettings;
@@ -22,6 +23,11 @@ export const OfferPage: React.FC<OfferPageProps> = ({ settings }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7FAFC] text-[#0B3561] relative overflow-hidden">
+      <SEO 
+        title="Special Offers" 
+        description="Exclusive discounts and deals on handwritten study notes and exam bundles. Save more on your preparation with PyNotes." 
+        keywords="Study Deals, Exam Discounts, Handwritten Notes Offers, PyNotes Coupons"
+      />
       <AbstractShapes />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-12 relative z-10 w-full space-y-12">

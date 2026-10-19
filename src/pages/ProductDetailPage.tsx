@@ -224,6 +224,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <span>11 people are checking out right now</span>
             </div>
 
+            {product.price_paise > 300000 && (
+              <div className="bg-[#12A5B0]/5 border border-[#12A5B0]/20 rounded-xl p-3 flex items-center gap-2 text-[10px] font-bold text-[#0B3561]">
+                <span>💳</span>
+                <span>EMI available on eligible orders (minimum amount varies by bank)</span>
+              </div>
+            )}
+
             {/* Recent Buyers Strip */}
             <RecentBuyersStrip enabled={settings?.show_recent_buyers_strip} />
 

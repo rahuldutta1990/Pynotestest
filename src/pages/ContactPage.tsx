@@ -36,7 +36,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings }) => {
   };
 
   const whatsappNum = settings?.whatsapp_number || '+919876543210';
-  const supportEmail = settings?.support_email || 'support@pynotes.in';
+  const supportEmail = settings?.support_email || 'devrd720@gmail.com';
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-8 py-12 space-y-10">

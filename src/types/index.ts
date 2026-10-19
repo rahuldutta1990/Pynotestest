@@ -160,6 +160,7 @@ export interface Order {
   ship_city: string;
   ship_state: string;
   razorpay_order_id?: string;
+  razorpay_payment_id?: string;
   reserved_until?: string;
   invoice_no?: string;
   courier?: string;

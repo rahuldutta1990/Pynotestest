@@ -252,7 +252,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label={userEmail ? 'Account' : 'Sign In'}
               title={userEmail ? 'Account' : 'Sign In'}
             >
-              <UserIcon className="w-5 h-5" />
+              <UserIcon className="w-5 h-5" showDot={!!userEmail} />
             </Link>
 
             <button
@@ -273,14 +273,14 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* EXPANDABLE AUTOMATED SEARCH BAR (1px Gap from Header) */}
       {searchVisible && (
-        <div className="sticky top-[73px] z-30 bg-white border-b border-[#0B3561]/10 shadow-lg animate-slideDown overflow-visible">
+        <div className="sticky top-[72px] z-30 bg-white border-b border-[#0B3561]/10 shadow-lg animate-slideDown overflow-visible mt-[1px]">
           <div ref={searchContainerRef} className="max-w-4xl mx-auto px-4 py-4 relative">
             <div className="relative flex items-center">
               <SearchIcon className="w-5 h-5 text-[#0B3561]/60 absolute left-4 pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Type to search books, Python, SQL, DSA..."
+                placeholder="Search subjects, books, Python, SQL, DSA..."
                 value={searchQuery}
                 onChange={e => {
                   setSearchQuery(e.target.value);
@@ -291,9 +291,7 @@ export const Header: React.FC<HeaderProps> = ({
               />
               {searchQuery && (
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                  }}
+                  onClick={() => setSearchQuery('')}
                   className="absolute right-4 text-[#3C5D81] hover:text-[#0B3561] bg-white p-1 rounded-full shadow-sm"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -303,14 +301,14 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Instant Live Autocomplete Dropdown - Positioned inside the expanding bar */}
+            {/* Instant Live Autocomplete Dropdown */}
             {searchFocused && searchQuery.trim().length > 0 && (
-              <div className="absolute top-full left-4 right-4 mt-1 bg-white rounded-2xl shadow-2xl border border-[#0B3561]/15 overflow-hidden z-50 animate-fadeIn">
+              <div className="absolute top-[calc(100%-8px)] left-4 right-4 bg-white rounded-b-2xl shadow-2xl border-x border-b border-[#0B3561]/15 overflow-hidden z-50 animate-fadeIn">
                 <div className="max-h-80 overflow-y-auto divide-y divide-[#0B3561]/10">
                   
                   {/* Matching Subjects Section */}
                   {matchingSubjects.length > 0 && (
-                    <div className="p-4 bg-[#DDF3F4]/30">
+                    <div className="p-4 bg-[#DDF3F4]/20">
                       <span className="text-[10px] font-black text-[#12A5B0] uppercase tracking-widest block mb-3 px-1">
                         Matching Subjects ({matchingSubjects.length})
                       </span>
@@ -330,7 +328,7 @@ export const Header: React.FC<HeaderProps> = ({
                               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: sub.accent_color || '#12A5B0' }} />
                               <span>{sub.name}</span>
                             </div>
-                            <span className="text-xs text-[#12A5B0] font-black">Explore Book →</span>
+                            <span className="text-xs text-[#12A5B0] font-black italic">View Book →</span>
                           </div>
                         ))}
                       </div>
@@ -341,7 +339,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {matchingProducts.length > 0 && (
                     <div className="p-3">
                       <span className="text-[10px] font-bold text-[#0B3561] uppercase tracking-wider block mb-2 px-1">
-                        Printed Books & Bundles ({matchingProducts.length})
+                        Books & Bundles ({matchingProducts.length})
                       </span>
                       <div className="space-y-1">
                         {matchingProducts.map(prod => (
@@ -350,6 +348,7 @@ export const Header: React.FC<HeaderProps> = ({
                             onClick={() => {
                               setSearchQuery('');
                               setSearchFocused(false);
+                              setSearchVisible(false);
                               navigate(`/product/${prod.slug}`);
                             }}
                             className="p-2.5 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition"
@@ -369,7 +368,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                   {matchingSubjects.length === 0 && matchingProducts.length === 0 && (
                     <div className="p-6 text-center text-xs text-[#3C5D81]">
-                      No subjects or books found for "<span className="font-bold text-[#0B3561]">{searchQuery}</span>"
+                      No results found for "<span className="font-bold text-[#0B3561]">{searchQuery}</span>"
                     </div>
                   )}
 

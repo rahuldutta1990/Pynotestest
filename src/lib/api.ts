@@ -376,10 +376,10 @@ export async function fetchMyProfile() {
   return res.json();
 }
 
-export async function updateMyProfile(data: { name?: string; phone?: string }) {
+export async function updateMyProfile(data: { name?: string; phone?: string; shipping_address?: any, addresses?: any[] }) {
   const headers = await getAuthHeaders();
   const res = await fetch('/api/me', {
-    method: 'PUT',
+    method: 'POST',
     headers,
     body: JSON.stringify(data),
   });
@@ -444,4 +444,59 @@ export async function subscribeNewsletter(email: string) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to subscribe');
   return data;
+}
+
+// Subscription APIs
+export async function fetchPlans(): Promise<any[]> {
+  const res = await fetch('/api/plans');
+  if (!res.ok) throw new Error('Failed to fetch plans');
+  return res.json();
+}
+
+export async function startSubscription(planId: string): Promise<{ subscription_id: string; razorpay_key_id: string }> {
+  const headers = await getAuthHeaders();
+  const res = await fetch('/api/subscriptions/start', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ plan_id: planId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to start subscription');
+  return data;
+}
+
+export async function cancelSubscription(subId: string, reason?: string): Promise<{ success: boolean }> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`/api/subscriptions/${subId}/cancel`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ reason }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to cancel subscription');
+  return data;
+}
+
+export async function fetchMySubscriptions(): Promise<any[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch('/api/subscriptions/me', { headers });
+  if (!res.ok) throw new Error('Failed to fetch subscriptions');
+  return res.json();
+}
+
+export async function fetchAdminPages(): Promise<any[]> {
+  return adminFetch('/pages');
+}
+
+export async function saveAdminPage(page: any) {
+  return adminFetch('/pages', {
+    method: 'POST',
+    body: JSON.stringify(page)
+  });
+}
+
+export async function deleteAdminPage(slug: string) {
+  return adminFetch(`/pages/${slug}`, {
+    method: 'DELETE'
+  });
 }

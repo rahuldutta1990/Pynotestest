@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { auth } from './lib/firebase';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { fetchCatalog, fetchHealth } from './lib/api';
 import { Subject, Product, SiteSettings, FAQ, Review, HealthResponse } from './types';
 import { Header } from './components/Header';
@@ -46,6 +47,38 @@ function ScrollToTop() {
   }, [pathname]);
   return null;
 }
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(u => {
+      setUser(u);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#12A5B0] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to={`/auth?redirect=${encodeURIComponent(pathname)}`} replace />;
+  }
+
+  if (!user.emailVerified) {
+    return <Navigate to="/auth?mode=verify" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 export default function App() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -141,11 +174,13 @@ export default function App() {
           <Route path="reports" element={<AdminCMS section="reports" />} />
           <Route path="system-check" element={<AdminSystemCheck />} />
           <Route path="subscriptions" element={<AdminCMS section="subscriptions" />} />
+          <Route path="cancellations" element={<AdminCMS section="cancellations" />} />
           <Route path="offers" element={<AdminCMS section="offers" />} />
           <Route path="settings" element={<AdminCMS section="settings" />} />
           <Route path="instagram" element={<AdminCMS section="instagram" />} />
           <Route path="payments" element={<AdminCMS section="payments" />} />
           <Route path="payment-page" element={<AdminCMS section="payment-page" />} />
+          <Route path="webhook-log" element={<AdminCMS section="webhook-log" />} />
           <Route path="users" element={<AdminCMS section="users" />} />
         </Route>
 
@@ -217,21 +252,23 @@ export default function App() {
                     <Route
                       path="/checkout"
                       element={
-                        <CheckoutPage
-                          cart={cart}
-                          products={products}
-                          onClearCart={() => setCart([])}
-                          holdMinutes={settings?.hold_minutes}
-                        />
+                        <ProtectedRoute>
+                          <CheckoutPage
+                            cart={cart}
+                            products={products}
+                            onClearCart={() => setCart([])}
+                            holdMinutes={settings?.hold_minutes}
+                          />
+                        </ProtectedRoute>
                       }
                     />
                     <Route path="/order/:orderNo/thank-you" element={<ThankYouPage />} />
                     <Route path="/track" element={<TrackPage />} />
                     <Route path="/pay" element={<PaymentPage settings={settings!} />} />
-                     <Route path="/subscription" element={<SubscriptionPage />} />
+                     <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
                      <Route path="/offers" element={<OfferPage settings={settings!} />} />
                      <Route path="/auth" element={<AuthPage />} />
-                     <Route path="/account" element={<AccountPage />} />
+                     <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/contact" element={<ContactPage settings={settings!} />} />
                     <Route path="/faq" element={<FaqPage faqs={faqs} />} />

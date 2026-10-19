@@ -24,6 +24,7 @@ export const PolicyPage: React.FC = () => {
     { slug: 'terms-of-service', title: 'Terms of Service' },
     { slug: 'refund-policy', title: 'Return & Refund Policy' },
     { slug: 'shipping-policy', title: 'Shipping Policy' },
+    { slug: 'cancellation-policy', title: 'Cancellation Policy' },
     { slug: 'contact-info', title: 'Contact Information' },
   ];
 

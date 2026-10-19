@@ -260,6 +260,28 @@ export const AdminOrders: React.FC = () => {
               </button>
             )}
 
+            {selectedOrder.status === 'processing' && (
+              <div className="pt-4 border-t border-[#0B3561]/5 flex justify-between items-center">
+                <p className="text-[10px] text-[#3C5D81]">Paid via Razorpay: {selectedOrder.razorpay_payment_id || 'N/A'}</p>
+                <button
+                  onClick={() => handleRefund(selectedOrder.order_no)}
+                  className="text-red-600 font-bold text-[10px] uppercase hover:underline"
+                >
+                  Issue Refund
+                </button>
+              </div>
+            )}
+
+            {selectedOrder.payment_status === 'refunded' && (
+              <div className="p-3 bg-red-50 text-red-700 rounded-xl text-[10px] font-bold text-center">
+                This order has been refunded.
+              </div>
+            )}
+
+            <div className="pt-2 text-[9px] text-[#9DAEC0] text-center italic">
+              Note: EMI and Cardless EMI refunds are processed by banks and may take 5-7 working days.
+            </div>
+
             {selectedOrder.invoice_no && (
               <div className="pt-2 text-center">
                 <a

@@ -164,9 +164,11 @@ export const AdminLayout: React.FC = () => {
     { label: 'System Check', path: '/admin/system-check', roles: ['owner'] },
     { label: 'Special Offers', path: '/admin/offers', roles: ['owner', 'manager', 'editor'] },
     { label: 'Subscription Plans & Hub', path: '/admin/subscriptions', roles: ['owner', 'manager'] },
+    { label: 'Cancellations', path: '/admin/cancellations', roles: ['owner', 'manager'] },
     { label: 'Instagram Feed API', path: '/admin/instagram', roles: ['owner', 'editor'] },
     { label: 'Razorpay Payments', path: '/admin/payments', roles: ['owner'] },
     { label: 'Payment Page & QR', path: '/admin/payment-page', roles: ['owner', 'manager'] },
+    { label: 'Webhook Log', path: '/admin/webhook-log', roles: ['owner'] },
     { label: 'Settings', path: '/admin/settings', roles: ['owner'] },
     { label: 'Users & Audit', path: '/admin/users', roles: ['owner'] },
   ];

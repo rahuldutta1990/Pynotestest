@@ -52,7 +52,7 @@ export const InnerPageBanner: React.FC<InnerPageBannerProps> = ({
                   <React.Fragment key={name}>
                     <span>/</span>
                     <Link to={routeTo} className="hover:underline capitalize text-[#12A5B0]">
-                      {name.replace(/-/g, ' ')}
+                      {name === 'auth' ? 'Create Account' : name.replace(/-/g, ' ')}
                     </Link>
                   </React.Fragment>
                 );

@@ -169,6 +169,7 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
               <li><Link to="/policies/terms-of-service" className="hover:text-[#12A5B0] transition">Terms of Service</Link></li>
               <li><Link to="/policies/refund-policy" className="hover:text-[#12A5B0] transition">Return & Refund Policy</Link></li>
               <li><Link to="/policies/shipping-policy" className="hover:text-[#12A5B0] transition">Shipping Policy</Link></li>
+              <li><Link to="/policies/cancellation-policy" className="hover:text-[#12A5B0] transition">Cancellation Policy</Link></li>
               <li><Link to="/policies/contact-info" className="hover:text-[#12A5B0] transition">Contact Information</Link></li>
             </ul>
           </div>
@@ -181,11 +182,18 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
             <span className="font-heading font-medium text-[11px] uppercase tracking-wider">
               Secured Payments:
             </span>
-            <div className="flex items-center gap-2">
-              {['UPI', 'Google Pay', 'PhonePe', 'Visa', 'Mastercard', 'RuPay'].map(icon => (
-                <span key={icon} className="bg-white/10 text-white font-code text-[10px] px-2 py-1 rounded border border-[#12A5B0]/20">
-                  {icon}
-                </span>
+            <div className="flex items-center gap-3 flex-wrap">
+              {[
+                { name: 'UPI', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/512px-UPI-Logo-vector.svg.png' },
+                { name: 'Google Pay', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png' },
+                { name: 'PhonePe', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/512px-PhonePe_Logo.svg.png' },
+                { name: 'Visa', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/512px-Visa_Inc._logo.svg.png' },
+                { name: 'Mastercard', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/512px-Mastercard-logo.svg.png' },
+                { name: 'RuPay', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/RuPay.svg/512px-RuPay.svg.png' },
+              ].map(payment => (
+                <div key={payment.name} className="bg-white p-1.5 rounded-lg flex items-center justify-center border border-white/20 shadow-sm h-8 w-12 overflow-hidden">
+                  <img src={payment.logo} alt={payment.name} className="max-h-full max-w-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300" title={payment.name} />
+                </div>
               ))}
             </div>
           </div>

@@ -267,6 +267,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
             )}
 
+            {quote.total_paise > 300000 && (
+              <div className="bg-[#DDF3F4]/50 p-2 rounded-lg border border-[#12A5B0]/20 text-[9px] text-[#0B3561] font-bold flex items-center gap-2 mb-2">
+                <span>💳</span>
+                <span>EMI available on eligible orders (minimum amount varies by bank)</span>
+              </div>
+            )}
+
             <div className="flex justify-between items-center pt-1">
               <span className="font-heading font-bold text-[#0B3561] text-base">Subtotal</span>
               <span className="font-display font-black italic text-xl text-[#0B3561]">

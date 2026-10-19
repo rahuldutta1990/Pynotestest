@@ -72,11 +72,15 @@ export const SearchIcon: React.FC<IconProps> = ({ className = 'w-6 h-6', navyCol
   </svg>
 );
 
-export const UserIcon: React.FC<IconProps> = ({ className = 'w-6 h-6', navyColor = '#0B3561', tealColor = '#12A5B0' }) => (
+interface UserIconProps extends IconProps {
+  showDot?: boolean;
+}
+
+export const UserIcon: React.FC<UserIconProps> = ({ className = 'w-6 h-6', navyColor = '#0B3561', tealColor = '#12A5B0', showDot = true }) => (
   <svg viewBox="0 0 48 48" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="16" r="8" stroke={navyColor} strokeWidth="2.6" />
     <path d="M10 38C10 30 16 28 24 28C32 28 38 30 38 38" stroke={navyColor} strokeWidth="2.6" strokeLinecap="round" />
-    <circle cx="34" cy="12" r="2" fill={tealColor} />
+    {showDot && <circle cx="34" cy="12" r="2" fill={tealColor} />}
   </svg>
 );
 

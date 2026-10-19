@@ -62,6 +62,160 @@
         "totalSpent": { "type": "number" }
       },
       "required": ["name", "email"]
+    },
+    "User": {
+      "title": "User",
+      "description": "App user (staff or student)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "addresses": { 
+          "type": "array", 
+          "items": { 
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "phone": { "type": "string" },
+              "line1": { "type": "string" },
+              "city": { "type": "string" },
+              "state": { "type": "string" },
+              "pincode": { "type": "string" },
+              "is_default": { "type": "boolean" }
+            }
+          }
+        },
+        "role": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Plan": {
+      "title": "Plan",
+      "description": "Razorpay Subscription Plan",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "amount_paise": { "type": "number" },
+        "period": { "type": "string" },
+        "interval": { "type": "number" },
+        "trial_days": { "type": "number" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "active": { "type": "boolean" },
+        "razorpay_plan_id": { "type": "string" },
+        "archived": { "type": "boolean" }
+      },
+      "required": ["name", "amount_paise", "period", "razorpay_plan_id"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "User subscription",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "plan_id": { "type": "string" },
+        "razorpay_subscription_id": { "type": "string" },
+        "status": { "type": "string" },
+        "trial_start": { "type": "string", "format": "date-time" },
+        "trial_end": { "type": "string", "format": "date-time" },
+        "first_charge_date": { "type": "string", "format": "date-time" },
+        "current_start": { "type": "string", "format": "date-time" },
+        "current_end": { "type": "string", "format": "date-time" },
+        "cancel_at_cycle_end": { "type": "boolean" },
+        "last_renewal_notified_for": { "type": "string", "format": "date-time" },
+        "last_notified_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "plan_id", "razorpay_subscription_id", "status"]
+    },
+    "SubscriptionEvent": {
+      "title": "SubscriptionEvent",
+      "description": "Audit log for subscription status changes",
+      "type": "object",
+      "properties": {
+        "subscription_id": { "type": "string" },
+        "time": { "type": "string", "format": "date-time" },
+        "old_status": { "type": "string" },
+        "new_status": { "type": "string" },
+        "event_id": { "type": "string" },
+        "source": { "type": "string" }
+      },
+      "required": ["subscription_id", "time", "new_status"]
+    },
+    "Cancellation": {
+      "title": "Cancellation",
+      "description": "Record of cancelled subscription",
+      "type": "object",
+      "properties": {
+        "subscription_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "cancelled_by": { "type": "string" },
+        "reason": { "type": "string" },
+        "was_in_trial": { "type": "boolean" },
+        "refund_flag": { "type": "boolean" }
+      },
+      "required": ["subscription_id", "date", "cancelled_by"]
+    },
+    "OrderItem": {
+      "title": "OrderItem",
+      "description": "Item in an order",
+      "type": "object",
+      "properties": {
+        "order_id": { "type": "string" },
+        "product_id": { "type": "string" },
+        "title": { "type": "string" },
+        "price_paise": { "type": "number" },
+        "qty": { "type": "number" }
+      },
+      "required": ["order_id", "product_id", "qty"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment record",
+      "type": "object",
+      "properties": {
+        "target_id": { "type": "string" },
+        "target_type": { "type": "string" },
+        "razorpay_payment_id": { "type": "string" },
+        "razorpay_order_id": { "type": "string" },
+        "amount_paise": { "type": "number" },
+        "method": { "type": "string" },
+        "status": { "type": "string" },
+        "captured": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["target_id", "razorpay_payment_id", "amount_paise", "status"]
+    },
+    "WebhookEvent": {
+      "title": "WebhookEvent",
+      "description": "Idempotent log for Razorpay webhooks",
+      "type": "object",
+      "properties": {
+        "event_id": { "type": "string" },
+        "processed_at": { "type": "string", "format": "date-time" },
+        "payload": { "type": "object" }
+      },
+      "required": ["event_id", "processed_at"]
+    },
+      "required": ["payment_id", "razorpay_refund_id", "amount_paise", "status"]
+    },
+    "Page": {
+      "title": "Page",
+      "description": "Static content page",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string" },
+        "title": { "type": "string" },
+        "body_md": { "type": "string" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "is_draft": { "type": "boolean" }
+      },
+      "required": ["slug", "title", "body_md"]
     }
   },
   "firestore": {
@@ -84,6 +238,46 @@
     "customers": {
       "schema": "Customer",
       "description": "Customer profiles"
+    },
+    "users": {
+      "schema": "User",
+      "description": "Registered users"
+    },
+    "plans": {
+      "schema": "Plan",
+      "description": "Subscription plans"
+    },
+    "subscriptions": {
+      "schema": "Subscription",
+      "description": "User subscriptions"
+    },
+    "subscription_events": {
+      "schema": "SubscriptionEvent",
+      "description": "Audit log for subscriptions"
+    },
+    "cancellations": {
+      "schema": "Cancellation",
+      "description": "Subscription cancellations"
+    },
+    "order_items": {
+      "schema": "OrderItem",
+      "description": "Items in orders"
+    },
+    "payments": {
+      "schema": "Payment",
+      "description": "Payment records"
+    },
+    "webhook_events": {
+      "schema": "WebhookEvent",
+      "description": "Webhook processing log"
+    },
+    "refunds": {
+      "schema": "Refund",
+      "description": "Refund records"
+    },
+    "pages": {
+      "schema": "Page",
+      "description": "Content pages"
     }
   }
 }

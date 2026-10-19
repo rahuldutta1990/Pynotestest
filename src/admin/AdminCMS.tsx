@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminFetch } from '../lib/api';
 import { SiteSettings, Coupon, Subject, FAQ } from '../types';
+import { AdminOrders } from './AdminOrders';
 
 export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
@@ -8,6 +9,13 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [adminPlans, setAdminPlans] = useState<any[]>([]);
+  const [adminSubscriptions, setAdminSubscriptions] = useState<any[]>([]);
+  const [adminCancellations, setAdminCancellations] = useState<any[]>([]);
+  const [adminWebhookEvents, setAdminWebhookEvents] = useState<any[]>([]);
+  const [adminMetrics, setAdminMetrics] = useState<any>(null);
+  const [adminPages, setAdminPages] = useState<any[]>([]);
+  const [editingPage, setEditingPage] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
@@ -29,6 +37,24 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
       } else if (section === 'users') {
         const res = await adminFetch('/users');
         setUsers(res);
+      } else if (section === 'subscriptions') {
+        const [plansRes, subsRes, metricsRes] = await Promise.all([
+          adminFetch('/plans'),
+          adminFetch('/subscriptions'),
+          adminFetch('/subscription-metrics')
+        ]);
+        setAdminPlans(plansRes);
+        setAdminSubscriptions(subsRes);
+        setAdminMetrics(metricsRes);
+      } else if (section === 'cancellations') {
+        const res = await adminFetch('/cancellations');
+        setAdminCancellations(res);
+      } else if (section === 'webhook-log') {
+        const res = await adminFetch('/webhook-events');
+        setAdminWebhookEvents(res);
+      } else if (section === 'pages') {
+        const res = await adminFetch('/pages');
+        setAdminPages(res);
       }
     } catch (e) {
       console.error(e);
@@ -397,126 +423,207 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   }
 
   if (section === 'subscriptions') {
-    const plans = settings.subscription_plans || [
-      { id: 'sub-1', name: 'Monthly Current Affairs', contents: 'Monthly PDF, daily/weekly quizzes, one-page monthly capsule', billing: 'Monthly', price: 149, razorpay_link: 'https://rzp.io/rzp/TiksPhvI' },
-      { id: 'sub-2', name: 'Exam Pass (SSC, Banking, UPSC)', contents: 'Current affairs, subject notes, test series, PYQs for one exam', billing: 'Quarterly / Yearly', price: 699, razorpay_link: 'https://rzp.io/rzp/TiksPhvI', popular: true },
-      { id: 'sub-3', name: 'All-Access Pass', contents: 'Every exam track + unlimited PYQs & test series', billing: 'Yearly', price: 1999, razorpay_link: 'https://rzp.io/rzp/TiksPhvI' },
-    ];
-
-    const handleAddPlan = () => {
-      const newPlan = {
-        id: 'sub-' + Date.now(),
-        name: 'New Plan',
-        contents: 'Plan features & inclusions',
-        billing: 'Monthly',
-        price: 299,
-        razorpay_link: 'https://rzp.io/rzp/TiksPhvI',
-      };
-      setSettings({ ...settings, subscription_plans: [...plans, newPlan] });
-    };
-
-    const handleDeletePlan = (id: string) => {
-      setSettings({ ...settings, subscription_plans: plans.filter(p => p.id !== id) });
-    };
-
-    const handleUpdatePlan = (id: string, field: string, val: any) => {
-      setSettings({
-        ...settings,
-        subscription_plans: plans.map(p => p.id === id ? { ...p, [field]: val } : p),
-      });
-    };
-
     return (
-      <form onSubmit={handleSaveSettings} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 max-w-4xl text-xs">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-heading font-bold text-lg text-[#0B3561]">Subscription Plans Management</h3>
-            <p className="text-[#3C5D81]">Add, edit, or delete subscription plans, billing cycles, and Razorpay payment links.</p>
-          </div>
-          <button type="button" onClick={handleAddPlan} className="bg-[#12A5B0] text-[#071E38] font-heading font-bold px-4 py-2.5 rounded-xl hover:brightness-105 transition">
-            + Add New Plan
-          </button>
-        </div>
-
-        {saveMsg && <div className="bg-[#DDF3F4] text-[#0B3561] font-bold p-3 rounded-xl">{saveMsg}</div>}
-
-        <div className="space-y-4">
-          {plans.map((p, idx) => (
-            <div key={p.id} className="border border-[#0B3561]/15 p-4 sm:p-6 rounded-2xl bg-[#F7FAFC] space-y-4 relative">
-              <div className="flex items-center justify-between">
-                <span className="font-heading font-bold text-sm text-[#0B3561]">Plan #{idx + 1}</span>
-                <button type="button" onClick={() => handleDeletePlan(p.id)} className="text-red-600 font-semibold hover:underline">
-                  Delete Plan
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold mb-1">Plan Name</label>
-                  <input
-                    type="text"
-                    value={p.name}
-                    onChange={e => handleUpdatePlan(p.id, 'name', e.target.value)}
-                    className="w-full p-2.5 bg-white border rounded-xl font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Billing Cycle</label>
-                  <input
-                    type="text"
-                    value={p.billing}
-                    onChange={e => handleUpdatePlan(p.id, 'billing', e.target.value)}
-                    className="w-full p-2.5 bg-white border rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Price (₹)</label>
-                  <input
-                    type="number"
-                    value={p.price}
-                    onChange={e => handleUpdatePlan(p.id, 'price', Number(e.target.value))}
-                    className="w-full p-2.5 bg-white border rounded-xl font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Razorpay Payment Link URL</label>
-                  <input
-                    type="text"
-                    value={p.razorpay_link}
-                    onChange={e => handleUpdatePlan(p.id, 'razorpay_link', e.target.value)}
-                    className="w-full p-2.5 bg-white border rounded-xl font-mono text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1">Plan Contents / Inclusions</label>
-                <input
-                  type="text"
-                  value={p.contents}
-                  onChange={e => handleUpdatePlan(p.id, 'contents', e.target.value)}
-                  className="w-full p-2.5 bg-white border rounded-xl"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`pop-${p.id}`}
-                  checked={!!p.popular}
-                  onChange={e => handleUpdatePlan(p.id, 'popular', e.target.checked)}
-                  className="rounded text-[#12A5B0]"
-                />
-                <label htmlFor={`pop-${p.id}`} className="font-semibold text-[#0B3561]">Mark as Most Popular / Recommended</label>
-              </div>
+      <div className="space-y-8 text-xs">
+        {/* Dashboard Metrics */}
+        {adminMetrics && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-1">
+              <p className="text-[#3C5D81] font-semibold">Trials Started</p>
+              <p className="text-lg font-black text-[#0B3561]">{adminMetrics.trials_started}</p>
             </div>
-          ))}
+            <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-1">
+              <p className="text-[#3C5D81] font-semibold">Conversion %</p>
+              <p className="text-lg font-black text-[#12A5B0]">{adminMetrics.trial_to_paid_conversion}%</p>
+            </div>
+            <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-1">
+              <p className="text-[#3C5D81] font-semibold">Trial Cancels</p>
+              <p className="text-lg font-black text-red-600">{adminMetrics.trial_cancellations}</p>
+            </div>
+            <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-1">
+              <p className="text-[#3C5D81] font-semibold">Active Subs</p>
+              <p className="text-lg font-black text-green-600">{adminMetrics.active_subscribers}</p>
+            </div>
+            <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-1">
+              <p className="text-[#3C5D81] font-semibold">Failed Payments</p>
+              <p className="text-lg font-black text-red-600">{adminMetrics.failed_payments}</p>
+            </div>
+            <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-1">
+              <p className="text-[#3C5D81] font-semibold">Est. MRR</p>
+              <p className="text-lg font-black text-[#0B3561]">₹{adminMetrics.mrr_paise / 100}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading font-bold text-lg text-[#0B3561]">Active Subscriptions</h3>
+            <div className="flex gap-2">
+              <button onClick={loadAll} className="px-3 py-1.5 bg-[#F7FAFC] border rounded-lg hover:bg-[#DDF3F4]">Refresh</button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
+            <table className="w-full text-left">
+              <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
+                <tr>
+                  <th className="px-4 py-3">Student / Email</th>
+                  <th className="px-4 py-3">Plan ID</th>
+                  <th className="px-4 py-3">RZP Sub ID</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Trial End</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#0B3561]/5">
+                {adminSubscriptions.map(s => (
+                  <tr key={s.razorpay_subscription_id} className="hover:bg-[#DDF3F4]/20 transition">
+                    <td className="px-4 py-3">
+                      <p className="font-bold text-[#0B3561]">{s.email}</p>
+                    </td>
+                    <td className="px-4 py-3 font-mono">{s.plan_id}</td>
+                    <td className="px-4 py-3 font-mono">{s.razorpay_subscription_id}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                        s.status === 'active' ? 'bg-green-100 text-green-700' :
+                        s.status === 'trialling' ? 'bg-blue-100 text-blue-700' :
+                        s.status === 'cancelled' ? 'bg-gray-100 text-gray-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {s.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-[#9DAEC0]">{new Date(s.trial_end).toLocaleDateString()}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={async () => {
+                            const res = await adminFetch(`/subscriptions/${s.razorpay_subscription_id}/sync`, { method: 'POST' });
+                            alert(`Synced! New status: ${res.status}`);
+                            loadAll();
+                          }}
+                          className="text-[#12A5B0] font-bold hover:underline"
+                        >
+                          Sync
+                        </button>
+                        {s.status !== 'cancelled' && (
+                          <button 
+                            onClick={async () => {
+                              if (!confirm('Are you sure you want to cancel this subscription?')) return;
+                              await adminFetch(`/subscriptions/${s.razorpay_subscription_id}/cancel`, { method: 'POST', body: JSON.stringify({ reason: 'Admin Cancel' }) });
+                              alert('Cancelled!');
+                              loadAll();
+                            }}
+                            className="text-red-600 font-bold hover:underline"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <button type="submit" className="w-full bg-[#0B3561] text-white font-heading font-bold py-3 rounded-xl hover:bg-[#071E38] transition">
-          Save All Subscription Plans ⚡
-        </button>
-      </form>
+        {/* Plan Management */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading font-bold text-lg text-[#0B3561]">Razorpay Plans</h3>
+            <button 
+              onClick={() => {
+                const name = prompt('Plan Name? (e.g. Monthly UPSC Current Affairs)');
+                if (!name) return;
+                const category = prompt('Category? (e.g. UPSC)');
+                const amount = Number(prompt('Amount in Paise? (e.g. 14900 for Rs. 149)'));
+                const trial = Number(prompt('Trial Days? (e.g. 7)') || 7);
+                if (name && amount) {
+                  adminFetch('/plans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      name, 
+                      category, 
+                      amount_paise: amount, 
+                      period: 'monthly', 
+                      trial_days: trial,
+                      features: ['All-Access PDF', 'Daily Quizzes', 'Personal Mentorship'] 
+                    })
+                  }).then(() => {
+                    alert('Plan Created!');
+                    loadAll();
+                  });
+                }
+              }}
+              className="bg-[#12A5B0] text-[#071E38] font-heading font-bold px-4 py-2 rounded-xl"
+            >
+              + Create New Plan
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {adminPlans.map(p => (
+              <div key={p.razorpay_plan_id} className="p-4 border rounded-2xl bg-[#F7FAFC] space-y-2">
+                <div className="flex justify-between items-start">
+                  <h4 className="font-bold text-[#0B3561]">{p.name}</h4>
+                  <span className={`px-2 py-0.5 rounded text-[8px] font-black ${p.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {p.active ? 'ACTIVE' : 'INACTIVE'}
+                  </span>
+                </div>
+                <p className="text-[#3C5D81] font-mono text-[10px]">{p.razorpay_plan_id}</p>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="font-black">₹{p.amount_paise / 100} / {p.period}</span>
+                  <span className="text-[#9DAEC0]">{p.trial_days} Day Trial</span>
+                </div>
+                <div className="pt-2 flex gap-2">
+                   <button 
+                    onClick={async () => {
+                      await adminFetch(`/plans/${p.razorpay_plan_id}`, { method: 'PUT', body: JSON.stringify({ active: !p.active }) });
+                      loadAll();
+                    }}
+                    className="text-[9px] font-bold text-[#0B3561] hover:underline"
+                   >
+                     {p.active ? 'Deactivate' : 'Activate'}
+                   </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'cancellations') {
+    return (
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 text-xs">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561]">Cancellations History</h3>
+        <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
+              <tr>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Sub ID</th>
+                <th className="px-4 py-3">By</th>
+                <th className="px-4 py-3">Reason</th>
+                <th className="px-4 py-3">In Trial?</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#0B3561]/5">
+              {adminCancellations.map((c, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-3">{new Date(c.date).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 font-mono">{c.subscription_id}</td>
+                  <td className="px-4 py-3 capitalize">{c.cancelled_by}</td>
+                  <td className="px-4 py-3 text-[#3C5D81]">{c.reason || 'N/A'}</td>
+                  <td className="px-4 py-3 font-bold">{c.was_in_trial ? 'YES' : 'NO'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     );
   }
 
@@ -798,15 +905,169 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
     );
   }
 
-  if (section === 'orders') {
+  if (section === 'webhook-log') {
     return (
-      <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm text-xs space-y-4">
-        <h3 className="font-heading font-bold text-lg text-[#0B3561] capitalize">Manage Orders</h3>
-        <p className="text-[#3C5D81]">View and filter customer orders, manage statuses and COD confirmation.</p>
-        {/* Placeholder for Order Table */}
-        <div className="border p-4 rounded-xl">Order List Placeholder</div>
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 text-xs">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561]">Razorpay Webhook Event Log</h3>
+        <p className="text-[#3C5D81]">Monitoring real-time events from Razorpay for subscriptions and orders.</p>
+        
+        <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
+              <tr>
+                <th className="px-4 py-3">Processed At</th>
+                <th className="px-4 py-3">Event ID</th>
+                <th className="px-4 py-3">Event Type</th>
+                <th className="px-4 py-3">Payload</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#0B3561]/5">
+              {adminWebhookEvents.map((ev, i) => (
+                <tr key={ev.event_id} className="align-top">
+                  <td className="px-4 py-3 whitespace-nowrap">{new Date(ev.processed_at).toLocaleString()}</td>
+                  <td className="px-4 py-3 font-mono text-[10px]">{ev.event_id}</td>
+                  <td className="px-4 py-3">
+                    <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold uppercase text-[9px]">{ev.payload?.event}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <details>
+                      <summary className="cursor-pointer text-[#12A5B0] font-bold">View JSON</summary>
+                      <pre className="mt-2 p-2 bg-gray-50 rounded text-[9px] max-w-xs overflow-x-auto">
+                        {JSON.stringify(ev.payload, null, 2)}
+                      </pre>
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {adminWebhookEvents.length === 0 && <div className="p-10 text-center text-[#3C5D81]">No webhook events logged yet.</div>}
+        </div>
       </div>
     );
+  }
+
+  if (section === 'pages') {
+    return (
+      <div className="space-y-8 text-xs">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-[#0B3561]">Legal Policies & Content Pages</h3>
+            <p className="text-[#3C5D81]">Manage Privacy Policy, Terms, and other static pages. Use Markdown for formatting.</p>
+          </div>
+          <button 
+            onClick={() => setEditingPage({ title: '', slug: '', body_md: '', is_draft: false })}
+            className="bg-[#12A5B0] text-[#071E38] font-heading font-bold px-4 py-2 rounded-xl"
+          >
+            + Add New Page
+          </button>
+        </div>
+
+        {editingPage && (
+          <div className="bg-[#F7FAFC] p-6 rounded-3xl border-2 border-[#12A5B0]/30 space-y-4">
+            <h4 className="font-heading font-bold text-[#0B3561]">{editingPage.slug ? 'Edit Page' : 'Create New Page'}</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold mb-1">Page Title</label>
+                <input
+                  type="text"
+                  value={editingPage.title}
+                  onChange={e => setEditingPage({ ...editingPage, title: e.target.value })}
+                  placeholder="e.g. Refund Policy"
+                  className="w-full p-2.5 bg-white border rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">URL Slug (lowercase, no spaces)</label>
+                <input
+                  type="text"
+                  value={editingPage.slug}
+                  onChange={e => setEditingPage({ ...editingPage, slug: e.target.value })}
+                  placeholder="e.g. refund-policy"
+                  className="w-full p-2.5 bg-white border rounded-xl font-mono"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block font-semibold mb-1">Page Content (Markdown supported)</label>
+              <textarea
+                rows={12}
+                value={editingPage.body_md}
+                onChange={e => setEditingPage({ ...editingPage, body_md: e.target.value })}
+                placeholder="# Page Heading\n\nWrite your content here..."
+                className="w-full p-3 bg-white border rounded-xl font-mono"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="is_draft"
+                checked={editingPage.is_draft}
+                onChange={e => setEditingPage({ ...editingPage, is_draft: e.target.checked })}
+              />
+              <label htmlFor="is_draft" className="font-semibold">Save as Draft (Hidden from footer)</label>
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={async () => {
+                  try {
+                    await adminFetch('/pages', { method: 'POST', body: JSON.stringify(editingPage) });
+                    alert('Page saved!');
+                    setEditingPage(null);
+                    loadAll();
+                  } catch (err: any) { alert(err.message); }
+                }}
+                className="flex-1 bg-[#0B3561] text-white font-heading font-bold py-3 rounded-xl"
+              >
+                Save Page Content
+              </button>
+              <button 
+                onClick={() => setEditingPage(null)}
+                className="px-6 bg-white border border-[#0B3561]/20 text-[#0B3561] font-heading font-bold py-3 rounded-xl"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {adminPages.map(p => (
+            <div key={p.slug} className="bg-white p-5 rounded-2xl border border-[#0B3561]/10 shadow-sm flex items-center justify-between group">
+              <div>
+                <h4 className="font-bold text-[#0B3561] text-sm">{p.title}</h4>
+                <p className="text-[#3C5D81] font-mono text-[10px]">/pages/{p.slug}</p>
+                {p.is_draft && <span className="inline-block mt-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[9px] font-black uppercase">Draft</span>}
+              </div>
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  onClick={() => setEditingPage(p)}
+                  className="p-2 bg-[#DDF3F4] text-[#0B3561] rounded-lg hover:bg-[#12A5B0] hover:text-white transition"
+                  title="Edit Page"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={async () => {
+                    if (!confirm(`Delete page "${p.title}"?`)) return;
+                    await adminFetch(`/pages/${p.slug}`, { method: 'DELETE' });
+                    loadAll();
+                  }}
+                  className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition"
+                  title="Delete Page"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (section === 'orders') {
+    return <AdminOrders />;
   }
 
   return (

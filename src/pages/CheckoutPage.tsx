@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Product, QuoteResponse, PaymentMethod } from '../types';
-import { quoteCart, createOrder, verifyPayment } from '../lib/api';
+import { quoteCart, createOrder, verifyPayment, fetchMyProfile, updateMyProfile } from '../lib/api';
 import { auth } from '../lib/firebase';
-import { TruckIcon } from '../components/Icons';
 
 interface CheckoutPageProps {
   cart: { slug: string; qty: number }[];
@@ -22,6 +21,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  // Selected Address State
+  const [selectedAddrId, setSelectedAddrId] = useState<string>('');
+  const [profile, setProfile] = useState<any>(null);
+  
+  // Manual/New Address Form State (Populated if selected or manual)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -30,22 +34,43 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [pincode, setPincode] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
+  
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('prepaid');
   const [couponCode, setCouponCode] = useState('');
   const [showNamePublicly, setShowNamePublicly] = useState(false);
 
+  const [loading, setLoading] = useState(true);
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Sync logged in user details if available
+  // Load Profile & Addresses
   useEffect(() => {
-    if (auth.currentUser) {
-      if (!name) setName(auth.currentUser.displayName || '');
-      if (!email) setEmail(auth.currentUser.email || '');
-    }
-  }, [auth.currentUser]);
+    fetchMyProfile()
+      .then(p => {
+        setProfile(p);
+        setEmail(p.email || auth.currentUser?.email || '');
+        if (p.addresses && p.addresses.length > 0) {
+          const def = p.addresses.find((a: any) => a.is_default) || p.addresses[0];
+          handleSelectAddress(def);
+        } else {
+          setName(p.name || auth.currentUser?.displayName || '');
+          setPhone(p.phone || '');
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSelectAddress = (addr: any) => {
+    setSelectedAddrId(addr.id);
+    setName(addr.name);
+    setPhone(addr.phone);
+    setLine1(addr.line1);
+    setCity(addr.city);
+    setState(addr.state);
+    setPincode(addr.pincode);
+  };
 
   // Re-quote whenever cart or payment method changes
   useEffect(() => {
@@ -59,7 +84,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
       .catch(err => setErrorMsg(err.message));
   }, [cart, paymentMethod, couponCode]);
 
-  // Pincode auto-fill lookup from api.postalpincode.in
   const handlePincodeChange = async (val: string) => {
     setPincode(val);
     if (val.length === 6 && /^\d+$/.test(val)) {
@@ -73,13 +97,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
           setState(po.State);
         }
       } catch (e) {
-        console.warn('Pincode lookup fallback:', e);
+        console.warn('Pincode lookup failed:', e);
       } finally {
         setPincodeLoading(false);
       }
     }
   };
-
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,30 +113,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
       return;
     }
 
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-      setErrorMsg('Please enter a valid 10-digit Indian mobile number starting with 6-9');
-      return;
-    }
-
-    if (!/^\d{6}$/.test(pincode)) {
-      setErrorMsg('Please enter a valid 6-digit Indian PIN code');
-      return;
-    }
-
     setSubmitting(true);
 
     try {
+      // Create Order
       const orderRes = await createOrder({
         contact: { email, phone, name },
-        shipping_address: {
-          name,
-          phone,
-          line1,
-          line2,
-          pincode,
-          city,
-          state,
-        },
+        shipping_address: { name, phone, line1, line2, pincode, city, state },
         items: cart,
         payment_method: paymentMethod,
         coupon_code: couponCode || undefined,
@@ -126,66 +132,49 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         return;
       }
 
-      // Prepaid Razorpay Payment Flow
-      if (paymentMethod === 'prepaid' && orderRes.razorpay_order_id) {
-        const keyToUse = orderRes.razorpay_key_id || razorpayKeyId;
+      // Razorpay Flow
+      const options = {
+        key: orderRes.razorpay_key_id || razorpayKeyId,
+        amount: orderRes.total_paise,
+        currency: 'INR',
+        name: 'PyNotes India',
+        description: `Order #${orderRes.order_no}`,
+        order_id: orderRes.razorpay_order_id,
+        prefill: { name, email, contact: phone },
+        theme: { color: '#0B3561' },
+        handler: async (response: any) => {
+          try {
+            await verifyPayment({
+              order_no: orderRes.order_no,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            onClearCart();
+            navigate(`/order/${orderRes.order_no}/thank-you?t=${orderRes.token}`);
+          } catch (err: any) {
+            setErrorMsg(err.message || 'Payment verification failed');
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmitting(false);
+            setErrorMsg('Payment cancelled. You can retry or choose COD.');
+          },
+        },
+      };
 
-        // If Razorpay SDK script is available or load it dynamically
-        const options = {
-          key: keyToUse,
-          amount: orderRes.total_paise,
-          currency: 'INR',
-          name: 'PyNotes India',
-          description: `Order #${orderRes.order_no}`,
-          order_id: orderRes.razorpay_order_id,
-          prefill: {
-            name,
-            email,
-            contact: phone,
-          },
-          theme: {
-            color: '#0B3561',
-          },
-          handler: async (response: any) => {
-            try {
-              await verifyPayment({
-                order_no: orderRes.order_no,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              });
-              onClearCart();
-              navigate(`/order/${orderRes.order_no}/thank-you?t=${orderRes.token}`);
-            } catch (err: any) {
-              setErrorMsg(err.message || 'Payment verification failed');
-            }
-          },
-          modal: {
-            ondismiss: () => {
-              setSubmitting(false);
-              setErrorMsg('Payment popup closed. You can retry or choose Cash on Delivery.');
-            },
-          },
-        };
-
-        // If Razorpay is window script
-        if ((window as any).Razorpay) {
+      if ((window as any).Razorpay) {
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => {
           const rzp = new (window as any).Razorpay(options);
           rzp.open();
-        } else {
-          // Dynamically load Razorpay script
-          const script = document.createElement('script');
-          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-          script.onload = () => {
-            const rzp = new (window as any).Razorpay(options);
-            rzp.open();
-          };
-          script.onerror = () => {
-            setErrorMsg('Failed to load Razorpay payment SDK. Please try Cash on Delivery.');
-            setSubmitting(false);
-          };
-          document.body.appendChild(script);
-        }
+        };
+        document.body.appendChild(script);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to place order');
@@ -193,320 +182,132 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     }
   };
 
+  if (loading) {
+    return <div className="py-24 text-center"><div className="w-10 h-10 border-4 border-[#12A5B0] border-t-transparent rounded-full animate-spin mx-auto" /></div>;
+  }
+
   if (cart.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-4">
         <h2 className="font-heading font-bold text-2xl text-[#0B3561]">Your Cart is Empty</h2>
-        <p className="text-xs text-[#3C5D81]">Please add some handwritten books before checking out.</p>
-        <button
-          onClick={() => navigate('/subjects')}
-          className="bg-[#0B3561] text-white px-6 py-2.5 rounded-xl font-bold text-xs"
-        >
-          Browse Books
-        </button>
+        <Link to="/subjects" className="inline-block bg-[#0B3561] text-white px-8 py-3 rounded-xl font-bold text-xs">Browse Books</Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-8 py-10 space-y-8">
-      {/* Top Title & Google Auth suggestion */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#0B3561]/10 pb-6">
-        <div>
-          <h1 className="font-heading font-bold text-2xl sm:text-3xl text-[#0B3561]">Checkout</h1>
-          <p className="font-body text-xs text-[#3C5D81] mt-0.5">Express shipping across India.</p>
-        </div>
-
-        {!auth.currentUser && (
-          <a
-            href="/auth"
-            className="flex items-center gap-2 bg-white border border-[#0B3561]/20 px-4 py-2 rounded-xl text-xs font-heading font-semibold text-[#0B3561] hover:bg-[#DDF3F4] transition shadow-xs"
-          >
-            <span>Sign In for Faster Checkout</span>
-          </a>
-        )}
+    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10 space-y-8">
+      <div className="border-b border-[#0B3561]/10 pb-6">
+        <h1 className="font-heading font-bold text-2xl text-[#0B3561]">Final Checkout</h1>
+        <p className="text-xs text-[#3C5D81]">Review your order and select delivery address.</p>
       </div>
 
-      {/* Collapsible Order Summary Box */}
+      {/* Order Summary */}
       {quote && (
-        <details className="bg-white p-5 rounded-2xl border border-[#0B3561]/10 shadow-sm group">
-          <summary className="font-heading font-bold text-sm text-[#0B3561] cursor-pointer flex justify-between items-center list-none">
-            <span className="flex items-center gap-2">
-              <span>Order Summary ({quote.lines.length} items)</span>
-              <span className="text-[#13834D] text-xs">Total: ₹{(quote.total_paise / 100).toFixed(2)}</span>
-            </span>
-            <span className="text-[#12A5B0] group-open:rotate-180 transition">▼</span>
-          </summary>
-
-          <div className="pt-4 border-t border-[#0B3561]/10 mt-3 space-y-3">
+        <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-4">
+          <h3 className="font-heading font-bold text-sm text-[#0B3561] uppercase tracking-wider">Order Summary</h3>
+          <div className="space-y-2">
             {quote.lines.map(line => (
-              <div key={line.slug} className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-[#0B3561]">
-                  {line.title} x {line.qty}
-                </span>
+              <div key={line.slug} className="flex justify-between text-xs">
+                <span className="text-[#3C5D81]">{line.title} x {line.qty}</span>
                 <span className="font-bold text-[#0B3561]">₹{(line.line_total_paise / 100).toFixed(2)}</span>
               </div>
             ))}
-
-            <div className="pt-2 border-t border-[#0B3561]/5 text-xs space-y-1">
-              <div className="flex justify-between text-[#3C5D81]">
-                <span>Subtotal</span>
-                <span>₹{(quote.subtotal_paise / 100).toFixed(2)}</span>
-              </div>
-              {quote.coupon_discount_paise > 0 && (
-                <div className="flex justify-between text-[#13834D] font-semibold">
-                  <span>Coupon Discount</span>
-                  <span>-₹{(quote.coupon_discount_paise / 100).toFixed(2)}</span>
-                </div>
-              )}
-              {quote.prepaid_discount_paise > 0 && (
-                <div className="flex justify-between text-[#13834D] font-semibold">
-                  <span>Prepaid Instant Off</span>
-                  <span>-₹{(quote.prepaid_discount_paise / 100).toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-[#3C5D81]">
-                <span>Shipping</span>
-                <span>{quote.is_free_shipping ? 'FREE' : `₹${(quote.shipping_paise / 100).toFixed(2)}`}</span>
-              </div>
-              {quote.cod_fee_paise > 0 && paymentMethod === 'cod' && (
-                <div className="flex justify-between text-[#3C5D81]">
-                  <span>COD Fee</span>
-                  <span>₹{(quote.cod_fee_paise / 100).toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm font-bold text-[#0B3561] pt-2 border-t border-[#0B3561]/10">
-                <span>Total Amount Payable</span>
-                <span className="font-display font-black text-lg">₹{(quote.total_paise / 100).toFixed(2)}</span>
-              </div>
-            </div>
           </div>
-        </details>
+          <div className="pt-4 border-t border-[#0B3561]/5 flex justify-between items-center">
+            <span className="text-sm font-bold text-[#0B3561]">Total Amount</span>
+            <span className="text-xl font-black text-[#12A5B0]">₹{(quote.total_paise / 100).toFixed(2)}</span>
+          </div>
+        </div>
       )}
 
-      <form onSubmit={handlePlaceOrder} className="space-y-6 bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-lg">
-        
-        {/* Contact Information */}
-        <div className="space-y-4">
-          <h3 className="font-heading font-bold text-base text-[#0B3561]">1. Contact Details</h3>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Full Name *</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Rahul Sharma"
-                className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Email Address *</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="rahul@example.com"
-                className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">
-              Indian Mobile Number (for delivery SMS & COD check) *
-            </label>
-            <div className="flex gap-2">
-              <span className="px-3 py-2.5 bg-[#E7EBEF] border border-[#0B3561]/20 rounded-xl text-xs font-bold text-[#0B3561]">
-                +91
-              </span>
-              <input
-                type="tel"
-                required
-                maxLength={10}
-                value={phone}
-                onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
-                placeholder="10 digits starting with 6-9"
-                className="flex-1 px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561] font-mono font-bold"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Shipping Address */}
-        <div className="space-y-4 pt-4 border-t border-[#0B3561]/10">
-          <h3 className="font-heading font-bold text-base text-[#0B3561]">2. Delivery Address</h3>
-
-          <div>
-            <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Flat, House No., Building / Street *</label>
-            <input
-              type="text"
-              required
-              value={line1}
-              onChange={e => setLine1(e.target.value)}
-              placeholder="e.g. Flat 402, Sunshine Apartments, MG Road"
-              className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Landmark / Sector (Optional)</label>
-            <input
-              type="text"
-              value={line2}
-              onChange={e => setLine2(e.target.value)}
-              placeholder="e.g. Near Metro Station"
-              className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561]"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">PIN Code *</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={pincode}
-                  onChange={e => handlePincodeChange(e.target.value.replace(/\D/g, ''))}
-                  placeholder="6 digits"
-                  className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561] font-mono font-bold"
-                />
-                {pincodeLoading && (
-                  <span className="absolute right-3 top-2.5 text-[10px] text-[#12A5B0] animate-pulse">
-                    Checking...
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">City *</label>
-              <input
-                type="text"
-                required
-                value={city}
-                onChange={e => setCity(e.target.value)}
-                placeholder="City"
-                className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">State *</label>
-              <input
-                type="text"
-                required
-                value={state}
-                onChange={e => setState(e.target.value)}
-                placeholder="State"
-                className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs text-[#0B3561]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Selection */}
-        <div className="space-y-4 pt-4 border-t border-[#0B3561]/10">
-          <h3 className="font-heading font-bold text-base text-[#0B3561]">3. Payment Choice</h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Prepaid Option */}
-            <label
-              className={`p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between ${
-                paymentMethod === 'prepaid'
-                  ? 'border-[#0B3561] bg-[#DDF3F4]/40 shadow-xs'
-                  : 'border-[#0B3561]/20 bg-[#F7FAFC]'
-              }`}
+      {/* Address Selection */}
+      <div className="space-y-4">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561]">Select Delivery Address</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {profile?.addresses?.map((addr: any) => (
+            <div 
+              key={addr.id}
+              onClick={() => handleSelectAddress(addr)}
+              className={`p-5 rounded-2xl border-2 cursor-pointer transition-all ${selectedAddrId === addr.id ? 'border-[#12A5B0] bg-[#DDF3F4]/20 shadow-md' : 'border-[#0B3561]/10 bg-white hover:border-[#0B3561]/30'}`}
             >
-              <div className="flex items-start gap-3">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="prepaid"
-                  checked={paymentMethod === 'prepaid'}
-                  onChange={() => setPaymentMethod('prepaid')}
-                  className="mt-1"
-                />
-                <div>
-                  <span className="font-heading font-bold text-sm text-[#0B3561] block">Prepaid (Online Payment)</span>
-                  <span className="text-xs text-[#13834D] font-bold mt-0.5 block">
-                    ⚡ Extra Instant Discount + Priority Delivery
-                  </span>
-                  <p className="text-[11px] text-[#3C5D81] mt-1">UPI (GPay, PhonePe, Paytm), Cards, NetBanking.</p>
+              <div className="flex justify-between items-start mb-2">
+                <p className="font-bold text-[#0B3561] text-sm">{addr.name}</p>
+                {selectedAddrId === addr.id && <span className="text-[#12A5B0] text-[10px] font-black uppercase">Selected</span>}
+              </div>
+              <p className="text-[11px] text-[#3C5D81] leading-relaxed mb-3">{addr.line1}, {addr.city}, {addr.state} - {addr.pincode}</p>
+              <button 
+                type="button"
+                className={`w-full py-2 rounded-xl text-[10px] font-black uppercase transition ${selectedAddrId === addr.id ? 'bg-[#12A5B0] text-white' : 'bg-[#F7FAFC] text-[#0B3561] hover:bg-[#DDF3F4]'}`}
+              >
+                {selectedAddrId === addr.id ? 'Using This Address' : 'Use This Delivery Address'}
+              </button>
+            </div>
+          ))}
+          <Link to="/account?tab=address" className="p-5 rounded-2xl border-2 border-dashed border-[#0B3561]/20 flex flex-col items-center justify-center text-center gap-2 hover:bg-[#F7FAFC] transition">
+             <span className="text-xl">➕</span>
+             <span className="text-[10px] font-bold text-[#3C5D81] uppercase">Add New Address</span>
+          </Link>
+        </div>
+      </div>
+
+      <form onSubmit={handlePlaceOrder} className="space-y-8">
+        {/* Delivery Details Confirmation */}
+        <div className="bg-white p-6 sm:p-8 rounded-[2rem] border border-[#0B3561]/10 shadow-lg space-y-6">
+           <h3 className="font-heading font-bold text-base text-[#0B3561]">Verify Delivery Details</h3>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-[#3C5D81] uppercase ml-1">Recipient Name</label>
+                <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="w-full px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/15 rounded-xl text-xs font-medium" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-[#3C5D81] uppercase ml-1">Contact Number</label>
+                <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone Number" className="w-full px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/15 rounded-xl text-xs font-medium" />
+              </div>
+              <div className="sm:col-span-2 space-y-1">
+                <label className="text-[10px] font-bold text-[#3C5D81] uppercase ml-1">Shipping Address</label>
+                <textarea required rows={2} value={line1} onChange={e => setLine1(e.target.value)} placeholder="Street, House No, Area" className="w-full px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/15 rounded-xl text-xs font-medium" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-[#3C5D81] uppercase ml-1">Pincode</label>
+                <input type="text" required value={pincode} onChange={e => handlePincodeChange(e.target.value)} placeholder="6 Digits" className="w-full px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/15 rounded-xl text-xs font-medium" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-[#3C5D81] uppercase ml-1">City / State</label>
+                <div className="flex gap-2">
+                  <input type="text" required value={city} onChange={e => setCity(e.target.value)} placeholder="City" className="w-1/2 px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/15 rounded-xl text-xs font-medium" />
+                  <input type="text" required value={state} onChange={e => setState(e.target.value)} placeholder="State" className="w-1/2 px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/15 rounded-xl text-xs font-medium" />
                 </div>
               </div>
-            </label>
-
-            {/* COD Option */}
-            <label
-              className={`p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between ${
-                paymentMethod === 'cod'
-                  ? 'border-[#0B3561] bg-[#DDF3F4]/40 shadow-xs'
-                  : 'border-[#0B3561]/20 bg-[#F7FAFC]'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="cod"
-                  checked={paymentMethod === 'cod'}
-                  onChange={() => setPaymentMethod('cod')}
-                  className="mt-1"
-                />
-                <div>
-                  <span className="font-heading font-bold text-sm text-[#0B3561] block">Cash on Delivery (COD)</span>
-                  <p className="text-[11px] text-[#3C5D81] mt-1">Pay in cash when courier delivers the books.</p>
-                </div>
-              </div>
-            </label>
-          </div>
-
-          {/* Plain Text Note as required */}
-          <div className="bg-[#E7EBEF] p-3 rounded-xl text-xs text-[#0B3561] font-heading font-medium flex items-center gap-2">
-            <span>ℹ️</span>
-            <span>We hold your books for {holdMinutes} minutes while you pay.</span>
-          </div>
+           </div>
         </div>
 
-        {/* Public Consent Checkbox */}
-        <div className="pt-2">
-          <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#3C5D81] font-heading font-medium">
-            <input
-              type="checkbox"
-              checked={showNamePublicly}
-              onChange={e => setShowNamePublicly(e.target.checked)}
-              className="mt-0.5"
-            />
-            <span>Show my first name and city in the recent orders strip on the site</span>
-          </label>
+        {/* Payment Choice */}
+        <div className="bg-white p-6 sm:p-8 rounded-[2rem] border border-[#0B3561]/10 shadow-lg space-y-6">
+           <h3 className="font-heading font-bold text-base text-[#0B3561]">Payment Method</h3>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-[#12A5B0] bg-[#DDF3F4]/20' : 'border-[#0B3561]/10'}`}>
+                <input type="radio" className="hidden" name="pm" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} />
+                <p className="font-bold text-[#0B3561] text-sm">Online Payment</p>
+                <p className="text-[10px] text-[#13834D] font-bold">Priority Shipping + Discount</p>
+              </label>
+              <label className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-[#12A5B0] bg-[#DDF3F4]/20' : 'border-[#0B3561]/10'}`}>
+                <input type="radio" className="hidden" name="pm" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
+                <p className="font-bold text-[#0B3561] text-sm">Cash on Delivery</p>
+                <p className="text-[10px] text-[#3C5D81]">Pay when delivered</p>
+              </label>
+           </div>
         </div>
 
-        {errorMsg && (
-          <div className="bg-[#C0392B]/10 border border-[#C0392B]/30 text-[#C0392B] p-3 rounded-xl text-xs font-bold">
-            {errorMsg}
-          </div>
-        )}
+        {errorMsg && <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-bold border border-red-100 text-center">{errorMsg}</div>}
 
-        {/* Action Button */}
-        <button
-          type="submit"
+        <button 
+          type="submit" 
           disabled={submitting}
-          className="w-full bg-[#0B3561] text-white font-heading font-bold py-4 rounded-2xl text-base shadow-xl hover:bg-[#071E38] transition tracking-wide disabled:opacity-50"
+          className="w-full bg-[#0B3561] text-[#FFD54A] font-heading font-black py-5 rounded-[2rem] text-lg shadow-2xl hover:bg-[#071E38] transition disabled:opacity-50"
         >
-          {submitting
-            ? 'Processing Order...'
-            : paymentMethod === 'prepaid'
-            ? `PAY NOW (₹${quote ? (quote.total_paise / 100).toFixed(2) : ''})`
-            : 'PLACE CASH ON DELIVERY ORDER'}
+          {submitting ? 'Placing Order...' : (paymentMethod === 'prepaid' ? 'PAY & PLACE ORDER' : 'CONFIRM COD ORDER')}
         </button>
-
       </form>
     </div>
   );
