@@ -2357,3 +2357,5 @@ app.delete('/api/admin/pages/:slug', authenticateUser, requireRole(['owner']), a
   await db.collection('pages').doc(req.params.slug).delete();
   res.json({ success: true });
 });
+
+export default app;
