@@ -263,11 +263,11 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
 
               {/* Big Headline with Handwriting Accent */}
-              <h1 className="font-heading font-black text-3xl sm:text-5xl xl:text-6xl text-[#0A192F] tracking-tight leading-[1.12]">
+              <h1 className="font-heading font-black text-3xl sm:text-5xl xl:text-6xl text-[#0B3561] tracking-tight leading-[1.12]">
                 Master Coding with Printed, Colourful{' '}
-                <span className="relative inline-block text-[#D97706] font-handwriting italic font-bold">
+                <span className="relative inline-block text-[#12A5B0] font-handwriting italic font-bold">
                   Handwritten
-                  <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#D97706" />
+                  <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
                 </span>{' '}
                 Notes.
               </h1>
@@ -281,7 +281,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
                 <a
                   href="#subjects-grid"
-                  className="w-full sm:w-auto px-8 py-4 bg-[#0A192F] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#132742] transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer group"
+                  className="w-full sm:w-auto px-8 py-4 bg-[#0B3561] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#132742] transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer group"
                 >
                   <span>Shop Notes</span>
                   <span className="group-hover:translate-y-0.5 transition-transform">↓</span>
@@ -289,10 +289,10 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <Link
                   to="/bundles"
-                  className="w-full sm:w-auto px-7 py-4 bg-white text-[#0A192F] border border-[#0A192F]/15 font-heading font-bold text-sm rounded-xl hover:bg-[#FAF7F0] transition shadow-xs flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-7 py-4 bg-white text-[#0B3561] border border-[#0B3561]/15 font-heading font-bold text-sm rounded-xl hover:bg-[#FAF7F0] transition shadow-xs flex items-center justify-center gap-2"
                 >
                   <span>Placement Bundles</span>
-                  <span className="text-[#D97706] text-xs font-mono font-bold">SAVE 50%</span>
+                  <span className="text-[#12A5B0] text-xs font-mono font-bold">SAVE 50%</span>
                 </Link>
               </div>
 
@@ -336,7 +336,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   slotId="subject_dsa"
                   title="DSA with Java"
                   subjectSlug="dsa-with-java"
-                  accentColor="#D97706"
+                  accentColor="#12A5B0"
                   highlighterColor="yellow"
                 />
               </div>
@@ -363,14 +363,14 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section id="subjects-grid" className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#D97706] bg-[#FEF3C7] px-3.5 py-1 rounded-full inline-block border border-[#F59E0B]/20">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#12A5B0] bg-[#FEF3C7] px-3.5 py-1 rounded-full inline-block border border-[#F59E0B]/20">
             Comprehensive Curriculum
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             Explore All 12{' '}
-            <span className="relative inline-block text-[#D97706] font-handwriting italic font-bold">
+            <span className="relative inline-block text-[#12A5B0] font-handwriting italic font-bold">
               Handwritten
-              <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-2.5" color="#D97706" />
+              <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-2.5" color="#12A5B0" />
             </span>{' '}
             Subjects
           </h2>
@@ -392,8 +392,8 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => setSubjectCategoryFilter(cat.id)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-bold transition-all cursor-pointer ${
                   subjectCategoryFilter === cat.id
-                    ? 'bg-[#0A192F] text-[#FEF08A] shadow-md scale-105'
-                    : 'bg-white text-[#486581] hover:text-[#0A192F] border border-[#0A192F]/10 hover:border-[#D97706]/40'
+                    ? 'bg-[#0B3561] text-[#FEF08A] shadow-md scale-105'
+                    : 'bg-white text-[#486581] hover:text-[#0B3561] border border-[#0B3561]/10 hover:border-[#12A5B0]/40'
                 }`}
               >
                 {cat.label} ({cat.count})
@@ -423,7 +423,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               return (
                 <div
                   key={subj.slug}
-                  className="bg-white rounded-3xl p-5 border border-[#0A192F]/10 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                  className="bg-white rounded-3xl p-5 border border-[#0B3561]/10 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                 >
                   <div>
                     {/* Top Notebook Visual Container */}
@@ -439,7 +439,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       />
 
                       {/* Tag Badge */}
-                      <span className="absolute top-3 left-3 bg-[#0A192F]/85 backdrop-blur-xs text-white font-mono font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded shadow-xs z-20">
+                      <span className="absolute top-3 left-3 bg-[#0B3561]/85 backdrop-blur-xs text-white font-mono font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded shadow-xs z-20">
                         {subj.tag}
                       </span>
 
@@ -451,7 +451,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                     {/* Metadata Pill */}
                     <div className="flex items-center justify-between text-[10px] font-mono text-[#627D98] mb-1.5">
-                      <span className="text-[#D97706] font-bold uppercase tracking-wider">
+                      <span className="text-[#12A5B0] font-bold uppercase tracking-wider">
                         Printed Book
                       </span>
                       <span>180+ Pages · 100 GSM</span>
@@ -460,7 +460,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     {/* Subject Name */}
                     <h3
                       onClick={() => navigate(`/product/${subj.slug}`)}
-                      className="font-heading font-black text-lg text-[#0A192F] group-hover:text-[#D97706] cursor-pointer transition-colors leading-snug line-clamp-1"
+                      className="font-heading font-black text-lg text-[#0B3561] group-hover:text-[#12A5B0] cursor-pointer transition-colors leading-snug line-clamp-1"
                     >
                       {subj.name}
                     </h3>
@@ -475,7 +475,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       {subj.highlights.map((item) => (
                         <span
                           key={item}
-                          className="text-[9px] font-mono font-medium bg-[#FAF7F0] text-[#334E68] border border-[#0A192F]/8 px-2 py-0.5 rounded"
+                          className="text-[9px] font-mono font-medium bg-[#FAF7F0] text-[#334E68] border border-[#0B3561]/8 px-2 py-0.5 rounded"
                         >
                           ✓ {item}
                         </span>
@@ -484,10 +484,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </div>
 
                   {/* Pricing and Action Buttons */}
-                  <div className="mt-5 pt-3.5 border-t border-[#0A192F]/8 space-y-3">
+                  <div className="mt-5 pt-3.5 border-t border-[#0B3561]/8 space-y-3">
                     <div className="flex items-baseline justify-between">
                       <div className="flex items-baseline gap-2">
-                        <span className="font-heading font-black text-2xl text-[#0A192F]">
+                        <span className="font-heading font-black text-2xl text-[#0B3561]">
                           ₹{(pricePaise / 100).toFixed(0)}
                         </span>
                         <span className="font-mono text-xs text-[#9DAEC0] line-through">
@@ -506,7 +506,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                           e.stopPropagation();
                           onAddToCart(subj.slug, 1);
                         }}
-                        className="flex-1 bg-[#D97706] hover:bg-[#B45309] text-white font-heading font-bold text-xs py-2.5 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        className="flex-1 bg-[#12A5B0] hover:bg-[#B45309] text-white font-heading font-bold text-xs py-2.5 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                         aria-label={`Add ${subj.name} to Cart`}
                       >
                         <CartIcon className="w-3.5 h-3.5 text-white" />
@@ -515,7 +515,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                       <button
                         onClick={() => navigate(`/product/${subj.slug}`)}
-                        className="px-3 py-2.5 bg-[#FAF7F0] hover:bg-white text-[#0A192F] border border-[#0A192F]/15 hover:border-[#D97706]/40 font-heading font-semibold text-xs rounded-xl transition cursor-pointer whitespace-nowrap"
+                        className="px-3 py-2.5 bg-[#FAF7F0] hover:bg-white text-[#0B3561] border border-[#0B3561]/15 hover:border-[#12A5B0]/40 font-heading font-semibold text-xs rounded-xl transition cursor-pointer whitespace-nowrap"
                         aria-label={`View details for ${subj.name}`}
                       >
                         Details →
@@ -531,7 +531,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="text-center pt-2">
           <Link
             to="/subjects"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#FAF7F0] text-[#0A192F] border border-[#0A192F]/15 rounded-xl font-heading font-semibold text-xs sm:text-sm hover:bg-white transition shadow-xs"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#FAF7F0] text-[#0B3561] border border-[#0B3561]/15 rounded-xl font-heading font-semibold text-xs sm:text-sm hover:bg-white transition shadow-xs"
           >
             <span>Browse Complete Subject Library</span>
             <span>→</span>
@@ -546,20 +546,20 @@ export const HomePage: React.FC<HomePageProps> = ({
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#0A192F]/10 pb-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[#0B3561]/10 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#D97706]" />
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#D97706]">Student Favourites</span>
+              <span className="w-2 h-2 rounded-full bg-[#12A5B0]" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#12A5B0]">Student Favourites</span>
             </div>
-            <h2 className="font-heading font-black text-2xl sm:text-3xl text-[#0A192F] tracking-tight mt-1">
+            <h2 className="font-heading font-black text-2xl sm:text-3xl text-[#0B3561] tracking-tight mt-1">
               Bestseller Printed Books
             </h2>
           </div>
 
           <Link
             to="/subjects"
-            className="text-xs font-heading font-bold text-[#D97706] hover:text-[#B45309] hover:underline"
+            className="text-xs font-heading font-bold text-[#12A5B0] hover:text-[#B45309] hover:underline"
           >
             View all books →
           </Link>
@@ -589,7 +589,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     />
 
                     {savingsPercent > 0 && (
-                      <span className="absolute top-3 left-3 bg-[#D97706] text-white font-mono font-bold text-[10px] px-2.5 py-1 rounded shadow-sm z-20">
+                      <span className="absolute top-3 left-3 bg-[#12A5B0] text-white font-mono font-bold text-[10px] px-2.5 py-1 rounded shadow-sm z-20">
                         SAVE {savingsPercent}%
                       </span>
                     )}
@@ -598,7 +598,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   {/* Title & Short Description */}
                   <h3
                     onClick={() => navigate(`/product/${prod.slug}`)}
-                    className="font-heading font-bold text-base text-[#0A192F] hover:text-[#D97706] cursor-pointer transition-colors line-clamp-1"
+                    className="font-heading font-bold text-base text-[#0B3561] hover:text-[#12A5B0] cursor-pointer transition-colors line-clamp-1"
                   >
                     {prod.title}
                   </h3>
@@ -608,9 +608,9 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Price Baseline & Quick Add To Cart */}
-                <div className="mt-5 pt-4 border-t border-[#0A192F]/8 flex items-center justify-between gap-3">
+                <div className="mt-5 pt-4 border-t border-[#0B3561]/8 flex items-center justify-between gap-3">
                   <div>
-                    <div className="font-heading font-bold text-xl text-[#0A192F]">
+                    <div className="font-heading font-bold text-xl text-[#0B3561]">
                       ₹{(prod.price_paise / 100).toFixed(0)}
                     </div>
                     <div className="font-mono text-xs text-[#9DAEC0] line-through">
@@ -621,14 +621,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onAddToCart(prod.slug, 1)}
-                      className="px-4 py-2.5 bg-[#0A192F] text-white font-heading font-bold text-xs rounded-xl hover:bg-[#132742] transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2.5 bg-[#0B3561] text-white font-heading font-bold text-xs rounded-xl hover:bg-[#132742] transition shadow-xs flex items-center gap-1.5 cursor-pointer"
                     >
                       <span>Add to Cart</span>
                       <span>+</span>
                     </button>
                     <Link
                       to={`/product/${prod.slug}`}
-                      className="px-3 py-2.5 bg-[#FAF7F0] text-[#0A192F] font-heading font-semibold text-xs rounded-xl hover:bg-white transition border border-[#0A192F]/10"
+                      className="px-3 py-2.5 bg-[#FAF7F0] text-[#0B3561] font-heading font-semibold text-xs rounded-xl hover:bg-white transition border border-[#0B3561]/10"
                     >
                       View
                     </Link>
@@ -647,10 +647,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         
         <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
             Examine the Quality
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             Look Inside Sample Pages
           </h2>
           <p className="font-body text-sm text-[#486581]">
@@ -659,15 +659,15 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
 
         {/* Look Inside Tab Controller */}
-        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-[#FAF7F0] rounded-2xl max-w-2xl mx-auto border border-[#0A192F]/8">
+        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-[#FAF7F0] rounded-2xl max-w-2xl mx-auto border border-[#0B3561]/8">
           {lookInsidePages.map((sample, idx) => (
             <button
               key={sample.id}
               onClick={() => setActiveSampleIdx(idx)}
               className={`px-4 py-2 rounded-xl text-xs font-heading font-semibold transition-all cursor-pointer ${
                 activeSampleIdx === idx
-                  ? 'bg-white text-[#0A192F] shadow-sm font-bold border border-[#0A192F]/10'
-                  : 'text-[#627D98] hover:text-[#0A192F]'
+                  ? 'bg-white text-[#0B3561] shadow-sm font-bold border border-[#0B3561]/10'
+                  : 'text-[#627D98] hover:text-[#0B3561]'
               }`}
             >
               {sample.subject}: {sample.title.split('&')[0].trim()}
@@ -677,7 +677,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
         {/* Active Sample Page Showcase */}
         {lookInsidePages[activeSampleIdx] && (
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#0A192F]/10 shadow-xl max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#0B3561]/10 shadow-xl max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             
             {/* Visual Sample Page Preview Slot */}
             <div className="md:col-span-6">
@@ -691,10 +691,10 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Editorial Information */}
             <div className="md:col-span-6 space-y-5">
               <div className="space-y-1">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706]">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0]">
                   {lookInsidePages[activeSampleIdx].chapter}
                 </span>
-                <h3 className="font-heading font-black text-2xl sm:text-3xl text-[#0A192F] leading-tight">
+                <h3 className="font-heading font-black text-2xl sm:text-3xl text-[#0B3561] leading-tight">
                   {lookInsidePages[activeSampleIdx].title}
                 </h3>
               </div>
@@ -706,8 +706,8 @@ export const HomePage: React.FC<HomePageProps> = ({
               {/* Highlight bullet points */}
               <div className="space-y-2 pt-2">
                 {lookInsidePages[activeSampleIdx].highlights.map((hl, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-xs text-[#0A192F] font-medium">
-                    <span className="w-4 h-4 rounded-full bg-[#FEF08A] text-[#0A192F] flex items-center justify-center font-bold text-[10px]">
+                  <div key={i} className="flex items-center gap-2.5 text-xs text-[#0B3561] font-medium">
+                    <span className="w-4 h-4 rounded-full bg-[#FEF08A] text-[#0B3561] flex items-center justify-center font-bold text-[10px]">
                       ✓
                     </span>
                     <span>{hl}</span>
@@ -716,11 +716,11 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
 
               {/* Sample Page Trust Stamp */}
-              <div className="pt-4 border-t border-[#0A192F]/8 flex items-center justify-between text-xs text-[#627D98]">
+              <div className="pt-4 border-t border-[#0B3561]/8 flex items-center justify-between text-xs text-[#627D98]">
                 <span>100 GSM Natural Cream Finish</span>
                 <Link
                   to="/subjects"
-                  className="font-heading font-bold text-[#D97706] hover:underline"
+                  className="font-heading font-bold text-[#12A5B0] hover:underline"
                 >
                   Order This Book →
                 </Link>
@@ -738,7 +738,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           with typed material. Written with admin editable [Mr Raibha Dutta and 2015].
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="bg-[#FAF7F0] rounded-3xl p-6 sm:p-12 border border-[#0A192F]/8 shadow-sm">
+        <div className="bg-[#FAF7F0] rounded-3xl p-6 sm:p-12 border border-[#0B3561]/8 shadow-sm">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center">
             
@@ -746,10 +746,10 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="lg:col-span-12 space-y-6">
               
               <div className="space-y-2">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
                   Our Origin Story
                 </span>
-                <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+                <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
                   Why We Chose Handcrafted Ink Over Cold Typed Slides
                 </h2>
               </div>
@@ -770,12 +770,12 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
 
               {/* Founder Sign-off */}
-              <div className="pt-4 border-t border-[#0A192F]/10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0A192F] text-white flex items-center justify-center font-heading font-bold text-base shadow-sm">
+              <div className="pt-4 border-t border-[#0B3561]/10 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center font-heading font-bold text-base shadow-sm">
                   RD
                 </div>
                 <div>
-                  <div className="font-heading font-bold text-sm text-[#0A192F]">
+                  <div className="font-heading font-bold text-sm text-[#0B3561]">
                     Mr. Raibha Dutta
                   </div>
                   <div className="text-xs text-[#627D98]">
@@ -798,10 +798,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
         
         <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
             Craftsmanship &amp; Fulfillment
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             How Every Book is Crafted
           </h2>
           <p className="font-body text-sm text-[#486581]">
@@ -813,27 +813,27 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
           
           {/* Step 1 */}
-          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+          <div className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
             <div className="w-10 h-10 rounded-xl bg-[#FEF08A] text-[#713F12] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
               01
             </div>
-            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+            <h3 className="font-heading font-bold text-base text-[#0B3561]">
               Handwritten
             </h3>
             <p className="font-body text-xs text-[#627D98] leading-relaxed">
               Every syntax rule, tree diagram, and algorithm trace is written by hand with multi-colored ink pens for optimal visual memory encoding.
             </p>
-            <div className="text-[11px] font-mono font-semibold text-[#D97706]">
+            <div className="text-[11px] font-mono font-semibold text-[#12A5B0]">
               • Step-by-step logic
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+          <div className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
             <div className="w-10 h-10 rounded-xl bg-[#BBF7D0] text-[#064E3B] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
               02
             </div>
-            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+            <h3 className="font-heading font-bold text-base text-[#0B3561]">
               Designed
             </h3>
             <p className="font-body text-xs text-[#627D98] leading-relaxed">
@@ -845,11 +845,11 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Step 3 */}
-          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+          <div className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
             <div className="w-10 h-10 rounded-xl bg-[#FBCFE8] text-[#831843] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
               03
             </div>
-            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+            <h3 className="font-heading font-bold text-base text-[#0B3561]">
               Printed in Colour
             </h3>
             <p className="font-body text-xs text-[#627D98] leading-relaxed">
@@ -861,11 +861,11 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Step 4: Uses parcel_shipping slot */}
-          <div className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
+          <div className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm hover:-translate-y-1 transition-transform relative space-y-3">
             <div className="w-10 h-10 rounded-xl bg-[#FED7AA] text-[#7C2D12] flex items-center justify-center font-mono font-bold text-sm shadow-xs">
               04
             </div>
-            <h3 className="font-heading font-bold text-base text-[#0A192F]">
+            <h3 className="font-heading font-bold text-base text-[#0B3561]">
               Delivered
             </h3>
             <p className="font-body text-xs text-[#627D98] leading-relaxed">
@@ -891,10 +891,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         
         <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
             Evidence-Based Learning
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             Typed Notes vs. Handwritten Notes
           </h2>
           <p className="font-body text-sm text-[#486581]">
@@ -903,15 +903,15 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
 
         {/* Clean, Polished Comparison Table */}
-        <div className="bg-white rounded-3xl border border-[#0A192F]/10 shadow-lg overflow-hidden max-w-4xl mx-auto">
+        <div className="bg-white rounded-3xl border border-[#0B3561]/10 shadow-lg overflow-hidden max-w-4xl mx-auto">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="border-b border-[#0A192F]/10 bg-[#FAF7F0]">
-                  <th className="p-4 sm:p-5 font-heading font-bold text-[#0A192F] w-1/3">
+                <tr className="border-b border-[#0B3561]/10 bg-[#FAF7F0]">
+                  <th className="p-4 sm:p-5 font-heading font-bold text-[#0B3561] w-1/3">
                     Study Dimension
                   </th>
-                  <th className="p-4 sm:p-5 font-heading font-bold text-white bg-[#0A192F] text-center w-1/3">
+                  <th className="p-4 sm:p-5 font-heading font-bold text-white bg-[#0B3561] text-center w-1/3">
                     PyNotes Handwritten
                   </th>
                   <th className="p-4 sm:p-5 font-heading font-semibold text-[#627D98] text-center w-1/3">
@@ -919,7 +919,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#0A192F]/8 font-body">
+              <tbody className="divide-y divide-[#0B3561]/8 font-body">
                 {[
                   {
                     factor: 'Memory Recall & Retention',
@@ -953,10 +953,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                   },
                 ].map((row, i) => (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAF7F0]/40'}>
-                    <td className="p-4 sm:p-5 font-heading font-semibold text-[#0A192F]">
+                    <td className="p-4 sm:p-5 font-heading font-semibold text-[#0B3561]">
                       {row.factor}
                     </td>
-                    <td className="p-4 sm:p-5 text-center bg-[#0A192F]/5 font-medium text-[#0A192F]">
+                    <td className="p-4 sm:p-5 text-center bg-[#0B3561]/5 font-medium text-[#0B3561]">
                       <div className="flex items-center justify-center gap-1.5">
                         <CheckCircleIcon className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
                         <span>{row.pynotes}</span>
@@ -983,10 +983,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         
         <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
             Curated Study Combos
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             Complete Prep Bundles
           </h2>
           <p className="font-body text-sm text-[#486581]">
@@ -1002,11 +1002,11 @@ export const HomePage: React.FC<HomePageProps> = ({
             return (
               <div
                 key={bundle.slug}
-                className="glossy-book-card p-6 rounded-3xl flex flex-col justify-between group border-2 border-[#D97706]/30 bg-gradient-to-b from-white to-[#FAF7F0]"
+                className="glossy-book-card p-6 rounded-3xl flex flex-col justify-between group border-2 border-[#12A5B0]/30 bg-gradient-to-b from-white to-[#FAF7F0]"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="bg-[#D97706] text-white text-[10px] font-mono font-bold px-2.5 py-0.5 rounded uppercase">
+                    <span className="bg-[#12A5B0] text-white text-[10px] font-mono font-bold px-2.5 py-0.5 rounded uppercase">
                       Bundle Deal
                     </span>
                     <span className="font-mono text-xs font-bold text-[#16A34A]">
@@ -1014,7 +1014,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     </span>
                   </div>
 
-                  <h3 className="font-heading font-bold text-lg text-[#0A192F] group-hover:text-[#D97706] transition-colors">
+                  <h3 className="font-heading font-bold text-lg text-[#0B3561] group-hover:text-[#12A5B0] transition-colors">
                     {bundle.title}
                   </h3>
                   <p className="font-body text-xs text-[#627D98] mt-2 leading-relaxed">
@@ -1022,12 +1022,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </p>
 
                   {/* Included Books Preview */}
-                  <div className="mt-4 pt-3 border-t border-[#0A192F]/10 space-y-1.5">
+                  <div className="mt-4 pt-3 border-t border-[#0B3561]/10 space-y-1.5">
                     <div className="text-[10px] font-mono font-bold uppercase text-[#627D98]">Includes printed books:</div>
-                    <ul className="text-xs font-medium text-[#0A192F] space-y-1">
+                    <ul className="text-xs font-medium text-[#0B3561] space-y-1">
                       {bundle.bundle_items?.map((item, idx) => (
                         <li key={idx} className="flex items-center gap-1.5">
-                          <span className="text-[#D97706]">✓</span>
+                          <span className="text-[#12A5B0]">✓</span>
                           <span>{item.qty || 1}× {item.book_slug.toUpperCase().replace(/-/g, ' ')}</span>
                         </li>
                       )) || (
@@ -1038,9 +1038,9 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Bundle Price & Add to Cart */}
-                <div className="mt-6 pt-4 border-t border-[#0A192F]/10 flex items-center justify-between">
+                <div className="mt-6 pt-4 border-t border-[#0B3561]/10 flex items-center justify-between">
                   <div>
-                    <div className="font-heading font-bold text-2xl text-[#0A192F]">
+                    <div className="font-heading font-bold text-2xl text-[#0B3561]">
                       ₹{(bundle.price_paise / 100).toFixed(0)}
                     </div>
                     <div className="font-mono text-xs text-[#9DAEC0] line-through">
@@ -1050,7 +1050,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                   <button
                     onClick={() => onAddToCart(bundle.slug, 1)}
-                    className="px-5 py-3 bg-[#D97706] text-white font-heading font-bold text-xs rounded-xl hover:bg-[#B45309] transition shadow-md flex items-center gap-1.5 cursor-pointer"
+                    className="px-5 py-3 bg-[#12A5B0] text-white font-heading font-bold text-xs rounded-xl hover:bg-[#B45309] transition shadow-md flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>Add Bundle</span>
                     <span>+</span>
@@ -1071,10 +1071,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         
         <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
             Verified Feedback
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             Student Reviews
           </h2>
           <p className="font-body text-sm text-[#486581]">
@@ -1088,7 +1088,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             {reviews.map((rev) => (
               <div
                 key={rev.id}
-                className="bg-white p-6 rounded-2xl border border-[#0A192F]/10 shadow-sm space-y-3"
+                className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex text-[#F59E0B] text-sm">
@@ -1099,14 +1099,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <span className="text-[10px] font-mono text-[#627D98]">Verified Student</span>
                 </div>
 
-                <h4 className="font-heading font-bold text-sm text-[#0A192F]">
+                <h4 className="font-heading font-bold text-sm text-[#0B3561]">
                   {rev.title}
                 </h4>
                 <p className="font-body text-xs text-[#486581] leading-relaxed">
                   &quot;{rev.body}&quot;
                 </p>
 
-                <div className="pt-3 border-t border-[#0A192F]/8 text-xs font-semibold text-[#0A192F]">
+                <div className="pt-3 border-t border-[#0B3561]/8 text-xs font-semibold text-[#0B3561]">
                   — {rev.display_name}
                 </div>
               </div>
@@ -1114,12 +1114,12 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         ) : (
           /* Clean, Honest Empty State — No Fake Testimonials or Invented Numbers */
-          <div className="bg-[#FAF7F0] p-8 sm:p-12 rounded-3xl border border-[#0A192F]/10 text-center max-w-xl mx-auto space-y-4">
-            <div className="w-12 h-12 rounded-full bg-white border border-[#0A192F]/10 flex items-center justify-center text-xl mx-auto text-[#D97706] shadow-xs">
+          <div className="bg-[#FAF7F0] p-8 sm:p-12 rounded-3xl border border-[#0B3561]/10 text-center max-w-xl mx-auto space-y-4">
+            <div className="w-12 h-12 rounded-full bg-white border border-[#0B3561]/10 flex items-center justify-center text-xl mx-auto text-[#12A5B0] shadow-xs">
               ✍️
             </div>
             <div className="space-y-1">
-              <h3 className="font-heading font-bold text-base text-[#0A192F]">
+              <h3 className="font-heading font-bold text-base text-[#0B3561]">
                 Verified Student Reviews
               </h3>
               <p className="font-body text-xs text-[#627D98] leading-relaxed max-w-md mx-auto">
@@ -1129,7 +1129,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="pt-2">
               <Link
                 to="/subjects"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A192F] text-white rounded-xl text-xs font-heading font-semibold hover:bg-[#132742] transition shadow-xs"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0B3561] text-white rounded-xl text-xs font-heading font-semibold hover:bg-[#132742] transition shadow-xs"
               >
                 <span>Order Notes &amp; Share Your Review</span>
                 <span>→</span>
@@ -1145,12 +1145,12 @@ export const HomePage: React.FC<HomePageProps> = ({
           "Start 7-day free trial"
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="bg-gradient-to-br from-[#070F1E] via-[#0A192F] to-[#132742] rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[#070F1E] via-[#0B3561] to-[#132742] rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
           
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             <div className="lg:col-span-8 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D97706]/20 border border-[#D97706]/40 text-[#F59E0B] text-xs font-mono font-bold">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#12A5B0]/20 border border-[#12A5B0]/40 text-[#F59E0B] text-xs font-mono font-bold">
                 <span>📰 PyNotes Pro Subscription</span>
               </div>
 
@@ -1178,7 +1178,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="lg:col-span-4 flex flex-col items-center lg:items-end justify-center">
               <Link
                 to="/subscription"
-                className="w-full sm:w-auto px-8 py-4 bg-[#D97706] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#B45309] transition shadow-lg flex items-center justify-center gap-2 cursor-pointer text-center"
+                className="w-full sm:w-auto px-8 py-4 bg-[#12A5B0] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#B45309] transition shadow-lg flex items-center justify-center gap-2 cursor-pointer text-center"
               >
                 <span>Start 7-Day Free Trial</span>
                 <span>→</span>
@@ -1200,10 +1200,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       <section className="max-w-4xl mx-auto px-4 sm:px-8 space-y-8">
         
         <div className="text-center space-y-2">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
             Got Questions?
           </span>
-          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F] tracking-tight">
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561] tracking-tight">
             Frequently Asked Questions
           </h2>
           <p className="font-body text-sm text-[#486581]">
@@ -1218,20 +1218,20 @@ export const HomePage: React.FC<HomePageProps> = ({
             return (
               <div
                 key={faq.id}
-                className="bg-white rounded-2xl border border-[#0A192F]/10 shadow-xs overflow-hidden transition-all"
+                className="bg-white rounded-2xl border border-[#0B3561]/10 shadow-xs overflow-hidden transition-all"
               >
                 <button
                   onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
-                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-heading font-semibold text-sm sm:text-base text-[#0A192F] hover:text-[#D97706] transition-colors cursor-pointer"
+                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-heading font-semibold text-sm sm:text-base text-[#0B3561] hover:text-[#12A5B0] transition-colors cursor-pointer"
                 >
                   <span>{faq.question}</span>
-                  <span className={`text-base font-bold text-[#D97706] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                  <span className={`text-base font-bold text-[#12A5B0] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
                     ▾
                   </span>
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm font-body text-[#486581] leading-relaxed border-t border-[#0A192F]/6 animate-fadeIn">
+                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm font-body text-[#486581] leading-relaxed border-t border-[#0B3561]/6 animate-fadeIn">
                     {faq.answer}
                   </div>
                 )}
@@ -1243,7 +1243,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="text-center pt-2">
           <Link
             to="/faq"
-            className="text-xs font-heading font-bold text-[#D97706] hover:underline"
+            className="text-xs font-heading font-bold text-[#12A5B0] hover:underline"
           >
             Read all frequently asked questions →
           </Link>

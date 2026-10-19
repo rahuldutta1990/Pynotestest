@@ -35,14 +35,14 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 space-y-8">
       {/* Header */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
+        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-3 py-1 rounded-full inline-block">
           Complete Subject Library
         </span>
-        <h1 className="font-heading font-black text-3xl sm:text-4xl text-[#0A192F]">
+        <h1 className="font-heading font-black text-3xl sm:text-4xl text-[#0B3561]">
           All Handwritten Printed{' '}
-          <span className="relative inline-block text-[#D97706] font-handwriting italic font-bold">
+          <span className="relative inline-block text-[#12A5B0] font-handwriting italic font-bold">
             Books
-            <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#D97706" />
+            <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
           </span>
         </h1>
         <p className="font-body text-[#486581] text-sm leading-relaxed">
@@ -51,15 +51,15 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
       </div>
 
       {/* Filters & Sort Controls */}
-      <div className="bg-white p-4 rounded-2xl border border-[#0A192F]/10 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 rounded-2xl border border-[#0B3561]/10 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Subject Filter Buttons */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto py-1 scrollbar-hide">
           <button
             onClick={() => setSelectedSubjectFilter('all')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-bold transition cursor-pointer whitespace-nowrap ${
               selectedSubjectFilter === 'all'
-                ? 'bg-[#0A192F] text-white shadow-xs'
-                : 'bg-[#FAF7F0] text-[#0A192F] hover:bg-white border border-[#0A192F]/10'
+                ? 'bg-[#0B3561] text-white shadow-xs'
+                : 'bg-[#FAF7F0] text-[#0B3561] hover:bg-white border border-[#0B3561]/10'
             }`}
           >
             All ({products.filter(p => p.type === 'book').length})
@@ -70,8 +70,8 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
               onClick={() => setSelectedSubjectFilter(sub.slug)}
               className={`px-3 py-1.5 rounded-xl text-xs font-heading font-semibold whitespace-nowrap transition cursor-pointer ${
                 selectedSubjectFilter === sub.slug
-                  ? 'bg-[#0A192F] text-white shadow-xs'
-                  : 'bg-[#FAF7F0] text-[#0A192F] hover:bg-white border border-[#0A192F]/10'
+                  ? 'bg-[#0B3561] text-white shadow-xs'
+                  : 'bg-[#FAF7F0] text-[#0B3561] hover:bg-white border border-[#0B3561]/10'
               }`}
             >
               {sub.menu_label || sub.name}
@@ -85,7 +85,7 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as any)}
-            className="bg-[#FAF7F0] border border-[#0A192F]/15 text-xs font-heading font-medium text-[#0A192F] rounded-xl px-3 py-1.5 focus:border-[#D97706] focus:outline-none cursor-pointer"
+            className="bg-[#FAF7F0] border border-[#0B3561]/15 text-xs font-heading font-medium text-[#0B3561] rounded-xl px-3 py-1.5 focus:border-[#12A5B0] focus:outline-none cursor-pointer"
           >
             <option value="featured">Featured</option>
             <option value="price-asc">Price: Low to High</option>
@@ -111,12 +111,12 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
                 >
                   <PlaceholderCover
                     title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
-                    accentColor="#D97706"
+                    accentColor="#12A5B0"
                     imageUrl={prod.images && prod.images.length > 0 ? prod.images[0] : undefined}
                   />
 
                   {savingsPercent > 0 && (
-                    <div className="absolute top-3 left-3 bg-[#FEF08A] text-[#0A192F] font-mono font-bold text-[10px] px-2.5 py-0.5 rounded shadow-xs z-20">
+                    <div className="absolute top-3 left-3 bg-[#FEF08A] text-[#0B3561] font-mono font-bold text-[10px] px-2.5 py-0.5 rounded shadow-xs z-20">
                       <span>SAVE {savingsPercent}%</span>
                     </div>
                   )}
@@ -124,7 +124,7 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
 
                 <h3
                   onClick={() => navigate(`/product/${prod.slug}`)}
-                  className="font-heading font-bold text-base text-[#0A192F] hover:text-[#D97706] cursor-pointer transition line-clamp-2 min-h-[44px]"
+                  className="font-heading font-bold text-base text-[#0B3561] hover:text-[#12A5B0] cursor-pointer transition line-clamp-2 min-h-[44px]"
                 >
                   {prod.title}
                 </h3>
@@ -134,7 +134,7 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
                 </p>
 
                 <div className="flex items-baseline gap-2 mt-3">
-                  <span className="font-heading font-bold text-xl text-[#0A192F]">
+                  <span className="font-heading font-bold text-xl text-[#0B3561]">
                     ₹{(prod.price_paise / 100).toFixed(0)}
                   </span>
                   <span className="font-mono text-xs text-[#9DAEC0] line-through">
@@ -143,16 +143,16 @@ export const SubjectsPage: React.FC<SubjectsPageProps> = ({
                 </div>
               </div>
 
-              <div className="mt-5 pt-3.5 border-t border-[#0A192F]/8 flex gap-2">
+              <div className="mt-5 pt-3.5 border-t border-[#0B3561]/8 flex gap-2">
                 <button
                   onClick={() => onAddToCart(prod.slug, 1)}
-                  className="flex-1 bg-[#D97706] text-white font-heading font-bold text-xs py-2.5 rounded-xl hover:bg-[#B45309] transition shadow-xs cursor-pointer"
+                  className="flex-1 bg-[#12A5B0] text-white font-heading font-bold text-xs py-2.5 rounded-xl hover:bg-[#B45309] transition shadow-xs cursor-pointer"
                 >
                   Add to Cart
                 </button>
                 <Link
                   to={`/product/${prod.slug}`}
-                  className="px-4 py-2.5 bg-[#FAF7F0] border border-[#0A192F]/10 text-[#0A192F] font-heading font-semibold text-xs rounded-xl hover:bg-white transition"
+                  className="px-4 py-2.5 bg-[#FAF7F0] border border-[#0B3561]/10 text-[#0B3561] font-heading font-semibold text-xs rounded-xl hover:bg-white transition"
                 >
                   View
                 </Link>

@@ -46,7 +46,7 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-12">
         
         {/* NEWSLETTER SUBSCRIPTION SECTION */}
-        <div className="bg-gradient-to-r from-[#0A192F] via-[#132742] to-[#0A192F] rounded-2xl p-7 sm:p-9 border border-[#D97706]/20 shadow-2xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#0B3561] via-[#132742] to-[#0B3561] rounded-2xl p-7 sm:p-9 border border-[#12A5B0]/20 shadow-2xl relative overflow-hidden">
           <div
             className="absolute inset-0 pointer-events-none opacity-5"
             style={{
@@ -59,7 +59,7 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
             
             {/* Newsletter Text Column */}
             <div className="lg:col-span-6 space-y-2">
-              <span className="inline-block bg-[#D97706]/20 text-[#F59E0B] font-heading font-bold text-[11px] uppercase tracking-wider px-3 py-1 rounded-full border border-[#D97706]/30">
+              <span className="inline-block bg-[#12A5B0]/20 text-[#F59E0B] font-heading font-bold text-[11px] uppercase tracking-wider px-3 py-1 rounded-full border border-[#12A5B0]/30">
                 STAY IN THE LOOP
               </span>
               <h3 className="font-heading font-bold text-2xl sm:text-3xl text-white">
@@ -79,12 +79,12 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="Enter your student email..."
-                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-xs sm:text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/30 backdrop-blur-xs font-medium"
+                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-xs sm:text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#12A5B0] focus:ring-2 focus:ring-[#12A5B0]/30 backdrop-blur-xs font-medium"
                 />
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="bg-[#D97706] text-white font-heading font-bold text-xs sm:text-sm px-6 py-3 rounded-xl hover:bg-[#B45309] transition shadow-md flex-shrink-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  className="bg-[#12A5B0] text-white font-heading font-bold text-xs sm:text-sm px-6 py-3 rounded-xl hover:bg-[#B45309] transition shadow-md flex-shrink-0 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {status === 'loading' ? (
                     'Subscribing...'

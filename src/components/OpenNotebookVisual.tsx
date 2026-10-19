@@ -13,7 +13,7 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
     <div className={`relative w-full max-w-2xl mx-auto ${className}`}>
       {/* If user provides a real image at slot.path, render it with glossy frame */}
       {slot.path && !imageError ? (
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-[#0A192F]/10 bg-white">
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-[#0B3561]/10 bg-white">
           <img
             src={slot.path}
             alt={slot.altText}
@@ -22,11 +22,11 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
             referrerPolicy="no-referrer"
             className="w-full h-auto object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/20 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B3561]/20 via-transparent to-transparent pointer-events-none" />
         </div>
       ) : (
         /* High-fidelity Open Notebook Illustration with tactile spiral binding & colorful handwritten notes */
-        <div className="relative rounded-2xl sm:rounded-3xl bg-[#FAF7F0] p-4 sm:p-7 shadow-[0_25px_50px_-12px_rgba(10,25,47,0.22)] border border-[#0A192F]/12 overflow-hidden">
+        <div className="relative rounded-2xl sm:rounded-3xl bg-[#FAF7F0] p-4 sm:p-7 shadow-[0_25px_50px_-12px_rgba(10,25,47,0.22)] border border-[#0B3561]/12 overflow-hidden">
           {/* Notebook Spiral Spine Center */}
           <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 sm:w-10 z-20 flex flex-col justify-between py-4 pointer-events-none">
             {[...Array(14)].map((_, i) => (
@@ -40,12 +40,12 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
           {/* Left and Right Page Spread */}
           <div className="grid grid-cols-2 gap-4 sm:gap-8 relative z-10">
             {/* Left Page: Pointers & Memory Diagrams */}
-            <div className="space-y-3 sm:space-y-4 pr-1 sm:pr-3 border-r border-[#0A192F]/8">
-              <div className="flex items-center justify-between pb-2 border-b border-[#0A192F]/10">
-                <span className="font-handwriting font-bold text-lg sm:text-2xl text-[#0A192F]">
+            <div className="space-y-3 sm:space-y-4 pr-1 sm:pr-3 border-r border-[#0B3561]/8">
+              <div className="flex items-center justify-between pb-2 border-b border-[#0B3561]/10">
+                <span className="font-handwriting font-bold text-lg sm:text-2xl text-[#0B3561]">
                   Ch. 04: Pointers &amp; Memory
                 </span>
-                <span className="text-[10px] sm:text-xs font-mono text-[#D97706] font-semibold">
+                <span className="text-[10px] sm:text-xs font-mono text-[#12A5B0] font-semibold">
                   pg. 42
                 </span>
               </div>
@@ -61,26 +61,26 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
               </div>
 
               {/* Memory Diagram with colored boxes */}
-              <div className="p-2 sm:p-3 bg-white rounded-xl border border-[#0A192F]/10 shadow-xs space-y-2">
+              <div className="p-2 sm:p-3 bg-white rounded-xl border border-[#0B3561]/10 shadow-xs space-y-2">
                 <div className="text-[10px] font-mono text-[#486581] font-semibold">
                   MEMORY HEAP &amp; STACK TRACE:
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 text-center">
                   <div className="bg-[#FEF08A] p-1.5 rounded border border-[#FACC15] shadow-xs">
                     <div className="text-[9px] font-mono text-[#713F12]">0x7FFEE1</div>
-                    <div className="font-bold text-xs text-[#0A192F]">x = 42</div>
+                    <div className="font-bold text-xs text-[#0B3561]">x = 42</div>
                   </div>
                   <div className="bg-[#BBF7D0] p-1.5 rounded border border-[#86EFAC] shadow-xs">
                     <div className="text-[9px] font-mono text-[#14532D]">0x7FFEE8</div>
-                    <div className="font-bold text-xs text-[#0A192F]">&amp;x (ptr)</div>
+                    <div className="font-bold text-xs text-[#0B3561]">&amp;x (ptr)</div>
                   </div>
                   <div className="bg-[#FED7AA] p-1.5 rounded border border-[#FDBA74] shadow-xs">
                     <div className="text-[9px] font-mono text-[#7C2D12]">0x7FFEF0</div>
-                    <div className="font-bold text-xs text-[#0A192F]">**ptr_ptr</div>
+                    <div className="font-bold text-xs text-[#0B3561]">**ptr_ptr</div>
                   </div>
                 </div>
                 {/* Visual Arrow */}
-                <div className="flex items-center justify-center text-[11px] font-handwriting text-[#D97706] font-bold">
+                <div className="flex items-center justify-center text-[11px] font-handwriting text-[#12A5B0] font-bold">
                   ptr points directly to x ➔ [42]
                 </div>
               </div>
@@ -96,11 +96,11 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
 
             {/* Right Page: Flowchart & Recursive Call Tree */}
             <div className="space-y-3 sm:space-y-4 pl-1 sm:pl-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#0A192F]/10">
-                <span className="font-handwriting font-bold text-lg sm:text-2xl text-[#0A192F]">
+              <div className="flex items-center justify-between pb-2 border-b border-[#0B3561]/10">
+                <span className="font-handwriting font-bold text-lg sm:text-2xl text-[#0B3561]">
                   Recursion Call Stack
                 </span>
-                <span className="text-[10px] sm:text-xs font-mono text-[#D97706] font-semibold">
+                <span className="text-[10px] sm:text-xs font-mono text-[#12A5B0] font-semibold">
                   pg. 43
                 </span>
               </div>
@@ -113,7 +113,7 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
               </div>
 
               {/* Visual Tree Diagram */}
-              <div className="p-2 sm:p-3 bg-white rounded-xl border border-[#0A192F]/10 shadow-xs flex flex-col items-center">
+              <div className="p-2 sm:p-3 bg-white rounded-xl border border-[#0B3561]/10 shadow-xs flex flex-col items-center">
                 <div className="text-[10px] font-mono text-[#486581] font-semibold mb-1">
                   fibonacci(3) CALL TREE
                 </div>
@@ -122,7 +122,7 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
                   fib(3) = 2
                 </div>
                 {/* Split Branches */}
-                <div className="w-24 border-t-2 border-dashed border-[#D97706] my-1" />
+                <div className="w-24 border-t-2 border-dashed border-[#12A5B0] my-1" />
                 <div className="flex justify-between w-32 sm:w-40 text-center">
                   <div className="px-2 py-0.5 rounded bg-[#E0E7FF] border border-[#818CF8] text-[10px] font-mono font-semibold text-[#3730A3]">
                     fib(2) = 1
@@ -143,7 +143,7 @@ export const OpenNotebookVisual: React.FC<OpenNotebookVisualProps> = ({ classNam
           </div>
 
           {/* Ribbon Bookmark Accent */}
-          <div className="absolute top-0 right-10 w-4 h-16 bg-gradient-to-b from-[#D97706] to-[#B45309] shadow-md rounded-b-sm pointer-events-none z-30" />
+          <div className="absolute top-0 right-10 w-4 h-16 bg-gradient-to-b from-[#12A5B0] to-[#B45309] shadow-md rounded-b-sm pointer-events-none z-30" />
         </div>
       )}
     </div>

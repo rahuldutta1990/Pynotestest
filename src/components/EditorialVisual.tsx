@@ -22,7 +22,7 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
   }[aspectRatio];
 
   return (
-    <div className={`relative w-full overflow-hidden rounded-2xl shadow-lg border border-[#0A192F]/10 ${aspectClass} ${className}`}>
+    <div className={`relative w-full overflow-hidden rounded-2xl shadow-lg border border-[#0B3561]/10 ${aspectClass} ${className}`}>
       {slot.path && !imageError ? (
         <img
           src={slot.path}
@@ -38,10 +38,10 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
           {slotId === 'notes_macro_diagram' && (
             <div className="h-full flex flex-col justify-between">
               <div className="space-y-2">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full inline-block">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-2.5 py-0.5 rounded-full inline-block">
                   Handwriting Macro
                 </span>
-                <h4 className="font-handwriting text-2xl font-bold text-[#0A192F]">
+                <h4 className="font-handwriting text-2xl font-bold text-[#0B3561]">
                   Tactile Ink &amp; Visual Logic
                 </h4>
                 <p className="font-body text-xs text-[#486581] leading-relaxed">
@@ -50,10 +50,10 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
               </div>
 
               {/* Sample diagram snippet */}
-              <div className="bg-white p-3.5 rounded-xl border border-[#0A192F]/10 shadow-xs space-y-2">
+              <div className="bg-white p-3.5 rounded-xl border border-[#0B3561]/10 shadow-xs space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />
-                  <span className="font-handwriting text-sm font-bold text-[#0A192F]">Binary Search Step-Trace</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#12A5B0]" />
+                  <span className="font-handwriting text-sm font-bold text-[#0B3561]">Binary Search Step-Trace</span>
                 </div>
                 <div className="flex gap-1.5">
                   {[2, 5, 8, 12, 16, 23, 38, 56, 72, 91].map((val, idx) => (
@@ -61,7 +61,7 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
                       key={idx}
                       className={`flex-1 text-center py-1 text-[10px] font-mono rounded ${
                         val === 23
-                          ? 'bg-[#FEF08A] font-bold text-[#0A192F] ring-1 ring-[#EAB308]'
+                          ? 'bg-[#FEF08A] font-bold text-[#0B3561] ring-1 ring-[#EAB308]'
                           : 'bg-[#F0F4F8] text-[#334E68]'
                       }`}
                     >
@@ -82,7 +82,7 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#16A34A] bg-[#DCFCE7] px-2.5 py-0.5 rounded-full inline-block">
                   Study Focus
                 </span>
-                <h4 className="font-handwriting text-2xl font-bold text-[#0A192F]">
+                <h4 className="font-handwriting text-2xl font-bold text-[#0B3561]">
                   Designed for Long Study Hours
                 </h4>
                 <p className="font-body text-xs text-[#486581] leading-relaxed">
@@ -90,7 +90,7 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
                 </p>
               </div>
 
-              <div className="bg-gradient-to-r from-[#0A192F] to-[#1E3A5F] text-white p-4 rounded-xl shadow-md space-y-2">
+              <div className="bg-gradient-to-r from-[#0B3561] to-[#1E3A5F] text-white p-4 rounded-xl shadow-md space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono text-[#FCD34D]">
                   <span>Active Recall Technique</span>
                   <span>94% Exam Retention</span>
@@ -108,7 +108,7 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#3B82F6] bg-[#DBEAFE] px-2.5 py-0.5 rounded-full inline-block">
                   Safe Logistics
                 </span>
-                <h4 className="font-handwriting text-2xl font-bold text-[#0A192F]">
+                <h4 className="font-handwriting text-2xl font-bold text-[#0B3561]">
                   Durable Water-Resistant Packaging
                 </h4>
                 <p className="font-body text-xs text-[#486581] leading-relaxed">
@@ -116,13 +116,13 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
                 </p>
               </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-[#0A192F]/10 shadow-xs flex items-center justify-between">
+              <div className="bg-white p-3.5 rounded-xl border border-[#0B3561]/10 shadow-xs flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="text-[10px] font-mono text-[#486581] uppercase font-semibold">Fast Shipping Across India</div>
-                  <div className="text-xs font-bold text-[#0A192F]">2–4 Business Days Delivery</div>
+                  <div className="text-xs font-bold text-[#0B3561]">2–4 Business Days Delivery</div>
                   <div className="text-[10px] text-[#16A34A] font-semibold">Cash on Delivery Available</div>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-[#D97706]/10 flex items-center justify-center text-xl text-[#D97706]">
+                <div className="w-12 h-12 rounded-full bg-[#12A5B0]/10 flex items-center justify-center text-xl text-[#12A5B0]">
                   📦
                 </div>
               </div>
@@ -132,15 +132,15 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
           {slotId.startsWith('sample_page_') && (
             <div className="h-full flex flex-col justify-between">
               <div className="space-y-1">
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FEF3C7] px-2 py-0.5 rounded-full inline-block">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] bg-[#FEF3C7] px-2 py-0.5 rounded-full inline-block">
                   Look Inside Sample
                 </span>
-                <h4 className="font-handwriting text-xl font-bold text-[#0A192F]">
+                <h4 className="font-handwriting text-xl font-bold text-[#0B3561]">
                   {slot.name}
                 </h4>
               </div>
 
-              <div className="bg-white p-3 rounded-lg border border-[#0A192F]/10 shadow-xs space-y-2 my-auto">
+              <div className="bg-white p-3 rounded-lg border border-[#0B3561]/10 shadow-xs space-y-2 my-auto">
                 <div className="h-2 w-3/4 bg-[#FEF08A] rounded" />
                 <div className="h-2 w-full bg-[#F0F4F8] rounded" />
                 <div className="h-2 w-5/6 bg-[#F0F4F8] rounded" />
@@ -158,7 +158,7 @@ export const EditorialVisual: React.FC<EditorialVisualProps> = ({
           {!['notes_macro_diagram', 'student_studying', 'parcel_shipping'].includes(slotId) && !slotId.startsWith('sample_page_') && (
             <div className="h-full flex flex-col items-center justify-center text-center p-4">
               <span className="text-2xl mb-2">📖</span>
-              <h4 className="font-heading font-semibold text-sm text-[#0A192F]">{slot.name}</h4>
+              <h4 className="font-heading font-semibold text-sm text-[#0B3561]">{slot.name}</h4>
               <p className="text-[11px] text-[#627D98] mt-1">{slot.description}</p>
             </div>
           )}

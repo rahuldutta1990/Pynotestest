@@ -65,7 +65,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
       text: 'text-[#92400E]',
       border: 'border-[#F59E0B]',
       badge: 'bg-[#FFFBEB] text-[#78350F]',
-      pen: '#D97706',
+      pen: '#12A5B0',
       lightBg: 'bg-[#FFFBEB]',
     },
   }[highlighterColor];
@@ -77,7 +77,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('c-plus-plus') || slug === 'cpp') {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>STL Vector Memory</span>
             <span className="text-[#059669] font-semibold">Heap [cap=8]</span>
           </div>
@@ -105,9 +105,9 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('java')) {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>OOP Heap References</span>
-            <span className="text-[#D97706] font-semibold">JVM Stack</span>
+            <span className="text-[#12A5B0] font-semibold">JVM Stack</span>
           </div>
           <div className="grid grid-cols-2 gap-1.5 pt-1">
             <div className="p-1.5 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded text-center">
@@ -129,14 +129,14 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('python')) {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>List Comprehension</span>
             <span className="text-[#059669] font-semibold">O(N)</span>
           </div>
           <div className="p-1.5 bg-[#F0FDF4] border border-[#22C55E]/30 rounded text-[#14532D]">
             <span className="text-[#16A34A] font-bold">[x*2 </span>
             <span className="text-[#1E3A5F]">for x in nums </span>
-            <span className="text-[#D97706]">if x &gt; 0]</span>
+            <span className="text-[#12A5B0]">if x &gt; 0]</span>
           </div>
           <p className="text-[9px] font-handwriting text-[#64748B] italic pt-0.5">
             ✎ generator expressions avoid full memory load
@@ -148,16 +148,16 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('dsa')) {
       return (
         <div className="space-y-1 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>Binary Search Tree</span>
-            <span className="text-[#D97706] font-semibold">O(log N)</span>
+            <span className="text-[#12A5B0] font-semibold">O(log N)</span>
           </div>
           {/* Mini Tree Diagram */}
           <div className="flex flex-col items-center py-1">
-            <div className="w-5 h-5 rounded-full border border-[#D97706] bg-[#FEF3C7] flex items-center justify-center text-[9px] font-bold text-[#92400E]">
+            <div className="w-5 h-5 rounded-full border border-[#12A5B0] bg-[#FEF3C7] flex items-center justify-center text-[9px] font-bold text-[#92400E]">
               50
             </div>
-            <div className="w-12 h-2 flex justify-between border-t border-dashed border-[#0A192F]/30 mt-0.5">
+            <div className="w-12 h-2 flex justify-between border-t border-dashed border-[#0B3561]/30 mt-0.5">
               <div className="w-4 h-4 rounded-full border border-[#059669] bg-[#DCFCE7] flex items-center justify-center text-[8px] font-bold text-[#14532D] -mt-1">
                 25
               </div>
@@ -176,7 +176,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('sql') || slug.includes('dbms')) {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>Relational Schema</span>
             <span className="text-[#059669] font-semibold">1 : N</span>
           </div>
@@ -185,7 +185,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
               <span className="font-bold text-[#0F172A] block text-[9px]">Users</span>
               <span className="text-[8px] text-[#2563EB]">PK: id</span>
             </div>
-            <span className="text-[#D97706] font-bold text-xs">➔</span>
+            <span className="text-[#12A5B0] font-bold text-xs">➔</span>
             <div className="flex-1 p-1 bg-[#F1F5F9] border border-[#CBD5E1] rounded text-center">
               <span className="font-bold text-[#0F172A] block text-[9px]">Orders</span>
               <span className="text-[8px] text-[#DC2626]">FK: user_id</span>
@@ -201,7 +201,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('os') || slug.includes('operating')) {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>Process Scheduling</span>
             <span className="text-[#7C3AED] font-semibold">Context Switch</span>
           </div>
@@ -228,7 +228,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('html') || slug.includes('css') || slug.includes('js') || slug.includes('javascript')) {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>DOM Tree &amp; Layout</span>
             <span className="text-[#2563EB] font-semibold">CSS Grid</span>
           </div>
@@ -249,7 +249,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     if (slug.includes('data-science') || slug.includes('datascience')) {
       return (
         <div className="space-y-1.5 text-[10px] font-mono">
-          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+          <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
             <span>Data Matrix &amp; Pandas</span>
             <span className="text-[#059669] font-semibold">DataFrame</span>
           </div>
@@ -268,7 +268,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     // Default C / Core Programming
     return (
       <div className="space-y-1.5 text-[10px] font-mono">
-        <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0A192F]/10 pb-1">
+        <div className="flex items-center justify-between text-[#1E3A5F] font-bold border-b border-[#0B3561]/10 pb-1">
           <span>Pointer Memory Address</span>
           <span className="text-[#2563EB] font-semibold">0x7ffee4</span>
         </div>
@@ -277,7 +277,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
             <span className="text-[8px] text-[#64748B] block font-sans">Variable a</span>
             <span className="font-bold text-[#1E40AF]">val: 100</span>
           </div>
-          <span className="text-[#D97706] font-bold text-xs">➔</span>
+          <span className="text-[#12A5B0] font-bold text-xs">➔</span>
           <div className="p-1.5 bg-[#FEF3C7] border border-[#FCD34D] rounded text-center flex-1">
             <span className="text-[8px] text-[#64748B] block font-sans">Pointer *p</span>
             <span className="font-bold text-[#92400E]">&amp;a</span>
@@ -294,7 +294,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
     <div className={`relative aspect-[3/4] w-full ${className}`}>
       {/* If real image provided and hasn't errored, display it inside the glossy frame */}
       {imageSrc && !imageError ? (
-        <div className="book-cover-3d w-full h-full bg-[#0A192F] relative group rounded-2xl overflow-hidden shadow-lg">
+        <div className="book-cover-3d w-full h-full bg-[#0B3561] relative group rounded-2xl overflow-hidden shadow-lg">
           <img
             src={imageSrc}
             alt={slot?.altText || `${title} Handwritten Coding Notes Book Cover`}
@@ -309,14 +309,14 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
       ) : (
         /* REVERSE DESIGN: Bright, Tactile Warm Cream Paper Notebook with Spiral Binding */
         <div
-          className="w-full h-full bg-[#FFFDF9] rounded-2xl p-4 sm:p-5 flex flex-col justify-between select-none relative overflow-hidden border border-[#0A192F]/12 shadow-md hover:shadow-xl transition-all duration-300"
+          className="w-full h-full bg-[#FFFDF9] rounded-2xl p-4 sm:p-5 flex flex-col justify-between select-none relative overflow-hidden border border-[#0B3561]/12 shadow-md hover:shadow-xl transition-all duration-300"
           style={{
             boxShadow:
               '-4px 0 10px -2px rgba(10, 25, 47, 0.08), 0 10px 25px -5px rgba(10, 25, 47, 0.1), 0 0 0 1px rgba(10, 25, 47, 0.06)',
           }}
         >
           {/* Left Spiral Wire Rings Binding Effect */}
-          <div className="absolute top-0 bottom-0 left-0 w-4 bg-gradient-to-r from-[#E5E0D4] to-[#FAF7F0] border-r border-[#0A192F]/15 flex flex-col justify-around py-2 z-20 pointer-events-none">
+          <div className="absolute top-0 bottom-0 left-0 w-4 bg-gradient-to-r from-[#E5E0D4] to-[#FAF7F0] border-r border-[#0B3561]/15 flex flex-col justify-around py-2 z-20 pointer-events-none">
             {[...Array(9)].map((_, i) => (
               <div key={i} className="flex items-center pl-0.5">
                 {/* Punched hole */}
@@ -351,14 +351,14 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
 
             {/* Handwritten Title with realistic highlighter swipe effect */}
             <div className="pt-1">
-              <p className="text-[9px] font-mono text-[#D97706] uppercase tracking-wider font-bold">
+              <p className="text-[9px] font-mono text-[#12A5B0] uppercase tracking-wider font-bold">
                 PyNotes Series
               </p>
               <div className="relative inline-block mt-0.5">
                 <span
                   className={`absolute inset-x-0 bottom-0.5 h-3 ${hlScheme.bg} opacity-90 rounded-sm -rotate-1 pointer-events-none`}
                 />
-                <h4 className="relative font-handwriting text-2xl sm:text-[26px] font-bold text-[#0A192F] leading-tight tracking-wide drop-shadow-xs">
+                <h4 className="relative font-handwriting text-2xl sm:text-[26px] font-bold text-[#0B3561] leading-tight tracking-wide drop-shadow-xs">
                   {title}
                 </h4>
               </div>
@@ -366,15 +366,15 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
           </div>
 
           {/* Middle: Clear White/Cream Paper Diagram Box with Hand-Drawn Algorithms */}
-          <div className="relative z-10 pl-3 my-2 bg-white/95 backdrop-blur-xs rounded-xl p-2.5 sm:p-3 border border-[#0A192F]/12 shadow-xs">
+          <div className="relative z-10 pl-3 my-2 bg-white/95 backdrop-blur-xs rounded-xl p-2.5 sm:p-3 border border-[#0B3561]/12 shadow-xs">
             {renderSubjectDiagram()}
           </div>
 
           {/* Bottom Trust Stamp & Paper Quality Features */}
-          <div className="relative z-10 pl-3 pt-2 border-t border-[#0A192F]/10 flex items-center justify-between">
+          <div className="relative z-10 pl-3 pt-2 border-t border-[#0B3561]/10 flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[10px] text-[#0A192F] font-bold">
-                <span className="text-[#D97706]">★</span>
+              <div className="flex items-center gap-1 text-[10px] text-[#0B3561] font-bold">
+                <span className="text-[#12A5B0]">★</span>
                 <span>Full Colour Print</span>
               </div>
               <div className="text-[9px] text-[#627D98] font-mono">
@@ -383,7 +383,7 @@ export const BookCoverVisual: React.FC<BookCoverVisualProps> = ({
             </div>
 
             {/* Embossed Gold Paper Seal */}
-            <div className="w-9 h-9 rounded-full border border-[#D97706]/50 bg-gradient-to-tr from-[#FEF3C7] to-[#FDE68A] flex flex-col items-center justify-center shadow-xs">
+            <div className="w-9 h-9 rounded-full border border-[#12A5B0]/50 bg-gradient-to-tr from-[#FEF3C7] to-[#FDE68A] flex flex-col items-center justify-center shadow-xs">
               <span className="text-[7px] font-black text-[#92400E] leading-none">PY</span>
               <span className="text-[6px] text-[#78350F] tracking-tighter uppercase font-mono font-bold">
                 ORIGINAL

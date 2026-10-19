@@ -10,7 +10,7 @@ interface PlaceholderCoverProps {
 
 export const PlaceholderCover: React.FC<PlaceholderCoverProps> = ({
   title,
-  accentColor = '#D97706',
+  accentColor = '#12A5B0',
   isAdminPreview = false,
   className = '',
   imageUrl,
@@ -20,7 +20,7 @@ export const PlaceholderCover: React.FC<PlaceholderCoverProps> = ({
   return (
     <div className={`relative w-full aspect-[3/4] ${className}`}>
       {imageUrl && !imageError ? (
-        <div className="book-cover-3d w-full h-full bg-[#0A192F] relative overflow-hidden rounded-2xl shadow-lg">
+        <div className="book-cover-3d w-full h-full bg-[#0B3561] relative overflow-hidden rounded-2xl shadow-lg">
           <img
             src={imageUrl}
             alt={title}
@@ -33,14 +33,14 @@ export const PlaceholderCover: React.FC<PlaceholderCoverProps> = ({
       ) : (
         /* Bright tactile cream notebook cover */
         <div
-          className="w-full h-full bg-[#FFFDF9] rounded-2xl p-5 sm:p-6 flex flex-col justify-between select-none relative overflow-hidden border border-[#0A192F]/12 shadow-lg"
+          className="w-full h-full bg-[#FFFDF9] rounded-2xl p-5 sm:p-6 flex flex-col justify-between select-none relative overflow-hidden border border-[#0B3561]/12 shadow-lg"
           style={{
             boxShadow:
               '-4px 0 12px -2px rgba(10, 25, 47, 0.08), 0 12px 28px -5px rgba(10, 25, 47, 0.12), 0 0 0 1px rgba(10, 25, 47, 0.06)',
           }}
         >
           {/* Spiral binding rings on left */}
-          <div className="absolute top-0 bottom-0 left-0 w-4 bg-gradient-to-r from-[#E5E0D4] to-[#FAF7F0] border-r border-[#0A192F]/15 flex flex-col justify-around py-3 z-20 pointer-events-none">
+          <div className="absolute top-0 bottom-0 left-0 w-4 bg-gradient-to-r from-[#E5E0D4] to-[#FAF7F0] border-r border-[#0B3561]/15 flex flex-col justify-around py-3 z-20 pointer-events-none">
             {[...Array(10)].map((_, i) => (
               <div key={i} className="flex items-center pl-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#334E68]/30 shadow-inner" />
@@ -64,7 +64,7 @@ export const PlaceholderCover: React.FC<PlaceholderCoverProps> = ({
               100% Handwritten
             </span>
             {isAdminPreview ? (
-              <span className="bg-[#D97706] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase">
+              <span className="bg-[#12A5B0] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase">
                 Preview
               </span>
             ) : (
@@ -76,12 +76,12 @@ export const PlaceholderCover: React.FC<PlaceholderCoverProps> = ({
 
           {/* Subject Title Center with Highlighter Swipe */}
           <div className="relative z-10 pl-3 my-auto space-y-1.5">
-            <p className="font-mono text-[10px] text-[#D97706] uppercase tracking-widest font-bold">
+            <p className="font-mono text-[10px] text-[#12A5B0] uppercase tracking-widest font-bold">
               PyNotes Compendium
             </p>
             <div className="relative inline-block">
               <span className="absolute inset-x-0 bottom-1 h-3.5 bg-[#FEF08A] opacity-90 rounded-sm -rotate-1 pointer-events-none" />
-              <h3 className="relative font-handwriting font-bold text-3xl sm:text-4xl leading-tight text-[#0A192F] drop-shadow-xs">
+              <h3 className="relative font-handwriting font-bold text-3xl sm:text-4xl leading-tight text-[#0B3561] drop-shadow-xs">
                 {title}
               </h3>
             </div>
@@ -91,12 +91,12 @@ export const PlaceholderCover: React.FC<PlaceholderCoverProps> = ({
           </div>
 
           {/* Bottom Book Footnote */}
-          <div className="relative z-10 pl-3 border-t border-[#0A192F]/10 pt-3 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-[#0A192F] font-bold">
-              <span className="text-[#D97706]">★</span>
+          <div className="relative z-10 pl-3 border-t border-[#0B3561]/10 pt-3 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-[#0B3561] font-bold">
+              <span className="text-[#12A5B0]">★</span>
               <span>Full Colour Print</span>
             </div>
-            <div className="w-8 h-8 rounded-full border border-[#D97706]/40 bg-[#FEF3C7] flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-full border border-[#12A5B0]/40 bg-[#FEF3C7] flex items-center justify-center shadow-xs">
               <span className="text-[7px] font-black text-[#92400E]">PY</span>
             </div>
           </div>
