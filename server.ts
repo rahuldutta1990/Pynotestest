@@ -12,8 +12,8 @@ import { z } from 'zod';
 import Razorpay from 'razorpay';
 import nodemailer from 'nodemailer';
 import firebaseConfig from './firebase-applet-config.json';
-import { registerLogisticsRoutes, initLogisticsWorkers } from './server/logisticsModule.js';
-import { createResilientFirestore } from './server/resilientDb.js';
+import { registerLogisticsRoutes, initLogisticsWorkers } from './server/logisticsModule';
+import { createResilientFirestore } from './server/resilientDb';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,16 +21,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Firebase Admin with target database ID
-const adminApp = !getApps().length
-  ? initializeApp({
-      projectId: firebaseConfig.projectId,
-    })
-  : getApps()[0];
+// Initialize Firebase Admin safely
+let adminApp: any = null;
+let rawFirestore: any = null;
+let db: any = null;
+let adminAuth: any = null;
 
-const rawFirestore = getFirestore(adminApp, firebaseConfig.firestoreDatabaseId);
-const db = createResilientFirestore(rawFirestore) as any;
-const adminAuth = getAuth(adminApp);
+try {
+  adminApp = !getApps().length
+    ? initializeApp({
+        projectId: firebaseConfig.projectId,
+      })
+    : getApps()[0];
+  rawFirestore = getFirestore(adminApp, firebaseConfig.firestoreDatabaseId);
+  db = createResilientFirestore(rawFirestore);
+  adminAuth = getAuth(adminApp);
+} catch (fbErr) {
+  console.warn("Firebase Admin init notice (using resilient fallback store):", fbErr);
+  db = createResilientFirestore(null);
+}
 
 // Environment secrets
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || '';
@@ -279,7 +288,13 @@ function requireRole(roles: string[]) {
 
 // Initialize Shiprocket Logistics & Courier Webhook Subsystem
 registerLogisticsRoutes(app, db, authenticateUser, requireRole, mailTransporter, MAIL_FROM);
-initLogisticsWorkers(db, mailTransporter, MAIL_FROM);
+if (!process.env.VERCEL) {
+  try {
+    initLogisticsWorkers(db, mailTransporter, MAIL_FROM);
+  } catch (logisticsErr) {
+    console.warn("Logistics workers init skipped:", logisticsErr);
+  }
+}
 
 // Default Seed Function if Firestore is empty
 async function seedDefaultCatalogIfNeeded() {
