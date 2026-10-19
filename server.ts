@@ -2365,4 +2365,15 @@ app.delete('/api/admin/pages/:slug', authenticateUser, requireRole(['owner']), a
   res.json({ success: true });
 });
 
+
+// Express Global Error Handler (Ensures all errors return structured JSON)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Express Global Error Handler:", err);
+  if (!res.headersSent) {
+    res.status(err.status || 500).json({
+      error: err.message || "A server error occurred. Please try again."
+    });
+  }
+});
+
 export default app;

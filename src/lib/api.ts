@@ -10,9 +10,21 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
+async function safeJsonParse(res: Response) {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch (err) {
+    if (!res.ok) {
+      throw new Error(text || `Server error (${res.status})`);
+    }
+    return {};
+  }
+}
+
 export async function fetchHealth(): Promise<HealthResponse> {
   const res = await fetch('/api/health');
-  return res.json();
+  return safeJsonParse(res);
 }
 
 export async function fetchCatalog(): Promise<{
@@ -428,9 +440,9 @@ export async function adminFetch(endpoint: string, options: RequestInit = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await res.json();
+  const data = await safeJsonParse(res);
   if (!res.ok) {
-    throw new Error(data.error || 'Admin request failed');
+    throw new Error(data?.error || data?.message || (typeof data === 'string' ? data : 'Admin request failed'));
   }
   return data;
 }
