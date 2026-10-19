@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { auth, signInWithGoogle, signOutUser, signInStaff } from '../lib/firebase';
+import { auth, signOutUser, signInUser } from '../lib/firebase';
 import { adminFetch } from '../lib/api';
 import { UserProfile } from '../types';
 
@@ -57,7 +57,7 @@ export const AdminLayout: React.FC = () => {
       setLoginError(null);
       setSubmitting(true);
       try {
-        await signInStaff(email, password);
+        await signInUser(email, password);
         window.location.reload();
       } catch (err: any) {
         setLoginError(err.message || 'Login failed. Check your staff credentials.');
@@ -162,6 +162,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Support Inbox', path: '/admin/support', roles: ['owner', 'manager'] },
     { label: 'Reports', path: '/admin/reports', roles: ['owner'] },
     { label: 'System Check', path: '/admin/system-check', roles: ['owner'] },
+    { label: 'Special Offers', path: '/admin/offers', roles: ['owner', 'manager', 'editor'] },
     { label: 'Subscription Plans & Hub', path: '/admin/subscriptions', roles: ['owner', 'manager'] },
     { label: 'Instagram Feed API', path: '/admin/instagram', roles: ['owner', 'editor'] },
     { label: 'Razorpay Payments', path: '/admin/payments', roles: ['owner'] },

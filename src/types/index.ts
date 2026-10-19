@@ -311,6 +311,7 @@ export interface SiteSettings {
   qr_code_image_url?: string;
   payment_instructions?: string;
   subscription_plans?: { id: string; name: string; contents: string; billing: string; price: number; razorpay_link: string; popular?: boolean }[];
+  offers?: { id: string; title: string; subject: string; discount_text: string; description: string; coupon_code: string; image_url: string; valid_until: string; badge?: string }[];
   announcement_messages: { text: string; highlight?: string }[];
   prepaid_discount_percent: number;
   stack_prepaid_with_coupon: boolean;

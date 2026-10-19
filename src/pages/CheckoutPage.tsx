@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product, QuoteResponse, PaymentMethod } from '../types';
 import { quoteCart, createOrder, verifyPayment } from '../lib/api';
-import { signInWithGoogle, auth } from '../lib/firebase';
+import { auth } from '../lib/firebase';
 import { TruckIcon } from '../components/Icons';
 
 interface CheckoutPageProps {
@@ -80,17 +80,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const cred = await signInWithGoogle();
-      if (cred && cred.user) {
-        setName(cred.user.displayName || name);
-        setEmail(cred.user.email || email);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,13 +218,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         </div>
 
         {!auth.currentUser && (
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
+          <a
+            href="/auth"
             className="flex items-center gap-2 bg-white border border-[#0B3561]/20 px-4 py-2 rounded-xl text-xs font-heading font-semibold text-[#0B3561] hover:bg-[#DDF3F4] transition shadow-xs"
           >
-            <span>Google Sign-In (Optional)</span>
-          </button>
+            <span>Sign In for Faster Checkout</span>
+          </a>
         )}
       </div>
 

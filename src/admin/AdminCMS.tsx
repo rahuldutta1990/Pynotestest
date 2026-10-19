@@ -7,13 +7,14 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      if (section === 'settings' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders' || section === 'instagram' || section === 'payments' || section === 'payment-page' || section === 'subscriptions') {
+      if (section === 'settings' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders' || section === 'instagram' || section === 'payments' || section === 'payment-page' || section === 'subscriptions' || section === 'offers') {
         const res = await adminFetch('/settings');
         setSettings(res);
       } else if (section === 'coupons') {
@@ -25,6 +26,9 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
       } else if (section === 'faqs') {
         const res = await adminFetch('/faqs');
         setFaqs(res);
+      } else if (section === 'users') {
+        const res = await adminFetch('/users');
+        setUsers(res);
       }
     } catch (e) {
       console.error(e);
@@ -513,6 +517,229 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
           Save All Subscription Plans ⚡
         </button>
       </form>
+    );
+  }
+
+  if (section === 'offers') {
+    const offers = settings.offers || [
+      {
+        id: 'off-1',
+        title: 'BTech Computer Science Semester Complete Bundle',
+        subject: 'Computer Science',
+        discount_text: 'FLAT 40% OFF',
+        description: 'Get all 8 semesters handwritten notes, coding cheat sheets, and solved PYQs at a massive discount.',
+        coupon_code: 'BTECH40',
+        image_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80',
+        valid_until: '31st Oct 2026',
+        badge: 'BESTSELLER',
+      },
+      {
+        id: 'off-2',
+        title: 'GATE Computer Science & IT Master Pass',
+        subject: 'GATE / PSU',
+        discount_text: '₹500 OFF',
+        description: 'Comprehensive data structures, algorithms, operating systems, and DBMS notes with test series.',
+        coupon_code: 'GATE500',
+        image_url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+        valid_until: '15th Nov 2026',
+        badge: 'LIMITED TIME',
+      },
+      {
+        id: 'off-3',
+        title: 'UPSC Civil Services General Studies Notes Combo',
+        subject: 'UPSC / Civil Services',
+        discount_text: 'FLAT 35% OFF',
+        description: 'Polity, History, Geography, Economy, and Environment handwritten toppers notes.',
+        coupon_code: 'UPSC35',
+        image_url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
+        valid_until: '30th Nov 2026',
+        badge: 'POPULAR',
+      },
+    ];
+
+    const handleAddOffer = () => {
+      const newOffer = {
+        id: 'off-' + Date.now(),
+        title: 'New Subject Offer',
+        subject: 'Computer Science',
+        discount_text: '20% OFF',
+        description: 'Offer details and inclusions...',
+        coupon_code: 'SAVE20',
+        image_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80',
+        valid_until: 'End of Month',
+        badge: 'NEW',
+      };
+      setSettings({ ...settings, offers: [...offers, newOffer] });
+    };
+
+    const handleDeleteOffer = (id: string) => {
+      setSettings({ ...settings, offers: offers.filter(o => o.id !== id) });
+    };
+
+    const handleUpdateOffer = (id: string, field: string, val: any) => {
+      setSettings({
+        ...settings,
+        offers: offers.map(o => o.id === id ? { ...o, [field]: val } : o),
+      });
+    };
+
+    return (
+      <form onSubmit={handleSaveSettings} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 max-w-4xl text-xs">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-[#0B3561]">Special Offers & Subject Deals Management</h3>
+            <p className="text-[#3C5D81]">Add, edit, or delete offers displayed on the dedicated /offers page.</p>
+          </div>
+          <button type="button" onClick={handleAddOffer} className="bg-[#12A5B0] text-[#071E38] font-heading font-bold px-4 py-2.5 rounded-xl hover:brightness-105 transition">
+            + Add New Offer
+          </button>
+        </div>
+
+        {saveMsg && <div className="bg-[#DDF3F4] text-[#0B3561] font-bold p-3 rounded-xl">{saveMsg}</div>}
+
+        <div className="space-y-6">
+          {offers.map((offer, idx) => (
+            <div key={offer.id} className="border border-[#0B3561]/15 p-4 sm:p-6 rounded-2xl bg-[#F7FAFC] space-y-4 relative">
+              <div className="flex items-center justify-between">
+                <span className="font-heading font-bold text-sm text-[#0B3561]">Offer #{idx + 1}</span>
+                <button type="button" onClick={() => handleDeleteOffer(offer.id)} className="text-red-600 font-semibold hover:underline">
+                  Delete Offer
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold mb-1">Offer Title</label>
+                  <input
+                    type="text"
+                    value={offer.title}
+                    onChange={e => handleUpdateOffer(offer.id, 'title', e.target.value)}
+                    className="w-full p-2.5 bg-white border rounded-xl font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Subject Category</label>
+                  <input
+                    type="text"
+                    value={offer.subject}
+                    onChange={e => handleUpdateOffer(offer.id, 'subject', e.target.value)}
+                    className="w-full p-2.5 bg-white border rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Discount Tag (e.g. FLAT 40% OFF)</label>
+                  <input
+                    type="text"
+                    value={offer.discount_text}
+                    onChange={e => handleUpdateOffer(offer.id, 'discount_text', e.target.value)}
+                    className="w-full p-2.5 bg-white border rounded-xl font-bold text-[#12A5B0]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Coupon Code</label>
+                  <input
+                    type="text"
+                    value={offer.coupon_code}
+                    onChange={e => handleUpdateOffer(offer.id, 'coupon_code', e.target.value)}
+                    className="w-full p-2.5 bg-white border rounded-xl font-mono uppercase font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Valid Until</label>
+                  <input
+                    type="text"
+                    value={offer.valid_until}
+                    onChange={e => handleUpdateOffer(offer.id, 'valid_until', e.target.value)}
+                    className="w-full p-2.5 bg-white border rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Badge Text (Optional)</label>
+                  <input
+                    type="text"
+                    value={offer.badge || ''}
+                    onChange={e => handleUpdateOffer(offer.id, 'badge', e.target.value)}
+                    className="w-full p-2.5 bg-white border rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Banner Image URL</label>
+                <input
+                  type="text"
+                  value={offer.image_url}
+                  onChange={e => handleUpdateOffer(offer.id, 'image_url', e.target.value)}
+                  className="w-full p-2.5 bg-white border rounded-xl font-mono text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={offer.description}
+                  onChange={e => handleUpdateOffer(offer.id, 'description', e.target.value)}
+                  className="w-full p-2.5 bg-white border rounded-xl"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="w-full bg-[#0B3561] text-white font-heading font-bold py-3 rounded-xl hover:bg-[#071E38] transition">
+          Save All Special Offers ⚡
+        </button>
+      </form>
+    );
+  }
+
+  if (section === 'users') {
+    return (
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 text-xs">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-[#0B3561]">User Management</h3>
+            <p className="text-[#3C5D81]">View and manage all registered users, staff, and customers.</p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
+          <table className="w-full text-left">
+            <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
+              <tr>
+                <th className="px-4 py-3">User / Name</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Joined On</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#0B3561]/5">
+              {users.map(u => (
+                <tr key={u.uid} className="hover:bg-[#DDF3F4]/20 transition">
+                  <td className="px-4 py-3 font-bold text-[#0B3561]">{u.name || 'Student'}</td>
+                  <td className="px-4 py-3 text-[#3C5D81] font-mono">{u.email}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                      u.role === 'owner' ? 'bg-purple-100 text-purple-700' :
+                      u.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-[#9DAEC0]">
+                    {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {users.length === 0 && (
+            <div className="p-10 text-center text-[#3C5D81]">No users found in database.</div>
+          )}
+        </div>
+      </div>
     );
   }
 

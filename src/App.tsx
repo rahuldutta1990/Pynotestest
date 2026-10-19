@@ -25,6 +25,8 @@ import { FaqPage } from './pages/FaqPage';
 import { PolicyPage } from './pages/PolicyPage';
 import { PaymentPage } from './pages/PaymentPage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
+import { OfferPage } from './pages/OfferPage';
+import { AuthPage } from './pages/AuthPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 // Admin Pages
@@ -139,6 +141,7 @@ export default function App() {
           <Route path="reports" element={<AdminCMS section="reports" />} />
           <Route path="system-check" element={<AdminSystemCheck />} />
           <Route path="subscriptions" element={<AdminCMS section="subscriptions" />} />
+          <Route path="offers" element={<AdminCMS section="offers" />} />
           <Route path="settings" element={<AdminCMS section="settings" />} />
           <Route path="instagram" element={<AdminCMS section="instagram" />} />
           <Route path="payments" element={<AdminCMS section="payments" />} />
@@ -225,8 +228,10 @@ export default function App() {
                     <Route path="/order/:orderNo/thank-you" element={<ThankYouPage />} />
                     <Route path="/track" element={<TrackPage />} />
                     <Route path="/pay" element={<PaymentPage settings={settings!} />} />
-                    <Route path="/subscription" element={<SubscriptionPage />} />
-                    <Route path="/account" element={<AccountPage />} />
+                     <Route path="/subscription" element={<SubscriptionPage />} />
+                     <Route path="/offers" element={<OfferPage settings={settings!} />} />
+                     <Route path="/auth" element={<AuthPage />} />
+                     <Route path="/account" element={<AccountPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/contact" element={<ContactPage settings={settings!} />} />
                     <Route path="/faq" element={<FaqPage faqs={faqs} />} />

@@ -91,9 +91,10 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Phone Number</label>
+            <label className="block text-xs font-heading font-semibold text-[#0B3561] mb-1">Phone Number *</label>
             <input
               type="tel"
+              required
               value={phone}
               onChange={e => setPhone(e.target.value)}
               className="w-full px-4 py-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs"

@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -12,16 +12,11 @@ export const getIdToken = async () => {
   return user ? await user.getIdToken() : null;
 };
 
-export const signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  return await signInWithPopup(auth, provider);
-};
-
-export const signInStaff = async (email: string, pass: string) => {
+export const signInUser = async (email: string, pass: string) => {
   return await signInWithEmailAndPassword(auth, email, pass);
 };
 
-export const registerStaff = async (email: string, pass: string) => {
+export const registerUser = async (email: string, pass: string) => {
   return await createUserWithEmailAndPassword(auth, email, pass);
 };
 

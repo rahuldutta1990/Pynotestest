@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, registerStaff } from '../lib/firebase';
+import { auth, registerUser } from '../lib/firebase';
 import { adminFetch } from '../lib/api';
 
 export const AdminSetupPage: React.FC = () => {
@@ -19,7 +19,7 @@ export const AdminSetupPage: React.FC = () => {
     try {
       // 1. Create or sign in staff account with email/password
       try {
-        await registerStaff(email, password);
+        await registerUser(email, password);
       } catch (regErr: any) {
         // If user already exists, try sign in or proceed if already logged in
         if (!auth.currentUser) {

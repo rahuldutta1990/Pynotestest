@@ -27,11 +27,9 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false);
-
+  const [searchVisible, setSearchVisible] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Close search popup on outside click
   useEffect(() => {
@@ -43,6 +41,10 @@ export const Header: React.FC<HeaderProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false);
 
   // Filter subjects and products based on user search query
   const matchingSubjects = searchQuery.trim()
@@ -209,7 +211,15 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <span>Subscriptions</span>
-              <span className="bg-[#FFD54A] text-[#071E38] text-[9px] font-black px-1.5 py-0.2 rounded-full">PRO</span>
+            </Link>
+
+            <Link
+              to="/offers"
+              className={`px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
+                isCurrent('/offers') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
+              }`}
+            >
+              <span>Offers</span>
             </Link>
 
             <Link
@@ -222,43 +232,86 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
           </nav>
 
-          {/* INLINE HEADER SEARCH BAR (Desktop & Tablet) */}
-          <div ref={searchContainerRef} className="relative hidden md:block flex-1 max-w-xs xl:max-w-md mx-2">
+          {/* HEADER ACTIONS */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Search Toggle Button */}
+            <button
+              onClick={() => {
+                setSearchVisible(!searchVisible);
+                if (!searchVisible) setTimeout(() => searchInputRef.current?.focus(), 100);
+              }}
+              className={`p-2 rounded-full transition ${searchVisible ? 'bg-[#12A5B0] text-white shadow-md' : 'text-[#0B3561] hover:bg-[#DDF3F4]'}`}
+              aria-label="Toggle search"
+            >
+              <SearchIcon className="w-5 h-5" />
+            </button>
+
+            <Link
+              to={userEmail ? '/account' : '/auth'}
+              className={`p-2 rounded-full transition ${isCurrent('/account') || isCurrent('/auth') ? 'bg-[#0B3561] text-white shadow-md' : 'text-[#0B3561] hover:bg-[#DDF3F4]'}`}
+              aria-label={userEmail ? 'Account' : 'Sign In'}
+              title={userEmail ? 'Account' : 'Sign In'}
+            >
+              <UserIcon className="w-5 h-5" />
+            </Link>
+
+            <button
+              onClick={onOpenCart}
+              className="relative p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition"
+              aria-label="View cart"
+            >
+              <CartIcon className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#12A5B0] text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* EXPANDABLE AUTOMATED SEARCH BAR (1px Gap from Header) */}
+      {searchVisible && (
+        <div className="sticky top-[73px] z-30 bg-white border-b border-[#0B3561]/10 shadow-lg animate-slideDown overflow-visible">
+          <div ref={searchContainerRef} className="max-w-4xl mx-auto px-4 py-4 relative">
             <div className="relative flex items-center">
-              <SearchIcon className="w-4 h-4 text-[#0B3561]/60 absolute left-3.5 pointer-events-none" />
+              <SearchIcon className="w-5 h-5 text-[#0B3561]/60 absolute left-4 pointer-events-none" />
               <input
+                ref={searchInputRef}
                 type="text"
-                placeholder="Search 13 books, Python, SQL, DSA..."
+                placeholder="Type to search books, Python, SQL, DSA..."
                 value={searchQuery}
                 onChange={e => {
                   setSearchQuery(e.target.value);
                   setSearchFocused(true);
                 }}
                 onFocus={() => setSearchFocused(true)}
-                className="w-full pl-9 pr-8 py-2 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-full text-xs font-medium text-[#0B3561] placeholder:text-[#3C5D81]/70 focus:outline-none focus:border-[#12A5B0] focus:ring-2 focus:ring-[#12A5B0]/20 transition-all shadow-inner"
+                className="w-full pl-11 pr-12 py-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-2xl text-sm font-medium text-[#0B3561] placeholder:text-[#3C5D81]/70 focus:outline-none focus:border-[#12A5B0] focus:ring-4 focus:ring-[#12A5B0]/10 transition-all shadow-inner"
               />
               {searchQuery && (
                 <button
                   onClick={() => {
                     setSearchQuery('');
-                    setSearchFocused(false);
                   }}
-                  className="absolute right-3 text-[#3C5D81] hover:text-[#0B3561] text-xs font-bold"
+                  className="absolute right-4 text-[#3C5D81] hover:text-[#0B3561] bg-white p-1 rounded-full shadow-sm"
                 >
-                  ✕
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               )}
             </div>
 
-            {/* Instant Live Autocomplete Dropdown */}
+            {/* Instant Live Autocomplete Dropdown - Positioned inside the expanding bar */}
             {searchFocused && searchQuery.trim().length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-[#0B3561]/15 overflow-hidden z-50 animate-fadeIn">
+              <div className="absolute top-full left-4 right-4 mt-1 bg-white rounded-2xl shadow-2xl border border-[#0B3561]/15 overflow-hidden z-50 animate-fadeIn">
                 <div className="max-h-80 overflow-y-auto divide-y divide-[#0B3561]/10">
                   
                   {/* Matching Subjects Section */}
                   {matchingSubjects.length > 0 && (
-                    <div className="p-3 bg-[#DDF3F4]/30">
-                      <span className="text-[10px] font-bold text-[#12A5B0] uppercase tracking-wider block mb-2 px-1">
+                    <div className="p-4 bg-[#DDF3F4]/30">
+                      <span className="text-[10px] font-black text-[#12A5B0] uppercase tracking-widest block mb-3 px-1">
                         Matching Subjects ({matchingSubjects.length})
                       </span>
                       <div className="space-y-1">
@@ -268,15 +321,16 @@ export const Header: React.FC<HeaderProps> = ({
                             onClick={() => {
                               setSearchQuery('');
                               setSearchFocused(false);
+                              setSearchVisible(false);
                               navigate(`/product/${sub.slug}`);
                             }}
-                            className="p-2 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition text-xs font-semibold text-[#0B3561]"
+                            className="p-3 rounded-xl hover:bg-[#DDF3F4] cursor-pointer flex items-center justify-between transition text-sm font-bold text-[#0B3561]"
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sub.accent_color || '#12A5B0' }} />
+                            <div className="flex items-center gap-3">
+                              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: sub.accent_color || '#12A5B0' }} />
                               <span>{sub.name}</span>
                             </div>
-                            <span className="text-[10px] text-[#12A5B0] font-bold">Explore Book →</span>
+                            <span className="text-xs text-[#12A5B0] font-black">Explore Book →</span>
                           </div>
                         ))}
                       </div>
@@ -323,44 +377,8 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
-
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Mobile Search Toggle Button */}
-            <button
-              onClick={() => setMobileSearchExpanded(!mobileSearchExpanded)}
-              className="md:hidden p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition"
-              title="Search"
-            >
-              <SearchIcon className="w-5 h-5" />
-            </button>
-
-            {/* Account Icon */}
-            <Link
-              to={userEmail ? '/account' : '/account?login=true'}
-              className="p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition"
-              title={userEmail ? 'Account' : 'Sign In'}
-            >
-              <UserIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-            </Link>
-
-            {/* Cart Icon with count badge */}
-            <button
-              onClick={onOpenCart}
-              className="p-2 text-[#0B3561] hover:bg-[#DDF3F4] rounded-full transition relative"
-              title="Cart"
-            >
-              <CartIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#12A5B0] text-[#071E38] font-bold text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-          </div>
         </div>
-      </header>
-
+      )}
       {/* Expandable Search Input for Mobile View */}
       {mobileSearchExpanded && (
         <div className="md:hidden bg-white border-b border-[#0B3561]/10 p-3 animate-fadeIn">
@@ -477,6 +495,22 @@ export const Header: React.FC<HeaderProps> = ({
                 className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
               >
                 Book Bundles
+              </Link>
+
+              <Link
+                to="/offers"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4] text-[#12A5B0] font-bold"
+              >
+                Special Offers 🏷️
+              </Link>
+
+              <Link
+                to="/subscription"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2.5 rounded-xl hover:bg-[#DDF3F4]"
+              >
+                Subscriptions (Pro)
               </Link>
 
               <Link

@@ -1055,14 +1055,48 @@ app.post('/api/contact', async (req, res) => {
     return res.status(400).json({ error: 'Name, email, and message required' });
   }
 
-  await db.collection('contact_messages').add({
+  const lead = {
     name,
     email,
     phone: phone || '',
     message,
     status: 'new',
     created_at: new Date().toISOString(),
-  });
+  };
+
+  await db.collection('contact_messages').add(lead);
+
+  // Send Lead Email Notification
+  if (mailTransporter) {
+    try {
+      await mailTransporter.sendMail({
+        from: MAIL_FROM,
+        to: 'devrd720@gmail.com',
+        subject: `New Lead: ${name} from Contact Form`,
+        text: `
+          New Contact Lead Received:
+          Name: ${name}
+          Email: ${email}
+          Phone: ${phone || 'N/A'}
+          Message: ${message}
+        `,
+        html: `
+          <div style="font-family: sans-serif; color: #0B3561;">
+            <h2>New Contact Lead Received</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+            <p><strong>Message:</strong></p>
+            <div style="background: #F7FAFC; padding: 15px; border-radius: 8px; border: 1px solid #0B3561/10;">
+              ${message.replace(/\n/g, '<br/>')}
+            </div>
+          </div>
+        `,
+      });
+    } catch (err: any) {
+      console.error('Failed to send lead email:', err.message);
+    }
+  }
 
   res.json({ message: 'Contact message received' });
 });
@@ -1176,6 +1210,18 @@ app.post('/api/admin/setup-claim', authenticateUser, async (req, res) => {
   );
 
   res.json({ message: 'Owner role claimed successfully! You now have full store control.' });
+});
+
+// Admin Users
+app.get('/api/admin/users', authenticateUser, async (req, res) => {
+  try {
+    const snap = await db.collection('users').get();
+    const users = snap.docs.map(d => d.data());
+    users.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Admin Dashboard KPI

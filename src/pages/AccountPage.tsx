@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { signInWithGoogle, signOutUser, auth } from '../lib/firebase';
+import { signOutUser, auth } from '../lib/firebase';
 import { fetchMyOrders, submitReview, submitIssueReport } from '../lib/api';
 import { Order } from '../types';
 
@@ -75,20 +75,17 @@ export const AccountPage: React.FC = () => {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center space-y-6">
         <div className="bg-white p-8 rounded-3xl border border-[#0B3561]/15 shadow-xl space-y-4">
-          <h2 className="font-heading font-bold text-2xl text-[#0B3561]">Customer Account Sign In</h2>
+          <h2 className="font-heading font-bold text-2xl text-[#0B3561]">Account Required</h2>
           <p className="font-body text-xs text-[#3C5D81]">
-            Sign in with your Google Account to view your order history, write book reviews, and report issues.
+            Please sign in to your account to view your order history, write book reviews, and report issues.
           </p>
 
-          <button
-            onClick={async () => {
-              await signInWithGoogle();
-              window.location.reload();
-            }}
-            className="w-full bg-[#0B3561] text-white font-heading font-bold py-3.5 rounded-xl hover:bg-[#071E38] transition shadow-md flex items-center justify-center gap-2 text-xs"
+          <a
+            href="/auth"
+            className="w-full bg-[#0B3561] text-[#FFD54A] font-heading font-bold py-3.5 rounded-xl hover:bg-[#071E38] transition shadow-md flex items-center justify-center gap-2 text-xs"
           >
-            <span>Sign In with Google</span>
-          </button>
+            <span>Go to Sign In</span>
+          </a>
         </div>
       </div>
     );

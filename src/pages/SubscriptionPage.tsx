@@ -13,7 +13,6 @@ export const SubscriptionPage: React.FC = () => {
     {
       id: 'monthly_ca',
       name: 'Monthly Current Affairs',
-      badge: 'POPULAR STARTER',
       monthlyPrice: 199,
       yearlyPrice: 149, // per month billed annually
       desc: 'Monthly PDF, daily & weekly quizzes, and concise one-page monthly current affairs capsules.',
@@ -29,7 +28,6 @@ export const SubscriptionPage: React.FC = () => {
     {
       id: 'exam_pass',
       name: 'Target Exam Pass',
-      badge: 'RECOMMENDED FOR SERIOUS ASPIRANTS',
       monthlyPrice: 599,
       yearlyPrice: 399, // per month billed annually
       desc: 'Comprehensive current affairs, subject notes, test series, and previous-year papers for your chosen exam.',
@@ -45,7 +43,6 @@ export const SubscriptionPage: React.FC = () => {
     {
       id: 'all_access',
       name: 'All-Access Master Pass',
-      badge: 'BEST VALUE • SAVE 65%',
       monthlyPrice: 1299,
       yearlyPrice: 799, // per month billed annually
       desc: 'Unlimited access to all govt exam tracks, complete test series banks, and priority mentor sessions.',
@@ -64,12 +61,11 @@ export const SubscriptionPage: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-[#F7FAFC] text-[#0B3561] relative overflow-hidden">
       <AbstractShapes />
 
-      <InnerPageBanner
-        title="Govt Exam Prep & Current Affairs Subscriptions"
-        subtitle="Crack UPSC, SSC, Banking, and State PSC with structured notes, daily quizzes, and autopay passes."
-      />
-
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-12 relative z-10 w-full space-y-12">
+        <div className="text-center space-y-3 pt-6">
+          <h1 className="font-display font-black text-3xl sm:text-4xl text-[#0B3561]">Govt Exam Prep & Current Affairs Subscriptions</h1>
+          <p className="font-body text-sm text-[#3C5D81] max-w-2xl mx-auto">Crack UPSC, SSC, Banking, and State PSC with structured notes, daily quizzes, and autopay passes.</p>
+        </div>
         
         {/* EXAM TRACK SELECTOR */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/12 shadow-sm space-y-4 text-center">
@@ -124,12 +120,6 @@ export const SubscriptionPage: React.FC = () => {
                   selectedPlan === plan.id ? 'border-[#12A5B0] scale-102 ring-4 ring-[#12A5B0]/20' : 'border-[#0B3561]/12 hover:border-[#12A5B0]/50'
                 }`}
               >
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[10px] uppercase tracking-wider px-4 py-1 rounded-full shadow-md">
-                    {plan.badge}
-                  </div>
-                )}
-
                 <div className="space-y-4">
                   <div className="text-center space-y-1">
                     <h3 className="font-heading font-bold text-xl text-[#0B3561]">{plan.name}</h3>

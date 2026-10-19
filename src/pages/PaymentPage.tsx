@@ -51,24 +51,6 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({ settings: initialSetti
 
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-8 py-12 relative z-10 w-full space-y-12">
         
-        {/* TOP NOTICE CARD */}
-        <div className="bg-[#071E38] text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-[#12A5B0]/30 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <span className="inline-block bg-[#12A5B0]/20 text-[#12A5B0] font-heading font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border border-[#12A5B0]/30">
-              SECURE MERCHANT TRANSFER
-            </span>
-            <h2 className="font-heading font-bold text-xl sm:text-2xl text-white">
-              Instant UPI & QR Code Checkout
-            </h2>
-            <p className="font-body text-xs sm:text-sm text-[#DDF3F4]/80">
-              {instructions}
-            </p>
-          </div>
-          <div className="bg-[#12A5B0] text-[#071E38] font-heading font-bold px-6 py-3.5 rounded-2xl shadow-lg flex items-center gap-2 text-sm flex-shrink-0">
-            <span>⚡ 100% Safe & Verified</span>
-          </div>
-        </div>
-
         {/* QR CODE DISPLAY SECTION */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           
