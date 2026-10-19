@@ -303,6 +303,14 @@ export interface WaitlistEntry {
 }
 
 export interface SiteSettings {
+  instagram_access_token?: string;
+  razorpay_key_id?: string;
+  razorpay_key_secret?: string;
+  merchant_name?: string;
+  merchant_upi_id?: string;
+  qr_code_image_url?: string;
+  payment_instructions?: string;
+  subscription_plans?: { id: string; name: string; contents: string; billing: string; price: number; razorpay_link: string; popular?: boolean }[];
   announcement_messages: { text: string; highlight?: string }[];
   prepaid_discount_percent: number;
   stack_prepaid_with_coupon: boolean;

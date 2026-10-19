@@ -43,13 +43,21 @@ const MAIL_FROM = process.env.MAIL_FROM || 'PyNotes <noreply@pynotes.in>';
 const ORDER_TOKEN_SECRET = process.env.ORDER_TOKEN_SECRET || 'pynotes-fallback-token-secret-2026';
 const OWNER_SETUP_CODE = process.env.OWNER_SETUP_CODE || 'pynotes-admin-setup';
 
-// Razorpay client instance
-let razorpayClient: Razorpay | null = null;
-if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
-  razorpayClient = new Razorpay({
-    key_id: RAZORPAY_KEY_ID,
-    key_secret: RAZORPAY_KEY_SECRET,
-  });
+async function getRazorpayClient() {
+  let keyId = RAZORPAY_KEY_ID;
+  let keySecret = RAZORPAY_KEY_SECRET;
+
+  try {
+    const sDoc = await db.collection('settings').doc('site').get();
+    if (sDoc.exists) {
+      const data = sDoc.data();
+      if (data?.razorpay_key_id) keyId = data.razorpay_key_id;
+      if (data?.razorpay_key_secret) keySecret = data.razorpay_key_secret;
+    }
+  } catch {}
+
+  const client = (keyId && keySecret) ? new Razorpay({ key_id: keyId, key_secret: keySecret }) : null;
+  return { client, keyId, keySecret };
 }
 
 // Nodemailer transporter
@@ -343,18 +351,20 @@ seedDefaultCatalogIfNeeded().catch(console.error);
 // ----------------------------------------------------
 
 // GET /api/health
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const rzpInfo = await getRazorpayClient();
+  const keyId = rzpInfo.keyId;
   res.json({
     status: 'ok',
     integrations: {
-      razorpay: !!(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET),
+      razorpay: !!rzpInfo.client,
       shiprocket: !!(SHIPROCKET_EMAIL && SHIPROCKET_PASSWORD),
       smtp: !!(SMTP_HOST && SMTP_USER),
       order_token_secret: !!ORDER_TOKEN_SECRET,
       owner_setup_code: !!OWNER_SETUP_CODE,
       firebase: true,
     },
-    test_mode: RAZORPAY_KEY_ID.startsWith('rzp_test_'),
+    test_mode: keyId ? keyId.startsWith('rzp_test_') : true,
   });
 });
 
@@ -857,9 +867,10 @@ app.post('/api/orders', checkoutLimiter, async (req, res) => {
 
     // Create Razorpay Order if prepaid
     let razorpay_order_id = undefined;
-    if (payment_method === 'prepaid' && razorpayClient) {
+    const rzpInfo = await getRazorpayClient();
+    if (payment_method === 'prepaid' && rzpInfo.client) {
       try {
-        const rzpOrder = await razorpayClient.orders.create({
+        const rzpOrder = await rzpInfo.client.orders.create({
           amount: orderResult.total_paise,
           currency: 'INR',
           receipt: orderResult.orderNo,
@@ -878,7 +889,7 @@ app.post('/api/orders', checkoutLimiter, async (req, res) => {
       order_no: orderResult.orderNo,
       token,
       razorpay_order_id,
-      razorpay_key_id: RAZORPAY_KEY_ID,
+      razorpay_key_id: rzpInfo.keyId,
       total_paise: orderResult.total_paise,
       message: payment_method === 'cod' ? 'COD order placed successfully!' : 'Order created, proceed to payment.',
     });
@@ -890,10 +901,11 @@ app.post('/api/orders', checkoutLimiter, async (req, res) => {
 // POST /api/payments/verify
 app.post('/api/payments/verify', async (req, res) => {
   const { order_no, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+  const rzpInfo = await getRazorpayClient();
 
-  if (RAZORPAY_KEY_SECRET) {
+  if (rzpInfo.keySecret) {
     const generatedSignature = crypto
-      .createHmac('sha256', RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', rzpInfo.keySecret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
@@ -1467,6 +1479,24 @@ app.post('/api/admin/system-check', authenticateUser, async (req, res) => {
   ];
 
   res.json({ tests });
+});
+
+// Admin Test Razorpay Live API
+app.post('/api/admin/test-razorpay', authenticateUser, async (req, res) => {
+  try {
+    const rzpInfo = await getRazorpayClient();
+    if (!rzpInfo.client) {
+      return res.status(400).json({ success: false, message: 'Razorpay Key ID and Secret are not configured in settings or environment.' });
+    }
+    const testOrder = await rzpInfo.client.orders.create({
+      amount: 100,
+      currency: 'INR',
+      receipt: 'TEST_LIVE_PING',
+    });
+    res.json({ success: true, message: `Razorpay live API test successful! Order ID: ${testOrder.id}`, test_order_id: testOrder.id });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message || 'Razorpay live API test failed. Check your live Key ID and Secret.' });
+  }
 });
 
 // Instagram Feed API Proxy

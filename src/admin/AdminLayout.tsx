@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { auth, signInWithGoogle, signOutUser } from '../lib/firebase';
+import { auth, signInWithGoogle, signOutUser, signInStaff } from '../lib/firebase';
 import { adminFetch } from '../lib/api';
 import { UserProfile } from '../types';
 
@@ -162,6 +162,10 @@ export const AdminLayout: React.FC = () => {
     { label: 'Support Inbox', path: '/admin/support', roles: ['owner', 'manager'] },
     { label: 'Reports', path: '/admin/reports', roles: ['owner'] },
     { label: 'System Check', path: '/admin/system-check', roles: ['owner'] },
+    { label: 'Subscription Plans & Hub', path: '/admin/subscriptions', roles: ['owner', 'manager'] },
+    { label: 'Instagram Feed API', path: '/admin/instagram', roles: ['owner', 'editor'] },
+    { label: 'Razorpay Payments', path: '/admin/payments', roles: ['owner'] },
+    { label: 'Payment Page & QR', path: '/admin/payment-page', roles: ['owner', 'manager'] },
     { label: 'Settings', path: '/admin/settings', roles: ['owner'] },
     { label: 'Users & Audit', path: '/admin/users', roles: ['owner'] },
   ];

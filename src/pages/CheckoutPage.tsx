@@ -82,10 +82,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
   const handleGoogleLogin = async () => {
     try {
-      const user = await signInWithGoogle();
-      if (user) {
-        setName(user.displayName || name);
-        setEmail(user.email || email);
+      const cred = await signInWithGoogle();
+      if (cred && cred.user) {
+        setName(cred.user.displayName || name);
+        setEmail(cred.user.email || email);
       }
     } catch (e) {
       console.error(e);

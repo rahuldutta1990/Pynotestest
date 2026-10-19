@@ -203,6 +203,16 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
 
             <Link
+              to="/subscription"
+              className={`px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
+                isCurrent('/subscription') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'
+              }`}
+            >
+              <span>Subscriptions</span>
+              <span className="bg-[#FFD54A] text-[#071E38] text-[9px] font-black px-1.5 py-0.2 rounded-full">PRO</span>
+            </Link>
+
+            <Link
               to="/track"
               className={`px-3 py-1.5 rounded-full transition-colors ${
                 isCurrent('/track') ? 'bg-[#0B3561] text-white' : 'hover:bg-[#DDF3F4]'

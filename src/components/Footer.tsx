@@ -149,6 +149,12 @@ export const Footer: React.FC<FooterProps> = ({ settings }) => {
               <li><Link to="/about" className="hover:text-[#12A5B0] transition">About Us</Link></li>
               <li><Link to="/contact" className="hover:text-[#12A5B0] transition">Contact Us</Link></li>
               <li><Link to="/track" className="hover:text-[#12A5B0] transition">Order Tracking</Link></li>
+              <li>
+                <Link to="/pay" className="hover:text-[#12A5B0] transition flex items-center gap-1.5">
+                  <span>Quick Scan & Pay</span>
+                  <span className="bg-[#12A5B0] text-[#071E38] text-[10px] font-bold px-1.5 py-0.5 rounded">UPI QR</span>
+                </Link>
+              </li>
               <li><Link to="/faq" className="hover:text-[#12A5B0] transition">FAQ's</Link></li>
             </ul>
           </div>

@@ -261,7 +261,7 @@ export async function fetchCatalog(): Promise<{
       },
       faqs: [],
       reviews: [],
-    };
+    } as any;
   }
 }
 

@@ -6,6 +6,7 @@ interface InstagramPost {
   media_url?: string;
   permalink?: string;
   timestamp?: string;
+  time?: string;
   handle?: string;
   likes?: string;
   tag?: string;
@@ -48,6 +49,7 @@ export const InstagramCarousel: React.FC = () => {
       handle: '@handwrittencode',
       caption: 'C Programming pointer notes fully handwritten & color-coded! 🚀 #btech #coding',
       media_url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+      permalink: 'https://instagram.com',
       likes: '1,428 likes',
       time: '2 hours ago',
       tag: '#HandwrittenCode #BTech',
@@ -57,6 +59,7 @@ export const InstagramCarousel: React.FC = () => {
       handle: '@handwrittencode',
       caption: 'DSA binary tree traversal handwritten revision sheet 📚 #datastructures',
       media_url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop&q=80',
+      permalink: 'https://instagram.com',
       likes: '2,890 likes',
       time: 'Yesterday',
       tag: '#CodingLife #ExamPrep',
@@ -66,6 +69,7 @@ export const InstagramCarousel: React.FC = () => {
       handle: '@handwrittencode',
       caption: 'Python OOP concepts made super simple for semester exams! ✨ #python',
       media_url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&auto=format&fit=crop&q=80',
+      permalink: 'https://instagram.com',
       likes: '954 likes',
       time: '3 days ago',
       tag: '#ComputerScience #Notes',
@@ -75,6 +79,7 @@ export const InstagramCarousel: React.FC = () => {
       handle: '@handwrittencode',
       caption: 'Final night exam revision setup with PyNotes physical printed books ☕📖',
       media_url: 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=600&auto=format&fit=crop&q=80',
+      permalink: 'https://instagram.com',
       likes: '3,120 likes',
       time: '4 days ago',
       tag: '#Placements #Java #Python',
