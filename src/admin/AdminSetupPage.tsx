@@ -17,21 +17,18 @@ export const AdminSetupPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      // 1. Create or sign in staff account with email/password
+      // 1. Create or sign in staff account with email/password if enabled
       try {
         await registerUser(email, password);
       } catch (regErr: any) {
-        // If user already exists, try sign in or proceed if already logged in
-        if (!auth.currentUser) {
-          throw regErr;
-        }
+        console.warn('Firebase registration notice:', regErr?.message || regErr);
       }
 
-      // 2. Claim owner role
+      // 2. Claim owner role directly via backend API
       const res = await adminFetch('/setup-claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ setup_code: setupCode }),
+        body: JSON.stringify({ setup_code: setupCode, email }),
       });
       setMsg(res.message || 'Congratulations! You are now the store Owner.');
       setTimeout(() => navigate('/admin'), 1500);
