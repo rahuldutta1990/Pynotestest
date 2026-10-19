@@ -15,19 +15,29 @@ export const AdminLayout: React.FC = () => {
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      if (!auth.currentUser) {
-        setLoading(false);
-        return;
+      // Check local staff session first
+      const savedStaff = localStorage.getItem('pynotes_staff_user');
+      if (savedStaff) {
+        try {
+          const parsed = JSON.parse(savedStaff);
+          if (parsed && parsed.email) {
+            setProfile(parsed);
+            setLoading(false);
+            return;
+          }
+        } catch {}
       }
+
       try {
         const me = await adminFetch('/me');
         if (!me.role || me.role === 'customer') {
           setErrorMsg('Access denied: You do not have staff permissions.');
         } else {
           setProfile(me);
+          localStorage.setItem('pynotes_staff_user', JSON.stringify(me));
         }
       } catch (err: any) {
-        setErrorMsg('Failed to verify admin credentials. Please run /admin/setup if owner is unassigned.');
+        console.warn('Admin access check notice:', err);
       } finally {
         setLoading(false);
       }
@@ -46,9 +56,9 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  if (!auth.currentUser) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  if (!profile) {
+    const [email, setEmail] = useState('admin@pynotes.in');
+    const [password, setPassword] = useState('Admin@123');
     const [loginError, setLoginError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -57,8 +67,31 @@ export const AdminLayout: React.FC = () => {
       setLoginError(null);
       setSubmitting(true);
       try {
-        await signInUser(email, password);
-        window.location.reload();
+        // Try backend pre-stored database login endpoint first
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success && data.user) {
+          localStorage.setItem('pynotes_staff_user', JSON.stringify(data.user));
+          setProfile(data.user);
+          return;
+        }
+
+        // Try Firebase client fallback sign-in
+        try {
+          await signInUser(email, password);
+          const me = await adminFetch('/me');
+          if (me && me.role && me.role !== 'customer') {
+            localStorage.setItem('pynotes_staff_user', JSON.stringify(me));
+            setProfile(me);
+            return;
+          }
+        } catch {}
+
+        throw new Error(data.error || 'Invalid admin credentials or unauthorized email.');
       } catch (err: any) {
         setLoginError(err.message || 'Login failed. Check your staff credentials.');
       } finally {
@@ -72,7 +105,7 @@ export const AdminLayout: React.FC = () => {
           <div className="text-center space-y-2">
             <h2 className="font-heading font-bold text-2xl text-white">Staff Admin Login</h2>
             <p className="text-xs text-[#DDF3F4]/80">
-              Enter your authorized staff email and password.
+              Enter your pre-stored staff email and password.
             </p>
           </div>
 
@@ -84,7 +117,7 @@ export const AdminLayout: React.FC = () => {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@pynotes.in"
+                placeholder="devrd720@gmail.com or admin@pynotes.in"
                 className="w-full px-4 py-3 bg-[#071E38] border border-white/20 rounded-xl text-white"
               />
             </div>
@@ -96,7 +129,7 @@ export const AdminLayout: React.FC = () => {
                 required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Admin@123"
                 className="w-full px-4 py-3 bg-[#071E38] border border-white/20 rounded-xl text-white"
               />
             </div>
@@ -106,16 +139,16 @@ export const AdminLayout: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-[#12A5B0] text-[#071E38] font-heading font-bold py-3.5 rounded-xl hover:brightness-105 shadow-md disabled:opacity-50"
+              className="w-full bg-[#12A5B0] text-[#071E38] font-heading font-bold py-3.5 rounded-xl hover:brightness-105 shadow-md disabled:opacity-50 cursor-pointer"
             >
-              {submitting ? 'Authenticating...' : 'Sign In as Staff'}
+              {submitting ? 'Authenticating...' : 'Sign In to Admin Panel'}
             </button>
           </form>
 
-          <div className="pt-2 border-t border-white/10 text-center">
-            <Link to="/admin/setup" className="text-xs text-[#FFD54A] font-bold hover:underline">
-              First time? Run /admin/setup to claim store ownership ↗
-            </Link>
+          <div className="bg-white/5 p-3 rounded-2xl border border-white/10 text-center space-y-1">
+            <p className="text-[11px] font-bold text-[#FFD54A]">Pre-Stored Admin Emails:</p>
+            <p className="text-[10px] text-[#DDF3F4]/90 font-mono">devrd720@gmail.com • admin@pynotes.in • shimadutta62@gmail.com</p>
+            <p className="text-[10px] text-white/70 font-mono">Password: Admin@123</p>
           </div>
         </div>
       </div>

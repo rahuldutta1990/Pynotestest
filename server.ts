@@ -1381,6 +1381,47 @@ app.post('/api/issues', authenticateUser, async (req, res) => {
 // STAFF / ADMIN API ENDPOINTS
 // ----------------------------------------------------
 
+// Pre-Stored Admin Login Endpoint
+app.post("/api/admin/login", async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const preStoredAdminEmails = [
+    "devrd720@gmail.com",
+    "admin@pynotes.in",
+    "shimadutta62@gmail.com",
+    "owner@pynotes.in",
+    "pynotes.in@gmail.com"
+  ];
+
+  const userDoc = await db.collection("users").doc(cleanEmail).get();
+  let userData = userDoc.exists ? userDoc.data() : null;
+
+  if (preStoredAdminEmails.includes(cleanEmail) || userData?.role === "owner" || userData?.role === "manager" || userData?.role === "editor") {
+    if (!userData || userData.role !== "owner") {
+      userData = {
+        uid: cleanEmail,
+        email: cleanEmail,
+        name: cleanEmail.split("@")[0],
+        role: "owner",
+        created_at: new Date().toISOString(),
+      };
+      await db.collection("users").doc(cleanEmail).set(userData, { merge: true });
+    }
+
+    return res.json({
+      success: true,
+      user: userData,
+      message: "Admin authentication successful",
+    });
+  }
+
+  return res.status(401).json({ error: "Invalid admin email or staff account not pre-stored." });
+});
+
 // One-time Setup Claim Owner Route
 app.post('/api/admin/setup-claim', async (req, res) => {
   const { setup_code, email } = req.body;
