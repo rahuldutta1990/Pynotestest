@@ -27,6 +27,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const product = products.find(p => p.slug === slug);
   const [selectedQty, setSelectedQty] = useState(1);
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [pageFlipKey, setPageFlipKey] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [readMoreDesc, setReadMoreDesc] = useState(false);
 
@@ -87,12 +88,40 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           
           {/* Left Column: Gallery (55%) -> 7 cols */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="w-full max-w-md mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-xl border border-[#0B3561]/10 bg-white">
-              <PlaceholderCover
-                title={product.title.replace(' Simplified Handwritten Notes', '')}
-                accentColor="#12A5B0"
-                imageUrl={product.images && product.images.length > 0 ? product.images[selectedImageIdx] : undefined}
-              />
+            <div className="w-full max-w-md mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-xl border border-[#0B3561]/10 bg-white relative group/gallery">
+              <div key={pageFlipKey} className="w-full h-full animate-page-turn">
+                <PlaceholderCover
+                  title={product.title.replace(' Simplified Handwritten Notes', '')}
+                  accentColor="#12A5B0"
+                  imageUrl={product.images && product.images.length > 0 ? product.images[selectedImageIdx] : undefined}
+                />
+              </div>
+
+              {/* Overlay Page Turnover Arrows < > */}
+              {product.images && product.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => {
+                      setSelectedImageIdx(prev => (prev - 1 + product.images.length) % product.images.length);
+                      setPageFlipKey(Date.now());
+                    }}
+                    aria-label="Previous image"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/gallery:opacity-100 transition shadow-lg font-bold text-lg z-20 cursor-pointer backdrop-blur-xs"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedImageIdx(prev => (prev + 1) % product.images.length);
+                      setPageFlipKey(Date.now());
+                    }}
+                    aria-label="Next image"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/gallery:opacity-100 transition shadow-lg font-bold text-lg z-20 cursor-pointer backdrop-blur-xs"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Thumbnail Strip */}
@@ -101,8 +130,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 {product.images.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedImageIdx(idx)}
-                    className={`w-16 h-20 rounded-lg overflow-hidden border-2 transition ${
+                    onClick={() => {
+                      setSelectedImageIdx(idx);
+                      setPageFlipKey(Date.now());
+                    }}
+                    className={`w-16 h-20 rounded-lg overflow-hidden border-2 transition cursor-pointer ${
                       selectedImageIdx === idx ? 'border-[#12A5B0] shadow-md' : 'border-transparent opacity-70'
                     }`}
                   >

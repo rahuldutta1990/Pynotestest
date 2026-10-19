@@ -13,7 +13,7 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      if (section === 'settings' || section === 'pricing' || section === 'content') {
+      if (section === 'settings' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders') {
         const res = await adminFetch('/settings');
         setSettings(res);
       } else if (section === 'coupons') {
@@ -162,6 +162,97 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
           Save Settings
         </button>
       </form>
+    );
+  }
+
+  if (section === 'announcements') {
+    return (
+      <form onSubmit={handleSaveSettings} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 max-w-2xl text-xs">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561]">Announcement Bar</h3>
+        {saveMsg && <div className="bg-[#DDF3F4] text-[#0B3561] font-bold p-3 rounded-xl">{saveMsg}</div>}
+
+        <div className="space-y-4">
+          {(settings.announcement_messages || []).map((msg, index) => (
+            <div key={index} className="flex gap-2 items-start border-b pb-4">
+              <input
+                type="text"
+                value={msg.text}
+                onChange={e => {
+                  const newMsgs = [...(settings.announcement_messages || [])];
+                  newMsgs[index].text = e.target.value;
+                  setSettings({ ...settings, announcement_messages: newMsgs });
+                }}
+                className="flex-1 p-2.5 bg-[#F7FAFC] border rounded-xl"
+                placeholder="Message text"
+              />
+              <input
+                type="text"
+                value={msg.highlight || ''}
+                onChange={e => {
+                  const newMsgs = [...(settings.announcement_messages || [])];
+                  newMsgs[index].highlight = e.target.value;
+                  setSettings({ ...settings, announcement_messages: newMsgs });
+                }}
+                className="w-24 p-2.5 bg-[#F7FAFC] border rounded-xl"
+                placeholder="Highlight"
+              />
+              <button 
+                type="button"
+                onClick={() => {
+                  const newMsgs = (settings.announcement_messages || []).filter((_, i) => i !== index);
+                  setSettings({ ...settings, announcement_messages: newMsgs });
+                }}
+                className="text-red-500 font-bold p-2"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+          <button 
+            type="button"
+            onClick={() => setSettings({ ...settings, announcement_messages: [...(settings.announcement_messages || []), { text: '', highlight: '' }] })}
+            className="text-blue-600 font-bold"
+          >
+            + Add Message
+          </button>
+        </div>
+
+        <button type="submit" className="w-full bg-[#0B3561] text-white font-heading font-bold py-3 rounded-xl">
+          Save Announcements
+        </button>
+      </form>
+    );
+  }
+
+  if (section === 'products') {
+    return (
+      <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm text-xs space-y-4">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561] capitalize">Manage Products</h3>
+        <p className="text-[#3C5D81]">Manage your catalog: add, edit, or remove books.</p>
+        {/* Simplified form structure placeholder */}
+        <button className="bg-[#12A5B0] text-white p-2 rounded-xl">Add New Product</button>
+      </div>
+    );
+  }
+
+  if (section === 'hero-banners') {
+    return (
+      <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm text-xs space-y-4">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561] capitalize">Manage Hero Banners</h3>
+        <p className="text-[#3C5D81]">Upload and replace your hero banner images.</p>
+        <button className="bg-[#12A5B0] text-white p-2 rounded-xl">Upload New Banner</button>
+      </div>
+    );
+  }
+
+  if (section === 'orders') {
+    return (
+      <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm text-xs space-y-4">
+        <h3 className="font-heading font-bold text-lg text-[#0B3561] capitalize">Manage Orders</h3>
+        <p className="text-[#3C5D81]">View and filter customer orders, manage statuses and COD confirmation.</p>
+        {/* Placeholder for Order Table */}
+        <div className="border p-4 rounded-xl">Order List Placeholder</div>
+      </div>
     );
   }
 

@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Rotating messages for the announcement bar",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "highlight": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "sortOrder": { "type": "number" }
+      },
+      "required": ["text", "enabled"]
+    },
+    "HeroBanner": {
+      "title": "HeroBanner",
+      "description": "Hero banner configuration",
+      "type": "object",
+      "properties": {
+        "desktopImage": { "type": "string" },
+        "mobileImage": { "type": "string" },
+        "link": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" }
+      },
+      "required": ["desktopImage"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Store product",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "price": { "type": "number" },
+        "sku": { "type": "string" },
+        "stock": { "type": "number" }
+      },
+      "required": ["title", "price", "sku"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order",
+      "type": "object",
+      "properties": {
+        "orderNo": { "type": "string" },
+        "customerName": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["orderNo", "customerName", "totalAmount", "status"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Store customer profile",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "totalSpent": { "type": "number" }
+      },
+      "required": ["name", "email"]
+    }
+  },
+  "firestore": {
+    "announcements": {
+      "schema": "Announcement",
+      "description": "List of announcements"
+    },
+    "hero_banners": {
+      "schema": "HeroBanner",
+      "description": "List of hero banners"
+    },
+    "products": {
+      "schema": "Product",
+      "description": "Store products"
+    },
+    "orders": {
+      "schema": "Order",
+      "description": "Customer orders"
+    },
+    "customers": {
+      "schema": "Customer",
+      "description": "Customer profiles"
+    }
+  }
+}

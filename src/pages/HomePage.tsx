@@ -29,6 +29,17 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [contactError, setContactError] = useState<string | null>(null);
   const [contactSubmitting, setContactSubmitting] = useState(false);
 
+  const carouselRef = React.useRef<HTMLDivElement>(null);
+  const [activeImageIdx, setActiveImageIdx] = useState<Record<string, number>>({});
+  const [pageFlipKey, setPageFlipKey] = useState<Record<string, number>>({});
+
+  const scrollLeft = () => {
+    carouselRef.current?.scrollBy({ left: -380, behavior: 'smooth' });
+  };
+  const scrollRight = () => {
+    carouselRef.current?.scrollBy({ left: 380, behavior: 'smooth' });
+  };
+
   const featuredProducts = products.filter(p => p.status === 'active' && p.type === 'book');
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -59,70 +70,175 @@ export const HomePage: React.FC<HomePageProps> = ({
     <div className="space-y-16 pb-16">
       
       {/* SECTION C: HERO BANNER */}
-      <section className="w-full">
-        <img 
-          src="/hero-banner.png" 
-          alt="PyNotes Hero Banner" 
-          className="w-full h-auto object-cover"
+      <section className="w-full relative">
+        <img
+          src="/hero-banner.png"
+          alt="PyNotes Hero Banner"
+          className="w-full h-auto object-cover block"
+        />
+        <button
+          onClick={() => navigate('/bundles')}
+          className="absolute bottom-[20%] left-[5%] w-[18%] h-[10%] cursor-pointer hover:bg-white/20 transition-colors"
+          aria-label="Shop Bundle Now"
         />
       </section>
 
       {/* SECTION D: FEATURE STRIP */}
-      <div className="-mt-1">
-        <FeatureStrip />
-      </div>
+      <FeatureStrip />
 
-      {/* SECTION E: FEATURED COLLECTION (3 Columns Grid) */}
+      {/* SECTION E: FEATURED COLLECTION WITH CAROUSEL ARROWS & PAGE TURNING MULTI-IMAGE GALLERY */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
-        <div className="text-center space-y-3">
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561] inline-block relative">
-            Featured{' '}
-            <span className="relative inline-block text-[#12A5B0]">
-              collection
-              <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-            </span>
-          </h2>
-          <p className="font-body text-[#3C5D81] text-base max-w-md mx-auto">
-            Explore our top-selling handwritten printed books designed for conceptual clarity and fast exam revision.
-          </p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+          <div className="space-y-3">
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561] inline-block relative">
+              Featured{' '}
+              <span className="relative inline-block text-[#12A5B0]">
+                collection
+                <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
+              </span>
+            </h2>
+            <p className="font-body text-[#3C5D81] text-base max-w-md">
+              Explore our top-selling handwritten printed books designed for conceptual clarity and fast exam revision.
+            </p>
+          </div>
+
+          {/* Carousel Navigation Arrows < > */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={scrollLeft}
+              aria-label="Scroll left"
+              className="w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-md font-bold text-lg cursor-pointer"
+            >
+              ‹
+            </button>
+            <button
+              onClick={scrollRight}
+              aria-label="Scroll right"
+              className="w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-md font-bold text-lg cursor-pointer"
+            >
+              ›
+            </button>
+          </div>
         </div>
 
-        {/* 3-Column Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Carousel Container */}
+        <div ref={carouselRef} className="flex gap-6 overflow-x-auto pb-6 snap-x scrollbar-hide scroll-smooth">
           {featuredProducts.map(prod => {
             const savingsPercent = Math.round(((prod.mrp_paise - prod.price_paise) / prod.mrp_paise) * 100);
+            const images = prod.images && prod.images.length > 0 ? prod.images : [];
+            const currIdx = activeImageIdx[prod.slug] || 0;
+            const currentImg = images.length > 0 ? images[currIdx % images.length] : undefined;
 
             return (
               <div
                 key={prod.slug}
-                className="bg-white rounded-3xl p-6 border border-[#0B3561]/12 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                className="bg-white rounded-3xl p-6 border border-[#0B3561]/12 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden snap-start min-w-[300px] sm:min-w-[350px]"
               >
                 <div>
-                  {/* 3D Book Image Cover */}
-                  <div
-                    onClick={() => navigate(`/product/${prod.slug}`)}
-                    className="cursor-pointer mb-5 relative group/img"
-                  >
-                    <PlaceholderCover
-                      title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
-                      accentColor="#12A5B0"
-                      imageUrl={prod.images && prod.images.length > 0 ? prod.images[0] : undefined}
-                    />
+                  {/* 3D Book Image Cover with Page Turning Animation & Overlay <> Carousel Buttons */}
+                  <div className="mb-4 relative group/img">
+                    <div
+                      key={pageFlipKey[prod.slug] || 0}
+                      onClick={() => navigate(`/product/${prod.slug}`)}
+                      className="cursor-pointer transform-gpu transition-all duration-500 ease-out group-hover/img:scale-102 animate-page-turn"
+                    >
+                      <PlaceholderCover
+                        title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
+                        accentColor="#12A5B0"
+                        imageUrl={currentImg}
+                      />
+                    </div>
 
-                    {/* SAVE Chip at bottom-left of image */}
+                    {/* Overlay Page Turning Carousel Arrows < > on the Image Card */}
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIdx(prev => ({
+                              ...prev,
+                              [prod.slug]: ((prev[prod.slug] || 0) - 1 + images.length) % images.length,
+                            }));
+                            setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                          }}
+                          aria-label="Previous image"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
+                        >
+                          ‹
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIdx(prev => ({
+                              ...prev,
+                              [prod.slug]: ((prev[prod.slug] || 0) + 1) % images.length,
+                            }));
+                            setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                          }}
+                          aria-label="Next image"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
+                        >
+                          ›
+                        </button>
+                      </>
+                    )}
+
+                    {/* SAVE Chip at top-left */}
                     {savingsPercent > 0 && (
-                      <div className="absolute top-4 left-4 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[11px] px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 uppercase tracking-wider">
+                      <div className="absolute top-4 left-4 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[11px] px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 uppercase tracking-wider pointer-events-none">
                         <span>SAVE {savingsPercent}%</span>
                       </div>
                     )}
-
-                    {/* Badge Text Top Right */}
-                    {prod.badge_text && (
-                      <div className="absolute top-4 right-4 bg-[#0B3561] text-white font-heading font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-white/20 uppercase tracking-wider z-10">
-                        {prod.badge_text}
-                      </div>
-                    )}
                   </div>
+
+                  {/* Under the Image Card: Multi-Picture Switcher & Page Turning Navigation */}
+                  {images.length > 1 && (
+                    <div className="mb-4 flex items-center justify-between bg-[#F7FAFC] px-3 py-2 rounded-xl border border-[#0B3561]/10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveImageIdx(prev => ({
+                            ...prev,
+                            [prod.slug]: ((prev[prod.slug] || 0) - 1 + images.length) % images.length,
+                          }));
+                          setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                        }}
+                        className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
+                      >
+                        ‹ Prev Page
+                      </button>
+
+                      <div className="flex items-center gap-1.5">
+                        {images.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIdx(prev => ({ ...prev, [prod.slug]: i }));
+                              setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                            }}
+                            className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                              i === (currIdx % images.length) ? 'bg-[#12A5B0] w-4' : 'bg-[#0B3561]/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveImageIdx(prev => ({
+                            ...prev,
+                            [prod.slug]: ((prev[prod.slug] || 0) + 1) % images.length,
+                          }));
+                          setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                        }}
+                        className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
+                      >
+                        Next Page ›
+                      </button>
+                    </div>
+                  )}
 
                   {/* Title */}
                   <h3
@@ -132,71 +248,27 @@ export const HomePage: React.FC<HomePageProps> = ({
                     {prod.title}
                   </h3>
 
-                  {/* Rating Stars */}
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex text-[#FFD54A] text-xs">
-                      ★★★★★
-                    </div>
-                    <span className="font-heading text-xs font-semibold text-[#0B3561]">4.9</span>
-                    <span className="text-[11px] text-[#6D86A0] font-medium">(120+ student reviews)</span>
+                  {/* Price Section */}
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="font-display font-black italic text-2xl text-[#0B3561]">
+                      Rs. {(prod.price_paise / 100).toFixed(2)}
+                    </span>
+                    <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
+                      Rs. {(prod.mrp_paise / 100).toFixed(2)}
+                    </span>
                   </div>
 
-                  {/* Short Description & Bullet Highlights */}
-                  <p className="font-body text-xs text-[#3C5D81] mt-2.5 leading-relaxed line-clamp-2">
+                  {/* Short Description */}
+                  <p className="font-body text-xs text-[#3C5D81] mt-2 leading-relaxed line-clamp-2">
                     {prod.short_desc}
                   </p>
-
-                  <ul className="mt-3.5 space-y-1.5 font-body text-xs text-[#0B3561] border-t border-[#0B3561]/10 pt-3">
-                    <li className="flex items-center gap-2 font-medium">
-                      <span className="text-[#13834D] font-bold">✓</span> Full Semester Syllabus & Exam Notes
-                    </li>
-                    <li className="flex items-center gap-2 font-medium">
-                      <span className="text-[#13834D] font-bold">✓</span> Color-Coded Syntax & Diagrams
-                    </li>
-                    <li className="flex items-center gap-2 font-medium">
-                      <span className="text-[#13834D] font-bold">✓</span> Printed Physical Book Delivered
-                    </li>
-                  </ul>
-
-                  {/* Stock & Express Delivery Banner */}
-                  <div className="mt-3.5 bg-[#DDF3F4]/70 px-3 py-1.5 rounded-xl border border-[#12A5B0]/30 flex items-center justify-between text-[11px] font-heading font-semibold text-[#0B3561]">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#13834D] animate-pulse" />
-                      In Stock ({prod.stock_qty || 50} copies left)
-                    </span>
-                    <span className="text-[#12A5B0] font-bold">Express Shipping</span>
-                  </div>
-
-                  {/* Price Section */}
-                  <div className="flex items-baseline justify-between mt-4 pt-3 border-t border-[#0B3561]/10">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-display font-black italic text-2xl text-[#0B3561]">
-                        Rs. {(prod.price_paise / 100).toFixed(2)}
-                      </span>
-                      <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
-                        Rs. {(prod.mrp_paise / 100).toFixed(2)}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-heading font-bold text-[#13834D] bg-[#13834D]/10 px-2 py-0.5 rounded-md">
-                      GST Included
-                    </span>
-                  </div>
                 </div>
 
-                {/* Quick Add / View Button */}
-                <div className="mt-6 pt-4 border-t border-[#0B3561]/10 flex gap-2">
-                  <button
-                    onClick={() => onAddToCart(prod.slug, 1)}
-                    className="flex-1 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs py-3 rounded-xl hover:brightness-105 transition shadow-sm flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z" />
-                    </svg>
-                    <span>Add to Cart</span>
-                  </button>
+                {/* View Details Button */}
+                <div className="mt-4 pt-4 border-t border-[#0B3561]/10">
                   <Link
                     to={`/product/${prod.slug}`}
-                    className="px-4 py-3 bg-[#F7FAFC] border border-[#0B3561]/20 text-[#0B3561] font-heading font-bold text-xs rounded-xl hover:bg-[#DDF3F4] transition flex items-center"
+                    className="block w-full text-center py-3 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs rounded-xl hover:brightness-105 transition shadow-sm"
                   >
                     View Details
                   </Link>

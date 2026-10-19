@@ -47,23 +47,72 @@ export const AdminLayout: React.FC = () => {
   }
 
   if (!auth.currentUser) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleLogin = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoginError(null);
+      setSubmitting(true);
+      try {
+        await signInStaff(email, password);
+        window.location.reload();
+      } catch (err: any) {
+        setLoginError(err.message || 'Login failed. Check your staff credentials.');
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
     return (
       <div className="min-h-screen bg-[#071E38] text-white flex items-center justify-center p-6">
-        <div className="bg-[#0B3561] p-8 rounded-3xl max-w-md w-full border border-white/10 shadow-2xl text-center space-y-6">
-          <h2 className="font-heading font-bold text-2xl text-white">Staff Admin Login</h2>
-          <p className="text-xs text-[#DDF3F4]/80">
-            Sign in with your authorized Google staff account.
-          </p>
-          <button
-            onClick={async () => {
-              await signInWithGoogle();
-              window.location.reload();
-            }}
-            className="w-full bg-[#12A5B0] text-[#071E38] font-heading font-bold py-3.5 rounded-xl hover:brightness-105 shadow-md"
-          >
-            Sign In with Google
-          </button>
-          <div className="pt-2 border-t border-white/10">
+        <div className="bg-[#0B3561] p-8 rounded-3xl max-w-md w-full border border-white/10 shadow-2xl space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="font-heading font-bold text-2xl text-white">Staff Admin Login</h2>
+            <p className="text-xs text-[#DDF3F4]/80">
+              Enter your authorized staff email and password.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-semibold mb-1 text-[#DDF3F4]">Staff Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@pynotes.in"
+                className="w-full px-4 py-3 bg-[#071E38] border border-white/20 rounded-xl text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 text-[#DDF3F4]">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-[#071E38] border border-white/20 rounded-xl text-white"
+              />
+            </div>
+
+            {loginError && <p className="text-[#C0392B] font-bold">{loginError}</p>}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-[#12A5B0] text-[#071E38] font-heading font-bold py-3.5 rounded-xl hover:brightness-105 shadow-md disabled:opacity-50"
+            >
+              {submitting ? 'Authenticating...' : 'Sign In as Staff'}
+            </button>
+          </form>
+
+          <div className="pt-2 border-t border-white/10 text-center">
             <Link to="/admin/setup" className="text-xs text-[#FFD54A] font-bold hover:underline">
               First time? Run /admin/setup to claim store ownership ↗
             </Link>
@@ -98,9 +147,11 @@ export const AdminLayout: React.FC = () => {
   const role = profile?.role || 'customer';
 
   const menuItems = [
+    { label: 'Announcement Bar', path: '/admin/announcements', roles: ['owner', 'editor'] },
+    { label: 'Hero Banners', path: '/admin/hero-banners', roles: ['owner', 'editor'] },
+    { label: 'Products', path: '/admin/product-list', roles: ['owner', 'manager'] },
+    { label: 'Orders', path: '/admin/orders', roles: ['owner', 'manager'] },
     { label: 'Dashboard', path: '/admin', roles: ['owner', 'manager'] },
-    { label: 'Orders & COD', path: '/admin/orders', roles: ['owner', 'manager'] },
-    { label: 'Products & Bundles', path: '/admin/products', roles: ['owner', 'manager'] },
     { label: 'Inventory & Reconcile', path: '/admin/inventory', roles: ['owner', 'manager'] },
     { label: 'Subjects', path: '/admin/subjects', roles: ['owner', 'manager'] },
     { label: 'Coupons', path: '/admin/coupons', roles: ['owner', 'manager'] },
