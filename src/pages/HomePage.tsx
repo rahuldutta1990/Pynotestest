@@ -6,6 +6,8 @@ import { FeatureStrip } from '../components/FeatureStrip';
 import { TestimonialSlider } from '../components/TestimonialSlider';
 import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, NotesIcon, HandwrittenIcon, TruckIcon, IdeaIcon } from '../components/Icons';
 import { postContactMessage } from '../lib/api';
+import { InteractiveCodingQuiz } from '../components/InteractiveCodingQuiz';
+import { StudyPlannerWidget } from '../components/StudyPlannerWidget';
 
 interface HomePageProps {
   subjects: Subject[];
@@ -67,7 +69,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="space-y-16 pb-16">
+    <div className="space-y-8 pb-8">
       
       {/* SECTION C: HERO BANNER */}
       <section className="w-full relative">
@@ -86,72 +88,105 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* SECTION D: FEATURE STRIP */}
       <FeatureStrip />
 
-      {/* SECTION E: FEATURED COLLECTION WITH CAROUSEL ARROWS & PAGE TURNING MULTI-IMAGE GALLERY */}
+      {/* SECTION E: FEATURED COLLECTION WITH EXTREME LEFT & RIGHT CAROUSEL ARROWS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
-          <div className="space-y-3">
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561] inline-block relative">
-              Featured{' '}
-              <span className="relative inline-block text-[#12A5B0]">
-                collection
-                <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-              </span>
-            </h2>
-            <p className="font-body text-[#3C5D81] text-base max-w-md">
-              Explore our top-selling handwritten printed books designed for conceptual clarity and fast exam revision.
-            </p>
-          </div>
-
-          {/* Carousel Navigation Arrows < > */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={scrollLeft}
-              aria-label="Scroll left"
-              className="w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-md font-bold text-lg cursor-pointer"
-            >
-              ‹
-            </button>
-            <button
-              onClick={scrollRight}
-              aria-label="Scroll right"
-              className="w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-md font-bold text-lg cursor-pointer"
-            >
-              ›
-            </button>
-          </div>
+        <div className="text-center space-y-3">
+          <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561] inline-block relative">
+            Featured{' '}
+            <span className="relative inline-block text-[#12A5B0]">
+              collection
+              <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
+            </span>
+          </h2>
+          <p className="font-body text-[#3C5D81] text-base max-w-md mx-auto">
+            Explore our top-selling handwritten printed books designed for conceptual clarity and fast exam revision.
+          </p>
         </div>
 
-        {/* Carousel Container */}
-        <div ref={carouselRef} className="flex gap-6 overflow-x-auto pb-6 snap-x scrollbar-hide scroll-smooth">
-          {featuredProducts.map(prod => {
-            const savingsPercent = Math.round(((prod.mrp_paise - prod.price_paise) / prod.mrp_paise) * 100);
-            const images = prod.images && prod.images.length > 0 ? prod.images : [];
-            const currIdx = activeImageIdx[prod.slug] || 0;
-            const currentImg = images.length > 0 ? images[currIdx % images.length] : undefined;
+        {/* Carousel Wrapper with Extreme Left & Right Arrows */}
+        <div className="relative px-2 sm:px-6">
+          {/* Extreme Left Arrow */}
+          <button
+            onClick={scrollLeft}
+            aria-label="Scroll left"
+            className="absolute -left-3 sm:-left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-2xl font-bold text-xl z-30 cursor-pointer border-2 border-white"
+          >
+            ‹
+          </button>
 
-            return (
-              <div
-                key={prod.slug}
-                className="bg-white rounded-3xl p-6 border border-[#0B3561]/12 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden snap-start min-w-[300px] sm:min-w-[350px]"
-              >
-                <div>
-                  {/* 3D Book Image Cover with Page Turning Animation & Overlay <> Carousel Buttons */}
-                  <div className="mb-4 relative group/img">
-                    <div
-                      key={pageFlipKey[prod.slug] || 0}
-                      onClick={() => navigate(`/product/${prod.slug}`)}
-                      className="cursor-pointer transform-gpu transition-all duration-500 ease-out group-hover/img:scale-102 animate-page-turn"
-                    >
-                      <PlaceholderCover
-                        title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
-                        accentColor="#12A5B0"
-                        imageUrl={currentImg}
-                      />
+          {/* Carousel Container */}
+          <div ref={carouselRef} className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x scrollbar-hide scroll-smooth">
+            {featuredProducts.map(prod => {
+              const savingsPercent = Math.round(((prod.mrp_paise - prod.price_paise) / prod.mrp_paise) * 100);
+              const images = prod.images && prod.images.length > 0 ? prod.images : [];
+              const currIdx = activeImageIdx[prod.slug] || 0;
+              const currentImg = images.length > 0 ? images[currIdx % images.length] : undefined;
+
+              return (
+                <div
+                  key={prod.slug}
+                  className="bg-white rounded-3xl p-6 border border-[#0B3561]/12 shadow-lg hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden snap-start min-w-[300px] sm:min-w-[350px]"
+                >
+                  <div>
+                    {/* 3D Book Image Cover with Page Turning Animation & Overlay <> Carousel Buttons */}
+                    <div className="mb-4 relative group/img">
+                      <div
+                        key={pageFlipKey[prod.slug] || 0}
+                        onClick={() => navigate(`/product/${prod.slug}`)}
+                        className="cursor-pointer transform-gpu transition-all duration-500 ease-out group-hover/img:scale-102 animate-page-turn"
+                      >
+                        <PlaceholderCover
+                          title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
+                          accentColor="#12A5B0"
+                          imageUrl={currentImg}
+                        />
+                      </div>
+
+                      {/* Overlay Page Turning Carousel Arrows < > on the Image Card */}
+                      {images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIdx(prev => ({
+                                ...prev,
+                                [prod.slug]: ((prev[prod.slug] || 0) - 1 + images.length) % images.length,
+                              }));
+                              setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                            }}
+                            aria-label="Previous image"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
+                          >
+                            ‹
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIdx(prev => ({
+                                ...prev,
+                                [prod.slug]: ((prev[prod.slug] || 0) + 1) % images.length,
+                              }));
+                              setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                            }}
+                            aria-label="Next image"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
+                          >
+                            ›
+                          </button>
+                        </>
+                      )}
+
+                      {/* SAVE Chip at top-left */}
+                      {savingsPercent > 0 && (
+                        <div className="absolute top-4 left-4 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[11px] px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 uppercase tracking-wider pointer-events-none">
+                          <span>SAVE {savingsPercent}%</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Overlay Page Turning Carousel Arrows < > on the Image Card */}
+                    {/* Under the Image Card: Multi-Picture Switcher & Page Turning Navigation */}
                     {images.length > 1 && (
-                      <>
+                      <div className="mb-4 flex items-center justify-between bg-[#F7FAFC] px-3 py-2 rounded-xl border border-[#0B3561]/10">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -161,11 +196,27 @@ export const HomePage: React.FC<HomePageProps> = ({
                             }));
                             setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
                           }}
-                          aria-label="Previous image"
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
+                          className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
                         >
-                          ‹
+                          ‹ Prev Page
                         </button>
+
+                        <div className="flex items-center gap-1.5">
+                          {images.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveImageIdx(prev => ({ ...prev, [prod.slug]: i }));
+                                setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
+                              }}
+                              className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                                i === (currIdx % images.length) ? 'bg-[#12A5B0] w-4' : 'bg-[#0B3561]/30'
+                              }`}
+                            />
+                          ))}
+                        </div>
+
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -175,107 +226,59 @@ export const HomePage: React.FC<HomePageProps> = ({
                             }));
                             setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
                           }}
-                          aria-label="Next image"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#0B3561]/80 hover:bg-[#12A5B0] text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition shadow-lg font-bold text-base z-20 cursor-pointer backdrop-blur-xs"
+                          className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
                         >
-                          ›
+                          Next Page ›
                         </button>
-                      </>
-                    )}
-
-                    {/* SAVE Chip at top-left */}
-                    {savingsPercent > 0 && (
-                      <div className="absolute top-4 left-4 bg-[#FFD54A] text-[#071E38] font-heading font-black text-[11px] px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 z-10 uppercase tracking-wider pointer-events-none">
-                        <span>SAVE {savingsPercent}%</span>
                       </div>
                     )}
-                  </div>
 
-                  {/* Under the Image Card: Multi-Picture Switcher & Page Turning Navigation */}
-                  {images.length > 1 && (
-                    <div className="mb-4 flex items-center justify-between bg-[#F7FAFC] px-3 py-2 rounded-xl border border-[#0B3561]/10">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveImageIdx(prev => ({
-                            ...prev,
-                            [prod.slug]: ((prev[prod.slug] || 0) - 1 + images.length) % images.length,
-                          }));
-                          setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                        }}
-                        className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
-                      >
-                        ‹ Prev Page
-                      </button>
+                    {/* Title */}
+                    <h3
+                      onClick={() => navigate(`/product/${prod.slug}`)}
+                      className="font-heading font-bold text-lg text-[#0B3561] line-clamp-2 hover:text-[#12A5B0] cursor-pointer transition min-h-[52px]"
+                    >
+                      {prod.title}
+                    </h3>
 
-                      <div className="flex items-center gap-1.5">
-                        {images.map((_, i) => (
-                          <button
-                            key={i}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveImageIdx(prev => ({ ...prev, [prod.slug]: i }));
-                              setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                            }}
-                            className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                              i === (currIdx % images.length) ? 'bg-[#12A5B0] w-4' : 'bg-[#0B3561]/30'
-                            }`}
-                          />
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveImageIdx(prev => ({
-                            ...prev,
-                            [prod.slug]: ((prev[prod.slug] || 0) + 1) % images.length,
-                          }));
-                          setPageFlipKey(prev => ({ ...prev, [prod.slug]: Date.now() }));
-                        }}
-                        className="text-xs font-bold text-[#0B3561] hover:text-[#12A5B0] px-2 py-1 rounded bg-white shadow-xs cursor-pointer"
-                      >
-                        Next Page ›
-                      </button>
+                    {/* Price Section */}
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="font-display font-black italic text-2xl text-[#0B3561]">
+                        Rs. {(prod.price_paise / 100).toFixed(2)}
+                      </span>
+                      <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
+                        Rs. {(prod.mrp_paise / 100).toFixed(2)}
+                      </span>
                     </div>
-                  )}
 
-                  {/* Title */}
-                  <h3
-                    onClick={() => navigate(`/product/${prod.slug}`)}
-                    className="font-heading font-bold text-lg text-[#0B3561] line-clamp-2 hover:text-[#12A5B0] cursor-pointer transition min-h-[52px]"
-                  >
-                    {prod.title}
-                  </h3>
-
-                  {/* Price Section */}
-                  <div className="flex items-baseline gap-2 mt-2">
-                    <span className="font-display font-black italic text-2xl text-[#0B3561]">
-                      Rs. {(prod.price_paise / 100).toFixed(2)}
-                    </span>
-                    <span className="font-body text-xs text-[#9DAEC0] line-through font-semibold">
-                      Rs. {(prod.mrp_paise / 100).toFixed(2)}
-                    </span>
+                    {/* Short Description */}
+                    <p className="font-body text-xs text-[#3C5D81] mt-2 leading-relaxed line-clamp-2">
+                      {prod.short_desc}
+                    </p>
                   </div>
 
-                  {/* Short Description */}
-                  <p className="font-body text-xs text-[#3C5D81] mt-2 leading-relaxed line-clamp-2">
-                    {prod.short_desc}
-                  </p>
+                  {/* View Details Button */}
+                  <div className="mt-4 pt-4 border-t border-[#0B3561]/10">
+                    <Link
+                      to={`/product/${prod.slug}`}
+                      className="block w-full text-center py-3 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs rounded-xl hover:brightness-105 transition shadow-sm"
+                    >
+                      View Details
+                    </Link>
+                  </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* View Details Button */}
-                <div className="mt-4 pt-4 border-t border-[#0B3561]/10">
-                  <Link
-                    to={`/product/${prod.slug}`}
-                    className="block w-full text-center py-3 bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs rounded-xl hover:brightness-105 transition shadow-sm"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+          {/* Extreme Right Arrow */}
+          <button
+            onClick={scrollRight}
+            aria-label="Scroll right"
+            className="absolute -right-3 sm:-right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#0B3561] text-white flex items-center justify-center hover:bg-[#12A5B0] hover:text-[#071E38] transition shadow-2xl font-bold text-xl z-30 cursor-pointer border-2 border-white"
+          >
+            ›
+          </button>
         </div>
 
         {/* View All Button */}
@@ -348,13 +351,22 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* SECTION G: "BUILT FOR CONCEPT CLARITY" */}
-      <section className="bg-[#DDF3F4]/50 py-16 px-4 sm:px-8 border-y border-[#12A5B0]/20">
-        <div className="max-w-7xl mx-auto space-y-10">
-          <div className="text-center">
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561]">
+      {/* SECTION G: "BUILT FOR CONCEPT CLARITY" WITH PARALLAX OVERLAY IMAGE */}
+      <section className="relative py-10 px-4 sm:px-8 bg-fixed bg-cover bg-center overflow-hidden border-y border-[#12A5B0]/20" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600&auto=format&fit=crop&q=80')` }}>
+        {/* Dark Gradient Overlay for Parallax Depth */}
+        <div className="absolute inset-0 bg-[#071E38]/85 backdrop-blur-xs" />
+
+        <div className="relative max-w-7xl mx-auto space-y-12 z-10 text-white">
+          <div className="text-center space-y-3">
+            <span className="bg-[#12A5B0]/30 text-[#FFD54A] font-heading font-black text-xs px-4 py-1.5 rounded-full border border-[#12A5B0]/50 uppercase tracking-widest">
+              Engineered For Success
+            </span>
+            <h2 className="font-heading font-bold text-3xl sm:text-5xl text-white">
               Built for Concept Clarity
             </h2>
+            <p className="font-body text-[#DDF3F4]/80 text-sm max-w-xl mx-auto">
+              Every page is hand-crafted with color-coded syntax and visual tracing to make learning effortless.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -376,10 +388,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                 desc: 'Printed on durable high-quality paper with vibrant 4-color ink.',
               },
             ].map((item, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl border border-[#0B3561]/10 shadow-sm flex flex-col items-center text-center space-y-3">
-                <CheckCircleIcon className="w-10 h-10 text-[#12A5B0]" />
-                <h3 className="font-heading font-bold text-lg text-[#0B3561]">{item.title}</h3>
-                <p className="font-body text-xs text-[#3C5D81] leading-relaxed">{item.desc}</p>
+              <div key={i} className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-xl flex flex-col items-center text-center space-y-3 transform hover:-translate-y-2 transition-all duration-300">
+                <div className="w-10 h-10 rounded-full bg-[#12A5B0] text-white flex items-center justify-center font-bold">
+                  ✓
+                </div>
+                <h3 className="font-heading font-bold text-lg text-white">{item.title}</h3>
+                <p className="font-body text-xs text-[#DDF3F4]/90 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -445,8 +459,51 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* SECTION H2: TESTIMONIAL SLIDER */}
       <TestimonialSlider />
 
+      {/* SECTION H3: "WHY PHYSICAL PRINTED BOOKS BEAT DIGITAL PDFS" */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-12">
+        <div className="bg-gradient-to-r from-[#0B3561] to-[#071E38] text-white p-8 sm:p-12 rounded-3xl shadow-2xl space-y-8 relative overflow-hidden">
+          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-cover bg-center opacity-10 pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop&q=80')` }} />
+          
+          <div className="text-center space-y-3 relative z-10">
+            <span className="text-xs font-heading font-bold text-[#FFD54A] uppercase tracking-widest">
+              No Screen Fatigue
+            </span>
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl text-white">
+              Why Physical Printed Notes Beat Digital PDFs
+            </h2>
+            <p className="text-xs text-[#DDF3F4]/80 max-w-md mx-auto">
+              Studies prove that physical handwritten reading dramatically improves memory retention and focus compared to screens.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/15 space-y-2">
+              <span className="text-2xl">👁️</span>
+              <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Zero Eye Strain</h4>
+              <p className="text-xs text-[#DDF3F4]">Study for hours without blue light fatigue or phone distractions.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/15 space-y-2">
+              <span className="text-2xl">✍️</span>
+              <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Active Recall</h4>
+              <p className="text-xs text-[#DDF3F4]">Easily highlight, annotate, and add sticky notes to your physical book.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/15 space-y-2">
+              <span className="text-2xl">⚡</span>
+              <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Always Ready</h4>
+              <p className="text-xs text-[#DDF3F4]">No internet needed, no dead batteries—just open and revise anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INTERACTIVE CODING QUIZ & STUDY PLANNER WIDGETS */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-12">
+        <InteractiveCodingQuiz />
+        <StudyPlannerWidget />
+      </section>
+
       {/* SECTION I: CONTACT FORM (Ruled paper background) */}
-      <section className="bg-ruled-paper py-16 px-4 sm:px-8 border-t border-[#0B3561]/10">
+      <section className="bg-ruled-paper py-8 px-4 sm:px-8 border-t border-[#0B3561]/10">
         <div className="max-w-2xl mx-auto bg-white p-8 sm:p-10 rounded-3xl border border-[#0B3561]/15 shadow-xl space-y-6">
           <div className="text-center">
             <h2 className="font-heading font-bold text-3xl text-[#0B3561]">Contact Form</h2>

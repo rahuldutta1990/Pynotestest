@@ -26,10 +26,7 @@ const adminApp = !getApps().length
     })
   : getApps()[0];
 
-const db = getFirestore(
-  adminApp,
-  firebaseConfig.firestoreDatabaseId || undefined
-);
+const db = getFirestore(adminApp);
 const adminAuth = getAuth(adminApp);
 
 // Environment secrets
@@ -1470,6 +1467,78 @@ app.post('/api/admin/system-check', authenticateUser, async (req, res) => {
   ];
 
   res.json({ tests });
+});
+
+// Instagram Feed API Proxy
+app.get('/api/instagram/feed', async (req, res) => {
+  let token = process.env.INSTAGRAM_ACCESS_TOKEN || (req.query.token as string);
+  if (!token) {
+    try {
+      const settingsDoc = await db.collection('settings').doc('site').get();
+      if (settingsDoc.exists) {
+        token = settingsDoc.data()?.instagram_access_token;
+      }
+    } catch {}
+  }
+  if (!token) {
+    return res.json({
+      posts: [
+        {
+          id: 'ig_1',
+          handle: '@handwrittencode',
+          caption: 'C Programming pointer notes fully handwritten & color-coded! 🚀 #btech #coding',
+          media_url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+          permalink: 'https://instagram.com/handwrittencode',
+          likes: '1,428 likes',
+          time: '2 hours ago',
+          tag: '#HandwrittenCode #BTech',
+        },
+        {
+          id: 'ig_2',
+          handle: '@handwrittencode',
+          caption: 'DSA binary tree traversal handwritten revision sheet 📚 #datastructures',
+          media_url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop&q=80',
+          permalink: 'https://instagram.com/handwrittencode',
+          likes: '2,890 likes',
+          time: 'Yesterday',
+          tag: '#CodingLife #ExamPrep',
+        },
+        {
+          id: 'ig_3',
+          handle: '@handwrittencode',
+          caption: 'Python OOP concepts made super simple for semester exams! ✨ #python',
+          media_url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&auto=format&fit=crop&q=80',
+          permalink: 'https://instagram.com/handwrittencode',
+          likes: '954 likes',
+          time: '3 days ago',
+          tag: '#ComputerScience #Notes',
+        },
+        {
+          id: 'ig_4',
+          handle: '@handwrittencode',
+          caption: 'Final night exam revision setup with PyNotes physical printed books ☕📖',
+          media_url: 'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=600&auto=format&fit=crop&q=80',
+          permalink: 'https://instagram.com/handwrittencode',
+          likes: '3,120 likes',
+          time: '4 days ago',
+          tag: '#Placements #Java #Python',
+        },
+      ],
+      connected: false,
+      message: 'Using curated feed. Set INSTAGRAM_ACCESS_TOKEN env var in server environment to connect your personal Instagram account.',
+    });
+  }
+
+  try {
+    const response = await fetch(`https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,timestamp&access_token=${token}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch from Instagram Graph API');
+    }
+    const data = await response.json();
+    res.json({ posts: data.data || [], connected: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Instagram API error' });
+  }
 });
 
 // Vite dev server middleware in dev, or static files in production

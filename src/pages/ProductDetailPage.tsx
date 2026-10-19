@@ -6,6 +6,7 @@ import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
 import { InstagramCarousel } from '../components/InstagramCarousel';
 import { TruckIcon, CheckCircleIcon, CrossIcon, PenUnderlineSVG } from '../components/Icons';
 import { RecentBuyersStrip } from '../components/RecentBuyersStrip';
+import { AbstractShapes } from '../components/AbstractShapes';
 
 interface ProductDetailPageProps {
   products: Product[];
@@ -86,7 +87,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const images = product.images && product.images.length > 0 ? product.images : defaultSampleImages;
 
   return (
-    <div className="space-y-16 pb-16">
+    <div className="space-y-8 pb-8">
       
       {/* TOP SECTION: GALLERY + BUY BOX */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
@@ -323,7 +324,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       </div>
 
       {/* BELOW THE FOLD: PART-BY-PART ATTACHMENTS & SECTIONS */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-10">
         
         {/* 1. Before & After Visual Transformation */}
         <section className="space-y-6 bg-white p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm">
@@ -336,6 +337,75 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </p>
           </div>
           <BeforeAfterSlider />
+        </section>
+
+        {/* PART-BY-PART CHAPTER ATTACHMENTS & MODULE BREAKDOWN */}
+        <section className="bg-white p-8 sm:p-12 rounded-3xl border border-[#0B3561]/12 shadow-sm space-y-8 relative overflow-hidden">
+          <AbstractShapes />
+          <div className="text-center space-y-2 relative z-10">
+            <span className="bg-[#12A5B0]/20 text-[#0B3561] font-heading font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-widest">
+              Syllabus Breakdown
+            </span>
+            <h2 className="font-heading font-bold text-3xl text-[#0B3561]">
+              Part-by-Part Chapter Attachments
+            </h2>
+            <p className="font-body text-xs text-[#3C5D81] max-w-xl mx-auto">
+              This volume is structured into 4 sequential printed modules. Each module features clear hand-drawn syntax maps and solved university questions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+            {[
+              {
+                part: 'Part 01',
+                title: 'Core Fundamentals & Syntax',
+                topics: ['Variables & Data Types', 'Operators & Expressions', 'Formatted I/O (printf/scanf)'],
+                pages: 'Pages 1 - 48',
+              },
+              {
+                part: 'Part 02',
+                title: 'Control Flow & Loops',
+                topics: ['If-Else & Switch Case', 'For, While & Do-While', 'Break, Continue & Goto'],
+                pages: 'Pages 49 - 96',
+              },
+              {
+                part: 'Part 03',
+                title: 'Arrays, Pointers & Memory',
+                topics: ['1D & 2D Matrices', 'Pointer Arithmetic', 'Dynamic Memory (malloc/free)'],
+                pages: 'Pages 97 - 152',
+              },
+              {
+                part: 'Part 04',
+                title: 'Functions, Structs & PYQs',
+                topics: ['User-Defined Functions', 'Structures & Unions', 'University Exam PYQs'],
+                pages: 'Pages 153 - 210',
+              },
+            ].map((mod, idx) => (
+              <div key={idx} className="bg-[#F7FAFC] p-6 rounded-2xl border border-[#0B3561]/10 flex flex-col justify-between space-y-4 hover:shadow-md transition">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-heading font-black text-xs bg-[#0B3561] text-white px-2.5 py-0.5 rounded">
+                      {mod.part}
+                    </span>
+                    <span className="font-code text-[10px] text-[#12A5B0] font-bold">{mod.pages}</span>
+                  </div>
+                  <h3 className="font-heading font-bold text-base text-[#0B3561]">{mod.title}</h3>
+                  <ul className="space-y-1 text-xs text-[#3C5D81]">
+                    {mod.topics.map((t, i) => (
+                      <li key={i} className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#12A5B0]" />
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="pt-3 border-t border-[#0B3561]/10 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-[#13834D]">✓ Attached Preview</span>
+                  <span className="text-xs font-bold text-[#0B3561]">Print Ready</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
 

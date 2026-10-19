@@ -158,6 +158,18 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
           </div>
         </div>
 
+        <div>
+          <label className="block font-semibold mb-1">Instagram Access Token (Secret Key)</label>
+          <input
+            type="password"
+            value={settings.instagram_access_token || ''}
+            onChange={e => setSettings({ ...settings, instagram_access_token: e.target.value })}
+            placeholder="Paste your Instagram Graph API access token here..."
+            className="w-full p-2.5 bg-[#F7FAFC] border rounded-xl font-mono text-xs"
+          />
+          <p className="text-[10px] text-[#3C5D81] mt-1">Saves your Instagram Access Token securely in database settings to fetch live posts on product detail pages.</p>
+        </div>
+
         <button type="submit" className="w-full bg-[#0B3561] text-white font-heading font-bold py-3 rounded-xl">
           Save Settings
         </button>
