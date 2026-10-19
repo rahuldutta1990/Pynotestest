@@ -8,6 +8,7 @@ import { AnnouncementBar } from './components/AnnouncementBar';
 import { CartDrawer } from './components/CartDrawer';
 import { TestModeBanner } from './components/TestModeBanner';
 import { CookieBanner } from './components/CookieBanner';
+import { InnerPageLayout } from './components/InnerPageLayout';
 
 // Storefront Pages
 import { HomePage } from './pages/HomePage';
@@ -172,55 +173,57 @@ export default function App() {
                       />
                     }
                   />
-                  <Route
-                    path="/subjects"
-                    element={
-                      <SubjectsPage
-                        subjects={subjects}
-                        products={products}
-                        onAddToCart={handleAddToCart}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/product/:slug"
-                    element={
-                      <ProductDetailPage
-                        products={products}
-                        settings={settings!}
-                        reviews={reviews}
-                        faqs={faqs}
-                        onAddToCart={handleAddToCart}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/bundles"
-                    element={
-                      <BundlesPage
-                        products={products}
-                        onAddToCart={handleAddToCart}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/checkout"
-                    element={
-                      <CheckoutPage
-                        cart={cart}
-                        products={products}
-                        onClearCart={() => setCart([])}
-                        holdMinutes={settings?.hold_minutes}
-                      />
-                    }
-                  />
-                  <Route path="/order/:orderNo/thank-you" element={<ThankYouPage />} />
-                  <Route path="/track" element={<TrackPage />} />
-                  <Route path="/account" element={<AccountPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/contact" element={<ContactPage settings={settings!} />} />
-                  <Route path="/faq" element={<FaqPage faqs={faqs} />} />
-                  <Route path="/policies/:slug" element={<PolicyPage />} />
+                  <Route element={<InnerPageLayout />}>
+                    <Route
+                      path="/subjects"
+                      element={
+                        <SubjectsPage
+                          subjects={subjects}
+                          products={products}
+                          onAddToCart={handleAddToCart}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/product/:slug"
+                      element={
+                        <ProductDetailPage
+                          products={products}
+                          settings={settings!}
+                          reviews={reviews}
+                          faqs={faqs}
+                          onAddToCart={handleAddToCart}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/bundles"
+                      element={
+                        <BundlesPage
+                          products={products}
+                          onAddToCart={handleAddToCart}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <CheckoutPage
+                          cart={cart}
+                          products={products}
+                          onClearCart={() => setCart([])}
+                          holdMinutes={settings?.hold_minutes}
+                        />
+                      }
+                    />
+                    <Route path="/order/:orderNo/thank-you" element={<ThankYouPage />} />
+                    <Route path="/track" element={<TrackPage />} />
+                    <Route path="/account" element={<AccountPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/contact" element={<ContactPage settings={settings!} />} />
+                    <Route path="/faq" element={<FaqPage faqs={faqs} />} />
+                    <Route path="/policies/:slug" element={<PolicyPage />} />
+                  </Route>
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </main>

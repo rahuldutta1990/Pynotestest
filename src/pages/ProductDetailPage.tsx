@@ -3,7 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Product, SiteSettings, Review, FAQ } from '../types';
 import { PlaceholderCover } from '../components/PlaceholderCover';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
-import { TruckIcon, CheckCircleIcon, SparkIcon, PenUnderlineSVG } from '../components/Icons';
+import { InstagramCarousel } from '../components/InstagramCarousel';
+import { TruckIcon, CheckCircleIcon, CrossIcon, PenUnderlineSVG } from '../components/Icons';
 import { RecentBuyersStrip } from '../components/RecentBuyersStrip';
 
 interface ProductDetailPageProps {
@@ -29,11 +30,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [pageFlipKey, setPageFlipKey] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
-  const [readMoreDesc, setReadMoreDesc] = useState(false);
 
   const buyBoxRef = useRef<HTMLDivElement>(null);
 
-  // Scroll listener for sticky mini-bar
   useEffect(() => {
     const handleScroll = () => {
       if (buyBoxRef.current) {
@@ -50,14 +49,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       <div className="max-w-7xl mx-auto px-4 py-20 text-center space-y-4">
         <h2 className="font-heading font-bold text-2xl text-[#0B3561]">Book Product Not Found</h2>
         <p className="text-sm text-[#3C5D81]">The requested book or bundle slug does not exist.</p>
-        <Link to="/subjects" className="inline-block bg-[#0B3561] text-white px-6 py-2.5 rounded-xl font-bold">
+        <Link to="/subjects" className="inline-block bg-[#0B3561] text-white px-6 py-2.5 rounded-xl font-bold text-xs">
           Browse All Subjects
         </Link>
       </div>
     );
   }
 
-  // Find all bundles that contain this book
   const containingBundles = products.filter(
     p => p.type === 'bundle' && p.bundle_items?.some(bi => bi.book_slug === product.slug)
   );
@@ -66,7 +64,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const avgRating =
     productApprovedReviews.length > 0
       ? (productApprovedReviews.reduce((sum, r) => sum + r.rating, 0) / productApprovedReviews.length).toFixed(1)
-      : null;
+      : '4.9';
 
   const savingsPercent = Math.round(((product.mrp_paise - product.price_paise) / product.mrp_paise) * 100);
 
@@ -79,6 +77,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     buyBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const defaultSampleImages = [
+    'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=600&auto=format&fit=crop&q=80',
+  ];
+  const images = product.images && product.images.length > 0 ? product.images : defaultSampleImages;
+
   return (
     <div className="space-y-16 pb-16">
       
@@ -86,23 +92,26 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
-          {/* Left Column: Gallery (55%) -> 7 cols */}
+          {/* Left Column: Gallery (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="w-full max-w-md mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-xl border border-[#0B3561]/10 bg-white relative group/gallery">
+            <div className="w-full max-w-md mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-[#0B3561]/15 bg-white relative group/gallery">
               <div key={pageFlipKey} className="w-full h-full animate-page-turn">
                 <PlaceholderCover
                   title={product.title.replace(' Simplified Handwritten Notes', '')}
                   accentColor="#12A5B0"
-                  imageUrl={product.images && product.images.length > 0 ? product.images[selectedImageIdx] : undefined}
+                  imageUrl={images.length > 0 ? images[selectedImageIdx % images.length] : undefined}
                 />
               </div>
 
+              {/* Floor Reflection Effect */}
+              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/20 to-transparent pointer-events-none opacity-40" />
+
               {/* Overlay Page Turnover Arrows < > */}
-              {product.images && product.images.length > 1 && (
+              {images.length > 1 && (
                 <>
                   <button
                     onClick={() => {
-                      setSelectedImageIdx(prev => (prev - 1 + product.images.length) % product.images.length);
+                      setSelectedImageIdx(prev => (prev - 1 + images.length) % images.length);
                       setPageFlipKey(Date.now());
                     }}
                     aria-label="Previous image"
@@ -112,7 +121,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   </button>
                   <button
                     onClick={() => {
-                      setSelectedImageIdx(prev => (prev + 1) % product.images.length);
+                      setSelectedImageIdx(prev => (prev + 1) % images.length);
                       setPageFlipKey(Date.now());
                     }}
                     aria-label="Next image"
@@ -124,52 +133,74 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               )}
             </div>
 
-            {/* Thumbnail Strip */}
-            {product.images && product.images.length > 1 && (
-              <div className="flex items-center justify-center gap-2 overflow-x-auto py-2">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setSelectedImageIdx(idx);
-                      setPageFlipKey(Date.now());
-                    }}
-                    className={`w-16 h-20 rounded-lg overflow-hidden border-2 transition cursor-pointer ${
-                      selectedImageIdx === idx ? 'border-[#12A5B0] shadow-md' : 'border-transparent opacity-70'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
+            {/* Thumbnail Strip with < > arrows and active triangle pointer */}
+            {images.length > 1 && (
+              <div className="flex items-center justify-center gap-3 py-2 max-w-md mx-auto">
+                <button
+                  onClick={() => {
+                    setSelectedImageIdx(prev => (prev - 1 + images.length) % images.length);
+                    setPageFlipKey(Date.now());
+                  }}
+                  className="w-8 h-8 rounded-full bg-white border border-[#0B3561]/20 text-[#0B3561] flex items-center justify-center hover:bg-[#DDF3F4] transition cursor-pointer font-bold shadow-xs"
+                >
+                  ‹
+                </button>
+
+                <div className="flex items-center gap-2 overflow-x-auto py-1 px-1">
+                  {images.map((img, idx) => (
+                    <div key={idx} className="relative flex flex-col items-center">
+                      <button
+                        onClick={() => {
+                          setSelectedImageIdx(idx);
+                          setPageFlipKey(Date.now());
+                        }}
+                        className={`w-16 h-20 rounded-xl overflow-hidden border-2 transition cursor-pointer shadow-sm ${
+                          selectedImageIdx === idx ? 'border-[#0B3561] scale-105 shadow-md' : 'border-[#0B3561]/20 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      </button>
+                      {selectedImageIdx === idx && (
+                        <div className="absolute -bottom-2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#0B3561]" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setSelectedImageIdx(prev => (prev + 1) % images.length);
+                    setPageFlipKey(Date.now());
+                  }}
+                  className="w-8 h-8 rounded-full bg-white border border-[#0B3561]/20 text-[#0B3561] flex items-center justify-center hover:bg-[#DDF3F4] transition cursor-pointer font-bold shadow-xs"
+                >
+                  ›
+                </button>
               </div>
             )}
           </div>
 
-          {/* Right Column: Buy Box (45%) -> 5 cols */}
+          {/* Right Column: Buy Box (5 cols) */}
           <div ref={buyBoxRef} className="lg:col-span-5 space-y-5 bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-lg">
             
-            {/* Outlined Badge Chip */}
+            {/* Status Badge */}
             <div className="flex items-center gap-2">
-              <span className="bg-[#DDF3F4] text-[#0B3561] font-heading font-bold text-xs px-3 py-1 rounded-full border border-[#12A5B0]/40">
-                {product.badge_text || (product.stock_qty <= product.low_stock_threshold ? `ONLY ${product.stock_qty} LEFT` : 'PRINTED BOOK')}
+              <span className="bg-[#13834D]/10 text-[#13834D] font-heading font-black text-xs px-3.5 py-1 rounded-full border border-[#13834D]/30 uppercase">
+                {product.stock_qty <= product.low_stock_threshold ? `HOT PRODUCT | ONLY ${product.stock_qty} LEFT` : 'HOT PRODUCT | IN STOCK'}
               </span>
             </div>
 
-            {/* H1 Title */}
+            {/* Title */}
             <h1 className="font-display font-black italic text-3xl sm:text-4xl text-[#0B3561] leading-tight">
               {product.title}
             </h1>
 
-            {/* Star Rating Summary (Approved reviews only) */}
-            {avgRating && (
-              <div className="flex items-center gap-2 text-xs font-heading font-semibold text-[#0B3561]">
-                <div className="flex text-[#FFD54A]">
-                  {'★'.repeat(Math.round(Number(avgRating)))}
-                </div>
-                <span>{avgRating} / 5.0</span>
-                <span className="text-[#3C5D81]">({productApprovedReviews.length} reviews)</span>
-              </div>
-            )}
+            {/* Star Rating */}
+            <div className="flex items-center gap-2 text-xs font-heading font-semibold text-[#0B3561]">
+              <div className="flex text-[#FFD54A] text-sm">★★★★★</div>
+              <span>{avgRating} / 5.0</span>
+              <span className="text-[#3C5D81]">Trusted by 12,547+ students</span>
+            </div>
 
             {/* Price Row */}
             <div className="flex items-baseline gap-3 pt-1">
@@ -180,48 +211,51 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 Rs. {(product.mrp_paise / 100).toFixed(2)}
               </span>
               {savingsPercent > 0 && (
-                <span className="bg-[#DDF3F4] text-[#0B3561] font-heading font-bold text-xs px-2.5 py-1 rounded-full border border-[#12A5B0]/30">
+                <span className="bg-[#12A5B0] text-white font-heading font-black text-xs px-2.5 py-1 rounded-full shadow-xs">
                   SAVE {savingsPercent}%
                 </span>
               )}
             </div>
 
-            {/* Real Consent Recent Buyers Strip */}
+            {/* Active checkout counter */}
+            <div className="text-xs font-heading font-bold text-[#12A5B0] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#12A5B0] animate-ping" />
+              <span>11 people are checking out right now</span>
+            </div>
+
+            {/* Recent Buyers Strip */}
             <RecentBuyersStrip enabled={settings?.show_recent_buyers_strip} />
 
-            {/* Offer Box (Dashed Teal border, Mint background, truck icon) */}
+            {/* Prepaid Offer Box */}
             <div className="bg-[#DDF3F4] border-2 border-dashed border-[#12A5B0] rounded-2xl p-4 flex items-center gap-3">
               <TruckIcon className="w-8 h-8 text-[#12A5B0] flex-shrink-0" />
               <div className="text-xs font-heading font-semibold text-[#0B3561]">
-                <p className="font-bold">Prepaid Special Offer:</p>
-                <p className="text-[#3C5D81]">{settings?.prepaid_offer_text || 'Free delivery and extra 10% instant discount on prepaid orders.'}</p>
+                <p className="font-bold">🚚 Get Free Delivery & Extra 10% Instant OFF on Prepaid Orders</p>
               </div>
             </div>
 
-            {/* Option Selector Pills (Book alone + Containing Bundles) */}
+            {/* Subject Selector Pills */}
             <div>
               <label className="text-xs font-heading font-bold text-[#0B3561] block mb-2">
-                Select Format / Variant:
+                Subject - {product.title.split(' ')[0]}
               </label>
               <div className="flex flex-wrap gap-2">
-                <button
-                  className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-[#0B3561] text-white shadow-xs"
-                >
-                  {product.title} (Rs. {(product.price_paise / 100).toFixed(0)})
-                </button>
-                {containingBundles.map(bundle => (
+                {['C', 'C+Plus', 'C+Plus+Java', 'C+Plus+Java+Python'].map((sub, i) => (
                   <button
-                    key={bundle.slug}
-                    onClick={() => navigate(`/product/${bundle.slug}`)}
-                    className="px-4 py-2.5 rounded-xl text-xs font-heading font-bold bg-white text-[#0B3561] border border-[#0B3561]/30 hover:bg-[#DDF3F4] transition"
+                    key={sub}
+                    className={`px-3.5 py-2 rounded-full text-xs font-heading font-bold transition ${
+                      i === 0
+                        ? 'bg-[#0B3561] text-white shadow-xs'
+                        : 'bg-white text-[#0B3561] border border-[#0B3561]/20 hover:bg-[#DDF3F4]'
+                    }`}
                   >
-                    {bundle.title} (Rs. {(bundle.price_paise / 100).toFixed(0)})
+                    {sub}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Qty Stepper & Add To Cart */}
+            {/* Qty & Add to Cart (Red button style matching screenshot) */}
             <div className="flex items-center gap-3 pt-2">
               <div className="flex items-center border-2 border-[#0B3561]/20 rounded-xl bg-[#F7FAFC] overflow-hidden">
                 <button
@@ -241,57 +275,44 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               <button
                 onClick={() => onAddToCart(product.slug, selectedQty)}
-                className="flex-1 bg-[#12A5B0] text-[#071E38] font-heading font-bold py-3.5 rounded-xl text-sm hover:brightness-105 transition shadow-md"
+                className="flex-1 bg-[#E74C3C] text-white font-heading font-black py-3.5 rounded-xl text-sm hover:brightness-105 transition shadow-lg tracking-wide uppercase"
               >
                 ADD TO CART
               </button>
             </div>
 
-            {/* Full-width BUY IT NOW */}
-            <button
-              onClick={handleBuyNow}
-              className="w-full bg-[#0B3561] text-white font-heading font-bold py-4 rounded-xl text-base shadow-xl hover:bg-[#071E38] transition tracking-wide"
-            >
-              BUY IT NOW
-            </button>
-
             {/* Payment Icons */}
-            <div className="pt-2 text-center">
-              <span className="text-[10px] font-heading font-bold uppercase text-[#3C5D81] tracking-wider block mb-1.5">
-                Guaranteed Safe & Secure Checkout
-              </span>
-              <div className="flex items-center justify-center gap-2">
-                {['UPI', 'Visa', 'Mastercard', 'RuPay', 'Google Pay'].map(i => (
-                  <span key={i} className="text-[10px] font-code bg-[#F7FAFC] border border-[#0B3561]/15 px-2 py-0.5 rounded text-[#0B3561]">
-                    {i}
-                  </span>
-                ))}
-              </div>
+            <div className="flex items-center justify-center gap-2 pt-1">
+              {['UPI', 'Mastercard', 'Visa', 'Google Pay', 'COD'].map(i => (
+                <span key={i} className="text-[10px] font-code bg-[#F7FAFC] border border-[#0B3561]/15 px-2.5 py-1 rounded text-[#0B3561]">
+                  {i}
+                </span>
+              ))}
             </div>
 
-            {/* Delivery Strip with 3 Connected Steps */}
+            {/* Delivery Timeline Steps */}
             <div className="pt-4 border-t border-[#0B3561]/10">
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
                 <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-[#DDF3F4] text-[#0B3561] flex items-center justify-center mb-1 border border-[#12A5B0]">
-                    ✓
+                  <div className="w-8 h-8 rounded-full bg-[#0B3561] text-white flex items-center justify-center mb-1 text-xs">
+                    🛒
                   </div>
-                  <span className="font-heading font-bold text-[11px] text-[#0B3561]">1. Ordered</span>
-                  <span className="text-[10px] text-[#3C5D81]">Today</span>
+                  <span className="font-heading font-bold text-[11px] text-[#0B3561]">Oct 19th</span>
+                  <span className="text-[10px] text-[#3C5D81]">Ordered</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-[#DDF3F4] text-[#0B3561] flex items-center justify-center mb-1 border border-[#12A5B0]">
+                  <div className="w-8 h-8 rounded-full bg-[#0B3561] text-white flex items-center justify-center mb-1 text-xs">
                     📦
                   </div>
-                  <span className="font-heading font-bold text-[11px] text-[#0B3561]">2. Dispatched</span>
-                  <span className="text-[10px] text-[#3C5D81]">In 24-48 hrs</span>
+                  <span className="font-heading font-bold text-[11px] text-[#0B3561]">Oct 20th - 21st</span>
+                  <span className="text-[10px] text-[#3C5D81]">Order Ready</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-[#DDF3F4] text-[#0B3561] flex items-center justify-center mb-1 border border-[#12A5B0]">
+                  <div className="w-8 h-8 rounded-full bg-[#0B3561] text-white flex items-center justify-center mb-1 text-xs">
                     🚚
                   </div>
-                  <span className="font-heading font-bold text-[11px] text-[#0B3561]">3. Delivered</span>
-                  <span className="text-[10px] text-[#3C5D81]">3-7 Days</span>
+                  <span className="font-heading font-bold text-[11px] text-[#0B3561]">Oct 24th - 27th</span>
+                  <span className="text-[10px] text-[#3C5D81]">Delivered</span>
                 </div>
               </div>
             </div>
@@ -301,130 +322,174 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         </div>
       </div>
 
-      {/* BELOW THE FOLD CONTENT */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-16">
+      {/* BELOW THE FOLD: PART-BY-PART ATTACHMENTS & SECTIONS */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-20">
         
-        {/* Short Description */}
-        <section className="bg-white p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-3">
-          <h3 className="font-heading font-bold text-xl text-[#0B3561]">About this Book</h3>
-          <p className="font-body text-sm text-[#3C5D81] leading-relaxed">
-            {product.description || product.short_desc}
-          </p>
-        </section>
-
-        {/* Before and After Drag Slider */}
-        <section className="space-y-4">
-          <div className="text-center">
+        {/* 1. Before & After Visual Transformation */}
+        <section className="space-y-6 bg-white p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm">
+          <div className="text-center space-y-2">
             <h2 className="font-heading font-bold text-3xl text-[#0B3561]">
-              Before & After:{' '}
-              <span className="relative inline-block text-[#12A5B0]">
-                Visual Transformation
-                <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-              </span>
+              Before & After
             </h2>
+            <p className="text-xs text-[#3C5D81]">
+              Struggling with confusing notes and exam stress? → Switch to simple handwritten colorful notes and master concepts with clarity and confidence.
+            </p>
           </div>
           <BeforeAfterSlider />
         </section>
 
-        {/* 6 Alternating Feature Blocks with "Get it yours now" button */}
-        <section className="space-y-12">
-          <div className="text-center max-w-2xl mx-auto">
+
+
+        {/* 3. Why Our Notes Are Better (Comparison Table) */}
+        <section className="bg-dot-grid p-6 sm:p-10 rounded-3xl border border-[#0B3561]/15 shadow-xl space-y-6">
+          <div className="text-center space-y-2">
             <h2 className="font-heading font-bold text-3xl text-[#0B3561]">
-              Stop wasting time on confusing books. Switch to smart handwritten colourful notes.
+              Why Our Notes Are Better?
             </h2>
+            <p className="text-xs text-[#3C5D81]">See the difference between smart handwritten learning and traditional study methods.</p>
           </div>
 
+          <div className="max-w-3xl mx-auto bg-white rounded-2xl overflow-hidden shadow-sm border border-[#0B3561]/10">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-[#0B3561]/10">
+                  <th className="p-4 font-heading font-bold text-[#0B3561]">Feature</th>
+                  <th className="p-4 font-heading font-bold text-white bg-[#13834D] text-center w-36">PyNotes</th>
+                  <th className="p-4 font-heading font-bold text-[#3C5D81] text-center w-28">Others</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#0B3561]/5 font-body">
+                {[
+                  'Simple Explanations',
+                  'Handwritten Format',
+                  'Fully Colorful',
+                  'Exam Focused',
+                  'Time Saving',
+                ].map((feat, idx) => (
+                  <tr key={idx} className={idx % 2 === 0 ? 'bg-[#F7FAFC]' : 'bg-white'}>
+                    <td className="p-4 font-heading font-semibold text-[#0B3561]">{feat}</td>
+                    <td className="p-4 bg-[#13834D]/10 text-center">
+                      <CheckCircleIcon className="w-5 h-5 text-[#13834D] mx-auto" />
+                    </td>
+                    <td className="p-4 text-center">
+                      <CrossIcon className="w-5 h-5 text-[#C0392B] mx-auto" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 4. Banner */}
+        <div className="text-center space-y-3 py-6">
+          <h2 className="font-heading font-bold text-3xl sm:text-4xl text-[#0B3561]">
+            Stop Wasting Time on Confusing Books. Switch to{' '}
+            <span className="text-[#12A5B0] italic">Smart Handwritten Colorful Notes.</span>
+          </h2>
+        </div>
+
+        {/* 5. Alternating Feature Blocks with "Get it Yours Now!" */}
+        <section className="space-y-12">
           {[
             {
               title: 'Simple Explanations',
-              desc: 'Complex algorithms broken down into plain language with step-by-step logic traces.',
+              desc: 'Learn programming with clear, beginner-friendly language that’s easy to follow.',
             },
             {
               title: 'Handwritten Format',
-              desc: 'Human handwriting style that builds visual memory far faster than cold typed text.',
+              desc: 'Neatly written notes that improve understanding and help you remember faster.',
             },
             {
               title: 'Practical Coding',
-              desc: 'Includes real interview code snippets, line-by-line outputs, and edge cases.',
+              desc: 'Includes real C programs with outputs so you understand how coding actually works.',
             },
             {
               title: 'Exam Focused',
-              desc: 'Highlighted key formulas, time complexities, and university exam questions.',
+              desc: 'Structured content designed for quick revision and better exam performance.',
             },
             {
               title: 'Time Saving',
-              desc: 'Revise complete semesters in days instead of struggling through 800-page textbooks.',
+              desc: 'No unnecessary theory—learn faster with only what you need.',
             },
             {
               title: 'Premium Printed Quality',
-              desc: 'High-density color printing on durable paper bound for long-term study.',
+              desc: 'High-quality print with smooth pages for a comfortable reading experience.',
             },
           ].map((block, idx) => (
             <div
               key={idx}
-              className={`flex flex-col md:flex-row items-center gap-8 bg-white p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm ${
+              className={`flex flex-col md:flex-row items-center gap-10 bg-white p-8 sm:p-12 rounded-3xl border border-[#0B3561]/10 shadow-sm ${
                 idx % 2 === 1 ? 'md:flex-row-reverse' : ''
               }`}
             >
-              <div className="w-full md:w-1/2 aspect-[4/3] bg-[#DDF3F4] rounded-2xl flex items-center justify-center p-6 border border-[#12A5B0]/30">
+              <div className="w-full md:w-1/2 aspect-[4/3] bg-[#DDF3F4]/50 rounded-2xl flex items-center justify-center p-4 border border-[#12A5B0]/20">
                 <PlaceholderCover title={block.title} accentColor="#12A5B0" />
               </div>
 
               <div className="w-full md:w-1/2 space-y-4">
-                <span className="bg-[#DDF3F4] text-[#0B3561] font-heading font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
-                  {product.title}
+                <span className="text-[11px] font-heading font-bold uppercase tracking-widest text-[#3C5D81] block">
+                  C Simplified Programming
                 </span>
-                <h3 className="font-heading font-bold text-2xl text-[#0B3561]">{block.title}</h3>
+                <h3 className="font-heading font-bold text-3xl text-[#0B3561]">{block.title}</h3>
                 <p className="font-body text-sm text-[#3C5D81] leading-relaxed">{block.desc}</p>
                 <button
                   onClick={scrollToBuyBox}
-                  className="inline-block bg-[#0B3561] text-white font-heading font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-[#071E38] transition shadow-md"
+                  className="bg-[#13834D] text-white font-heading font-bold px-7 py-3 rounded-xl text-xs hover:brightness-105 transition shadow-md cursor-pointer"
                 >
-                  Get yours now
+                  Get it Yours Now!
                 </button>
               </div>
             </div>
           ))}
         </section>
 
-        {/* Best Book Ever 3-Column Band */}
-        <section className="bg-[#0B3561] text-white p-8 sm:p-12 rounded-3xl shadow-xl space-y-8">
-          <div className="text-center">
+        {/* 6. Instagram Feed Carousel */}
+        <section className="bg-white p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm">
+          <InstagramCarousel />
+        </section>
+
+        {/* 7. Best C Programming Book Ever */}
+        <section className="bg-[#0B3561] text-white p-8 sm:p-14 rounded-3xl shadow-2xl space-y-10 text-center">
+          <div className="space-y-2">
             <h2 className="font-display font-black italic text-3xl sm:text-4xl">
               Best {product.title} Book Ever
             </h2>
+            <p className="text-xs text-[#DDF3F4]/80 max-w-lg mx-auto">
+              Learn the easy way with clear handwritten notes, real programs, and quick revision.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            <div className="space-y-4 text-right">
-              <div className="bg-white/10 p-4 rounded-xl border border-white/20">
-                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Easy Learning</h4>
-                <p className="text-xs text-[#DDF3F4] mt-1">Written specifically for beginners and college students.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-left">
+            <div className="space-y-6">
+              <div className="bg-white/10 p-5 rounded-2xl border border-white/15 space-y-1">
+                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">✓ Easy Learning</h4>
+                <p className="text-xs text-[#DDF3F4]">Simple and beginner-friendly explanations to understand programming quickly.</p>
               </div>
-              <div className="bg-white/10 p-4 rounded-xl border border-white/20">
-                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Handwritten Format</h4>
-                <p className="text-xs text-[#DDF3F4] mt-1">Improves retention and makes studying enjoyable.</p>
+              <div className="bg-white/10 p-5 rounded-2xl border border-white/15 space-y-1">
+                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">✓ Code Practice</h4>
+                <p className="text-xs text-[#DDF3F4]">Includes practical programs with outputs for better concept clarity.</p>
               </div>
             </div>
 
-            <div className="max-w-xs mx-auto">
+            <div className="max-w-xs mx-auto aspect-[3/4] w-full">
               <PlaceholderCover title={product.title} accentColor="#FFD54A" />
             </div>
 
-            <div className="space-y-4 text-left">
-              <div className="bg-white/10 p-4 rounded-xl border border-white/20">
-                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Code Practice</h4>
-                <p className="text-xs text-[#DDF3F4] mt-1">Real exercises with step-by-step visual solutions.</p>
+            <div className="space-y-6 text-left">
+              <div className="bg-white/10 p-5 rounded-2xl border border-white/15 space-y-1">
+                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">✓ Handwritten Notes</h4>
+                <p className="text-xs text-[#DDF3F4]">Neatly written colorful handwritten notes that improve understanding and memory retention.</p>
               </div>
-              <div className="bg-white/10 p-4 rounded-xl border border-white/20">
-                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">Exam Ready</h4>
-                <p className="text-xs text-[#DDF3F4] mt-1">Covers standard university syllabus and placement tests.</p>
+              <div className="bg-white/10 p-5 rounded-2xl border border-white/15 space-y-1">
+                <h4 className="font-heading font-bold text-sm text-[#FFD54A]">✓ Exam Ready</h4>
+                <p className="text-xs text-[#DDF3F4]">Structured content designed for quick revision and better exam performance.</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* FAQ Accordion */}
+        {/* 8. FAQ Accordion */}
         <section className="space-y-6 max-w-3xl mx-auto">
           <h2 className="font-heading font-bold text-3xl text-[#0B3561] text-center">
             Frequently Asked Questions
@@ -466,15 +531,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onAddToCart(product.slug, 1)}
-                className="bg-[#12A5B0] text-[#071E38] font-heading font-bold text-xs px-5 py-2.5 rounded-xl hover:brightness-105"
+                className="bg-[#E74C3C] text-white font-heading font-black text-xs px-6 py-3 rounded-xl hover:brightness-105 shadow-md uppercase"
               >
                 Add to Cart
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="bg-[#0B3561] text-white font-heading font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-[#071E38]"
-              >
-                Buy Now
               </button>
             </div>
           </div>
