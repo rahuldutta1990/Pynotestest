@@ -2329,7 +2329,9 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+if (!process.env.VERCEL) {
+  startServer().catch(console.error);
+}
 
 // Admin: Webhook Events
 app.get('/api/admin/webhook-events', authenticateUser, requireRole(['owner']), async (req, res) => {
