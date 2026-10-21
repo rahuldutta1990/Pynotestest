@@ -37,7 +37,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ banners }) => {
               />
             )}
             {/* Overlay for 0.05 opacity requirement */}
-            <div className="absolute inset-0 bg-white/95 z-[1]" />
+            <div className="absolute inset-0 bg-black/10 z-[1]" />
             
             {/* Content Overlay */}
             <div className="relative z-10 w-full h-full p-6 sm:p-12 lg:p-16 flex items-center justify-center lg:justify-start">

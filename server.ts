@@ -1767,8 +1767,8 @@ app.post("/api/admin/login", async (req, res) => {
     "devrd14190@gmail.com"
   ];
 
-  const userDoc = await db.collection("users").doc(cleanEmail).get();
-  let userData = userDoc.exists ? userDoc.data() : null;
+  const userSnap = await db.collection("users").where("email", "==", cleanEmail).limit(1).get();
+  let userData = !userSnap.empty ? userSnap.docs[0].data() : null;
 
   const isPreStored = preStoredAdminEmails.includes(cleanEmail);
   const isStaffRole = userData && ["owner", "manager", "editor"].includes(userData.role);
