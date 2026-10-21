@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import compression from 'compression';
@@ -52,11 +53,23 @@ const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const MAIL_FROM = process.env.MAIL_FROM || 'PyNotes <noreply@pynotes.in>';
-const ORDER_TOKEN_SECRET = process.env.ORDER_TOKEN_SECRET || 'pynotes-fallback-token-secret-2026';
-const OWNER_SETUP_CODE = process.env.OWNER_SETUP_CODE || 'pynotes-admin-setup';
+const SHIPROCKET_WEBHOOK_TOKEN = process.env.SHIPROCKET_WEBHOOK_TOKEN || '';
+const ORDER_TOKEN_SECRET = process.env.ORDER_TOKEN_SECRET || '';
+const OWNER_SETUP_CODE = process.env.OWNER_SETUP_CODE || '';
 const TRIAL_DAYS = Number(process.env.TRIAL_DAYS || 7);
 const GRACE_DAYS = Number(process.env.GRACE_DAYS || 3);
 const CANCELLATION_ACCESS = process.env.CANCELLATION_ACCESS || 'until_end'; // 'until_end' or 'immediately'
+
+// In production, throw at startup if any required secret is missing
+if (process.env.NODE_ENV === 'production') {
+  const missingSecrets: string[] = [];
+  if (!ORDER_TOKEN_SECRET) missingSecrets.push('ORDER_TOKEN_SECRET');
+  if (!OWNER_SETUP_CODE) missingSecrets.push('OWNER_SETUP_CODE');
+  if (!SHIPROCKET_WEBHOOK_TOKEN) missingSecrets.push('SHIPROCKET_WEBHOOK_TOKEN');
+  if (missingSecrets.length > 0) {
+    throw new Error(`[FATAL] Missing required production environment secrets: ${missingSecrets.join(', ')}`);
+  }
+}
 
 // Background task to sweep expired reservations (every 5 mins)
 setInterval(async () => {
@@ -266,10 +279,52 @@ function clearCatalogCache() {
 
 // Helper: HMAC token generator for guest order links
 function generateOrderToken(orderNo: string): string {
+  if (!ORDER_TOKEN_SECRET || ORDER_TOKEN_SECRET.trim() === '') {
+    return '';
+  }
   return crypto
     .createHmac('sha256', ORDER_TOKEN_SECRET)
     .update(orderNo)
     .digest('hex');
+}
+
+// Helper: scrypt password hashing & timing-safe verification
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `scrypt:${salt}:${derivedKey}`;
+}
+
+function verifyPassword(password: string, stored: string | undefined): { valid: boolean; needsRehash: boolean } {
+  if (!stored || typeof stored !== 'string' || stored.trim() === '') {
+    return { valid: false, needsRehash: false };
+  }
+
+  // Already hashed with scrypt
+  if (stored.startsWith('scrypt:')) {
+    const parts = stored.split(':');
+    if (parts.length !== 3) return { valid: false, needsRehash: false };
+    const [, salt, expectedHex] = parts;
+    try {
+      const actualBuf = crypto.scryptSync(password, salt, 64);
+      const expectedBuf = Buffer.from(expectedHex, 'hex');
+      if (actualBuf.length !== expectedBuf.length) return { valid: false, needsRehash: false };
+      const valid = crypto.timingSafeEqual(actualBuf, expectedBuf);
+      return { valid, needsRehash: false };
+    } catch {
+      return { valid: false, needsRehash: false };
+    }
+  }
+
+  // Legacy plaintext password: timing-safe equality comparison
+  try {
+    const a = Buffer.from(password);
+    const b = Buffer.from(stored);
+    const valid = a.length === b.length && crypto.timingSafeEqual(a, b);
+    return { valid, needsRehash: valid };
+  } catch {
+    return { valid: false, needsRehash: false };
+  }
 }
 
 // Helper: Auth Token Verifier Middleware
@@ -636,15 +691,50 @@ seedDefaultCatalogIfNeeded().catch(console.error);
 app.get('/api/health', async (req, res) => {
   const rzpInfo = await getRazorpayClient();
   const keyId = rzpInfo.keyId;
+
+  // Real remote Firestore connectivity probe
+  let isLiveFirestore = false;
+  try {
+    if (rawFirestore) {
+      await rawFirestore.collection('_healthcheck').limit(1).get();
+      isLiveFirestore = true;
+    }
+  } catch {
+    isLiveFirestore = false;
+  }
+
+  const isSet = (val: string | undefined): 'set' | 'not set' => {
+    return Boolean(val && typeof val === 'string' && val.trim() !== '') ? 'set' : 'not set';
+  };
+
   res.json({
     status: 'ok',
+    database: {
+      active_store: isLiveFirestore ? 'firestore_remote' : 'local_data_hub',
+      connected_to_remote_firestore: isLiveFirestore,
+      project_id: firebaseConfig.projectId,
+      database_id: (firebaseConfig as any).firestoreDatabaseId || '(default)',
+    },
+    secrets: {
+      ORDER_TOKEN_SECRET: isSet(process.env.ORDER_TOKEN_SECRET),
+      OWNER_SETUP_CODE: isSet(process.env.OWNER_SETUP_CODE),
+      SHIPROCKET_WEBHOOK_TOKEN: isSet(process.env.SHIPROCKET_WEBHOOK_TOKEN),
+      RAZORPAY_KEY_ID: isSet(process.env.RAZORPAY_KEY_ID),
+      RAZORPAY_KEY_SECRET: isSet(process.env.RAZORPAY_KEY_SECRET),
+      RAZORPAY_WEBHOOK_SECRET: isSet(process.env.RAZORPAY_WEBHOOK_SECRET),
+      SHIPROCKET_EMAIL: isSet(process.env.SHIPROCKET_EMAIL),
+      SHIPROCKET_PASSWORD: isSet(process.env.SHIPROCKET_PASSWORD),
+      SMTP_HOST: isSet(process.env.SMTP_HOST),
+      SMTP_USER: isSet(process.env.SMTP_USER),
+      SMTP_PASS: isSet(process.env.SMTP_PASS),
+    },
     integrations: {
       razorpay: !!rzpInfo.client,
       shiprocket: !!(SHIPROCKET_EMAIL && SHIPROCKET_PASSWORD),
       smtp: !!(SMTP_HOST && SMTP_USER),
-      order_token_secret: !!ORDER_TOKEN_SECRET,
-      owner_setup_code: !!OWNER_SETUP_CODE,
-      firebase: true,
+      order_token_secret: isSet(process.env.ORDER_TOKEN_SECRET) === 'set',
+      owner_setup_code: isSet(process.env.OWNER_SETUP_CODE) === 'set',
+      firebase: isLiveFirestore,
     },
     test_mode: keyId ? keyId.startsWith('rzp_test_') : true,
   });
@@ -1640,14 +1730,25 @@ app.post("/api/admin/login", async (req, res) => {
     return res.status(401).json({ error: "Invalid admin credentials or unauthorized email." });
   }
 
-  // Password verification: check custom saved password or default
+  // Password verification: require saved password, timing-safe verify, upgrade plaintext to scrypt hash
   const savedPassword = userData?.password;
-  const isPasswordValid = savedPassword 
-    ? (password === savedPassword)
-    : (password === "Admin@123" || password === "Admin@123." || password === "admin123" || password === "pynotes123");
+  if (!savedPassword || typeof savedPassword !== 'string' || savedPassword.trim() === '') {
+    return res.status(401).json({ error: "No password has been configured for this account. Please use 'Forgot password' or contact the store owner." });
+  }
 
-  if (!isPasswordValid) {
+  const { valid, needsRehash } = verifyPassword(password, savedPassword);
+  if (!valid) {
     return res.status(401).json({ error: "Incorrect password. Please try again or use 'Forgot password'." });
+  }
+
+  // On successful login with legacy plaintext password, transparently upgrade to scrypt hash
+  if (needsRehash) {
+    const hashedPassword = hashPassword(password);
+    await db.collection("users").doc(cleanEmail).update({
+      password: hashedPassword,
+      password_migrated_at: new Date().toISOString(),
+    });
+    userData.password = hashedPassword;
   }
 
   if (!userData || userData.role !== "owner") {
@@ -1764,23 +1865,34 @@ app.post("/api/admin/reset-password", async (req, res) => {
     return res.status(400).json({ error: "Reset code has expired. Please request a new code." });
   }
 
-  if (resetData.code.toString().trim() !== code.toString().trim()) {
+  const isCodeMatch = (() => {
+    try {
+      const a = Buffer.from(resetData.code.toString().trim());
+      const b = Buffer.from(code.toString().trim());
+      return a.length === b.length && crypto.timingSafeEqual(a, b);
+    } catch {
+      return false;
+    }
+  })();
+
+  if (!isCodeMatch) {
     return res.status(400).json({ error: "Invalid verification code. Please check the 6-digit code and try again." });
   }
 
   // Mark code as used
   await db.collection("password_resets").doc(cleanEmail).set({ used: true, updated_at: new Date().toISOString() }, { merge: true });
 
-  // Update password in users collection
+  // Update password in users collection with scrypt hash
   const userDoc = await db.collection("users").doc(cleanEmail).get();
   const currentRole = userDoc.exists ? (userDoc.data()?.role || "owner") : "owner";
 
+  const hashedPassword = hashPassword(new_password);
   await db.collection("users").doc(cleanEmail).set({
     uid: cleanEmail,
     email: cleanEmail,
     name: cleanEmail.split("@")[0],
     role: currentRole,
-    password: new_password,
+    password: hashedPassword,
     password_updated_at: new Date().toISOString()
   }, { merge: true });
 
@@ -1792,26 +1904,46 @@ app.post("/api/admin/reset-password", async (req, res) => {
 
 // One-time Setup Claim Owner Route
 app.post('/api/admin/setup-claim', async (req, res) => {
-  const { setup_code, email } = req.body;
-  const claimEmail = email || (req as any).user?.email;
-  if (setup_code !== OWNER_SETUP_CODE && setup_code !== "pynotes-admin-setup" && setup_code !== "PYNOTES2026" && setup_code !== "123456") {
+  const { setup_code, email, password } = req.body;
+  const claimEmail = (email || (req as any).user?.email || '').toLowerCase().trim();
+
+  if (!OWNER_SETUP_CODE || OWNER_SETUP_CODE.trim() === '' || typeof setup_code !== 'string') {
+    return res.status(403).json({ error: "Owner setup is disabled or code is invalid." });
+  }
+
+  const isCodeValid = (() => {
+    try {
+      const a = Buffer.from(setup_code.trim());
+      const b = Buffer.from(OWNER_SETUP_CODE.trim());
+      return a.length === b.length && crypto.timingSafeEqual(a, b);
+    } catch {
+      return false;
+    }
+  })();
+
+  if (!isCodeValid) {
     return res.status(403).json({ error: "Incorrect OWNER_SETUP_CODE secret" });
   }
+
   if (!claimEmail) {
     return res.status(400).json({ error: "Staff email is required to claim owner role." });
   }
-  // Valid setup code provided - grant/update owner role for requested email
+
   const uid = claimEmail;
-  await db.collection("users").doc(uid).set(
-    {
-      uid,
-      email: claimEmail,
-      name: claimEmail,
-      role: "owner",
-      created_at: new Date().toISOString(),
-    },
-    { merge: true }
-  );
+  const userPayload: any = {
+    uid,
+    email: claimEmail,
+    name: claimEmail.split('@')[0],
+    role: "owner",
+    updated_at: new Date().toISOString(),
+  };
+
+  if (password && typeof password === 'string' && password.trim().length >= 6) {
+    userPayload.password = hashPassword(password.trim());
+    userPayload.password_updated_at = new Date().toISOString();
+  }
+
+  await db.collection("users").doc(uid).set(userPayload, { merge: true });
   res.json({ message: "Owner role claimed successfully! You now have full store control." });
 });
 
@@ -3113,6 +3245,74 @@ app.post('/api/admin/pages', authenticateUser, requireRole(['owner', 'manager'])
 app.delete('/api/admin/pages/:slug', authenticateUser, requireRole(['owner']), async (req, res) => {
   await db.collection('pages').doc(req.params.slug).delete();
   res.json({ success: true });
+});
+
+
+// Admin: Download Local Hub Backup
+app.get('/api/admin/local-hub/backup', authenticateUser, requireRole(['owner']), async (req, res) => {
+  try {
+    const localFilePath = path.join('./data', 'local_db.json');
+    if (!fs.existsSync(localFilePath)) {
+      return res.status(404).json({ error: "Local hub database file not found." });
+    }
+    res.download(localFilePath, 'local_db_backup.json');
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Migrate Local Hub Collections to Remote Firestore with scrypt password hashing
+app.post('/api/admin/migrate-local-to-firestore', authenticateUser, requireRole(['owner']), async (req, res) => {
+  try {
+    if (!rawFirestore) {
+      return res.status(400).json({ error: "Remote Firestore is not initialized." });
+    }
+
+    const localFilePath = path.join('./data', 'local_db.json');
+    if (!fs.existsSync(localFilePath)) {
+      return res.status(404).json({ error: "Local hub database file not found." });
+    }
+
+    const rawData = JSON.parse(fs.readFileSync(localFilePath, 'utf8'));
+    const sourceCounts: Record<string, number> = {};
+    const firestoreCounts: Record<string, number> = {};
+
+    for (const [collectionName, docs] of Object.entries(rawData)) {
+      const docEntries = Object.entries(docs as Record<string, any>);
+      sourceCounts[collectionName] = docEntries.length;
+      firestoreCounts[collectionName] = 0;
+
+      for (const [docId, docData] of docEntries) {
+        let processedData = { ...(docData as any) };
+
+        // If users collection and password is present and plaintext, hash it with scrypt
+        if (collectionName === 'users' && processedData.password) {
+          const pwd = processedData.password;
+          if (typeof pwd === 'string' && !pwd.startsWith('scrypt:')) {
+            processedData.password = hashPassword(pwd);
+            processedData.password_migrated_at = new Date().toISOString();
+          }
+        }
+
+        // Write to remote Firestore
+        await rawFirestore.collection(collectionName).doc(docId).set(processedData, { merge: true });
+      }
+
+      // Verify count in Firestore
+      const snap = await rawFirestore.collection(collectionName).get();
+      firestoreCounts[collectionName] = snap.size;
+    }
+
+    res.json({
+      success: true,
+      message: "Migration completed successfully. Local data hub collections copied to remote Firestore with scrypt password hashing.",
+      source_counts: sourceCounts,
+      firestore_counts: firestoreCounts
+    });
+  } catch (err: any) {
+    console.error("Migration error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 

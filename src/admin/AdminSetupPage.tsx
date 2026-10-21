@@ -28,7 +28,7 @@ export const AdminSetupPage: React.FC = () => {
       const res = await adminFetch('/setup-claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ setup_code: setupCode, email }),
+        body: JSON.stringify({ setup_code: setupCode, email, password }),
       });
       setMsg(res.message || 'Congratulations! You are now the store Owner.');
       setTimeout(() => navigate('/admin'), 1500);

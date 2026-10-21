@@ -92,7 +92,7 @@ export class ShiprocketService {
   constructor(creds?: Partial<ShiprocketCredentials>) {
     this.email = creds?.email || process.env.SHIPROCKET_API_EMAIL || process.env.SHIPROCKET_EMAIL || '';
     this.password = creds?.password || process.env.SHIPROCKET_API_PASSWORD || process.env.SHIPROCKET_PASSWORD || '';
-    this.webhookToken = creds?.webhookToken || process.env.SHIPROCKET_WEBHOOK_TOKEN || 'pynotes-sr-webhook-secret-token-2026';
+    this.webhookToken = creds?.webhookToken || process.env.SHIPROCKET_WEBHOOK_TOKEN || '';
     this.pickupLocation = creds?.pickupLocation || process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary';
 
     // If credentials are empty or default dummy values, run in reliable simulation mode
@@ -110,14 +110,16 @@ export class ShiprocketService {
   }
 
   /**
-   * Verify Webhook token using constant-time comparison
+   * Verify Webhook token using constant-time comparison.
+   * Rejects every request when the configured token is empty.
    */
   public verifyWebhookHeader(receivedToken: string | undefined): boolean {
-    if (!receivedToken) return false;
+    if (!receivedToken || typeof receivedToken !== 'string') return false;
     const expected = this.webhookToken;
+    if (!expected || expected.trim() === '') return false;
     try {
-      const a = Buffer.from(receivedToken);
-      const b = Buffer.from(expected);
+      const a = Buffer.from(receivedToken.trim());
+      const b = Buffer.from(expected.trim());
       if (a.length !== b.length) return false;
       return crypto.timingSafeEqual(a, b);
     } catch {

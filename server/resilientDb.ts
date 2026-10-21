@@ -215,24 +215,35 @@ export function createResilientFirestore(
   let adminHealthy = false;
   let hasCheckedHealth = false;
 
-  // Check health asynchronously in background
+  // Periodic background health check & retry every 30s
   if (adminFirestoreInstance) {
-    adminFirestoreInstance
-      .collection('__health_test__')
-      .limit(1)
-      .get()
-      .then(() => {
+    const checkHealth = async () => {
+      try {
+        await adminFirestoreInstance.collection('_healthcheck').limit(1).get();
+        if (!adminHealthy) {
+          console.log('[Database] Firestore reconnected successfully.');
+        }
         adminHealthy = true;
         hasCheckedHealth = true;
-      })
-      .catch((err: any) => {
+      } catch (err: any) {
         adminHealthy = false;
         hasCheckedHealth = true;
-        // Suppress noisy PERMISSION_DENIED; log graceful fallback notice
-        console.log('[Database] Active Mode: High-performance persistent storage (Local Data Hub). Ready.');
-      });
+        console.warn('[Database] Firestore health check failed (will retry):', err.message || err);
+      }
+    };
+    checkHealth();
+    setInterval(checkHealth, 30000);
   } else {
     hasCheckedHealth = true;
+  }
+
+  function ensureProductionFirestore() {
+    if (process.env.NODE_ENV === 'production' && !adminHealthy) {
+      const err: any = new Error('[Database] Firestore is unreachable in production. Service Unavailable.');
+      err.status = 503;
+      console.error('[Database ERROR] Production Firestore operation failed (503 Service Unavailable).');
+      throw err;
+    }
   }
 
   function createDocumentReference(colName: string, docId: string): ResilientDocumentReference {
@@ -257,6 +268,7 @@ export function createResilientFirestore(
             }
           }
         }
+        ensureProductionFirestore();
         const data = store.getDoc(colName, docId);
         return {
           id: docId,
@@ -279,6 +291,7 @@ export function createResilientFirestore(
             }
           }
         }
+        ensureProductionFirestore();
         store.setDoc(colName, docId, data, options?.merge);
       },
       async update(data: Record<string, any>) {
@@ -295,6 +308,7 @@ export function createResilientFirestore(
             }
           }
         }
+        ensureProductionFirestore();
         store.updateDoc(colName, docId, data);
       },
       async delete() {
@@ -311,6 +325,7 @@ export function createResilientFirestore(
             }
           }
         }
+        ensureProductionFirestore();
         store.deleteDoc(colName, docId);
       },
     };
@@ -367,6 +382,7 @@ export function createResilientFirestore(
             }
           }
         }
+        ensureProductionFirestore();
 
         // Run query against local store
         let all = store.listDocs(colName);
