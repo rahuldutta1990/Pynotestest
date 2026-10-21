@@ -1799,6 +1799,10 @@ app.post("/api/admin/login", async (req, res) => {
 
     // On successful login with legacy plaintext password, transparently upgrade to scrypt hash
     if (needsRehash) {
+      if (!userData) {
+        console.log("[DEBUG] Login failed: userData is null during rehash");
+        return res.status(401).json({ error: "User profile not found." });
+      }
       const hashedPassword = hashPassword(password);
       await db.collection("users").doc(cleanEmail).update({
         password: hashedPassword,
@@ -1808,12 +1812,13 @@ app.post("/api/admin/login", async (req, res) => {
     }
 
     if (!userData || userData.role !== "owner") {
+      const existingUser = userData;
       userData = {
         uid: cleanEmail,
         email: cleanEmail,
         name: cleanEmail.split("@")[0],
-        role: userData?.role || "owner",
-        created_at: new Date().toISOString(),
+        role: existingUser?.role || "owner",
+        created_at: existingUser?.created_at || new Date().toISOString(),
       };
       await db.collection("users").doc(cleanEmail).set(userData, { merge: true });
     }
