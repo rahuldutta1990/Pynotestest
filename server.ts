@@ -1752,24 +1752,28 @@ app.post('/api/issues', authenticateUser, async (req, res) => {
 
 // Pre-Stored Admin Login Endpoint with Password Verification
 app.post("/api/admin/login", async (req, res) => {
-  console.log("[DEBUG] Admin login request received for email:", req.body.email);
-  const { email, password } = req.body;
-  if (!email || !password) {
-    console.log("[DEBUG] Login failed: email or password missing");
-    return res.status(400).json({ error: "Email and password are required" });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  const preStoredAdminEmails = [
-    "devrd720@gmail.com",
-    "admin@pynotes.in",
-    "shimadutta62@gmail.com",
-    "owner@pynotes.in",
-    "pynotes.in@gmail.com",
-    "devrd14190@gmail.com"
-  ];
-
   try {
+    console.log("[DEBUG] Admin login request received:", req.body ? "body exists" : "body missing");
+    if (!req.body) {
+       console.log("[DEBUG] Login failed: req.body is null");
+       return res.status(400).json({ error: "Empty request body" });
+    }
+    const { email, password } = req.body;
+    if (!email || !password) {
+      console.log("[DEBUG] Login failed: email or password missing");
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const preStoredAdminEmails = [
+      "devrd720@gmail.com",
+      "admin@pynotes.in",
+      "shimadutta62@gmail.com",
+      "owner@pynotes.in",
+      "pynotes.in@gmail.com",
+      "devrd14190@gmail.com"
+    ];
+
     console.log("[DEBUG] Querying Firestore for user:", cleanEmail);
     const userSnap = await db.collection("users").where("email", "==", cleanEmail).limit(1).get();
     console.log("[DEBUG] Query result size:", userSnap.size);
