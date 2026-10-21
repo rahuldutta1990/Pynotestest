@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Subject, Product, SiteSettings, Review, FAQ, HeroBannerItem } from '../types';
 import { FeatureStrip } from '../components/FeatureStrip';
+import { HeroCarousel } from '../components/HeroCarousel';
 import { BookCoverVisual } from '../components/BookCoverVisual';
-import { OpenNotebookVisual } from '../components/OpenNotebookVisual';
-import { EditorialVisual } from '../components/EditorialVisual';
+import { TestimonialSection } from '../components/TestimonialSection';
 import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, CartIcon } from '../components/Icons';
-import { postContactMessage } from '../lib/api';
+import { postContactMessage, fetchWishlist, toggleWishlistItem } from '../lib/api';
+import { auth } from '../lib/firebase';
 
 interface HomePageProps {
   subjects: Subject[];
@@ -27,15 +28,28 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  // Active sample page for "Look inside" carousel
+  const [wishlist, setWishlist] = useState<string[]>([]);
   const [activeSampleIdx, setActiveSampleIdx] = useState(0);
+
+  useEffect(() => {
+    if (auth.currentUser) {
+      fetchWishlist().then(setWishlist);
+    }
+  }, []);
+
+  const handleToggleWishlist = async (slug: string) => {
+    if (!auth.currentUser) {
+      navigate('/auth');
+      return;
+    }
+    await toggleWishlistItem(slug);
+    setWishlist(prev => prev.includes(slug) ? prev.filter(i => i !== slug) : [...prev, slug]);
+  };
 
   // FAQ accordion state
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
 
   // Hero Banner Carousel State & Fallbacks
-  const [activeBannerIdx, setActiveBannerIdx] = useState(0);
-  const [isBannerHovered, setIsBannerHovered] = useState(false);
 
   const defaultHeroBanners: HeroBannerItem[] = [
     {
@@ -47,7 +61,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       cta_link: '#subjects-grid',
       secondary_cta_text: 'Placement Bundles SAVE 50%',
       secondary_cta_link: '/bundles',
-      image: '',
+      image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1600&q=80',
       accent_color: '#0B3561',
       active: true,
     },
@@ -60,7 +74,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       cta_link: '/bundles',
       secondary_cta_text: 'View All 13 Subjects',
       secondary_cta_link: '/subjects',
-      image: '',
+      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80',
       accent_color: '#12A5B0',
       active: true,
     },
@@ -73,7 +87,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       cta_link: '/subjects',
       secondary_cta_text: 'Look Inside Pages',
       secondary_cta_link: '#look-inside',
-      image: '',
+      image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1600&q=80',
       accent_color: '#FFD54A',
       active: true,
     },
@@ -86,7 +100,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       cta_link: '#subjects-grid',
       secondary_cta_text: 'Check PIN Code ETA',
       secondary_cta_link: '/track',
-      image: '',
+      image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1600&q=80',
       accent_color: '#10B981',
       active: true,
     },
@@ -96,16 +110,6 @@ export const HomePage: React.FC<HomePageProps> = ({
     ? settings.hero_banners.filter(b => b.active !== false)
     : defaultHeroBanners;
 
-  const currentBanner = activeBanners[activeBannerIdx] || activeBanners[0] || defaultHeroBanners[0];
-
-  // Auto-rotate hero banners every 6 seconds unless hovered
-  useEffect(() => {
-    if (activeBanners.length <= 1 || isBannerHovered) return;
-    const interval = setInterval(() => {
-      setActiveBannerIdx(prev => (prev + 1) % activeBanners.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [activeBanners.length, isBannerHovered]);
 
   // Filter book products
   const bookProducts = products.filter(p => p.status === 'active' && p.type === 'book');
@@ -324,195 +328,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           Rotating Hero Banner Carousel (3–4 big images with write-up)
           Connected to and manageable from the Admin Panel.
          ========================================================================= */}
-      <section
-        className="relative overflow-hidden pt-4 sm:pt-8"
-        onMouseEnter={() => setIsBannerHovered(true)}
-        onMouseLeave={() => setIsBannerHovered(false)}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-8">
-          
-          <div className="relative bg-gradient-to-b from-[#F7FAFC] via-[#FAF7F0]/40 to-white rounded-3xl p-6 sm:p-10 border border-[#0B3561]/5 shadow-xs">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center min-h-[460px]">
-              
-              {/* Left Column: Headline, Kicker & Action */}
-              <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-center lg:text-left transition-all duration-500">
-                
-                {/* Highlight Kicker / Badge */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FEF3C7] border border-[#F59E0B]/30 text-[#92400E] text-xs font-heading font-semibold shadow-2xs">
-                  <span>{currentBanner.badge || '✨ 2026 Revised Student Edition • 100 GSM Colour Print'}</span>
-                </div>
-
-                {/* Big Headline */}
-                <h1 className="font-heading font-black text-3xl sm:text-5xl xl:text-6xl text-[#0B3561] tracking-tight leading-[1.12]">
-                  {currentBanner.headline ? (
-                    currentBanner.headline.includes('Handwritten') ? (
-                      <>
-                        {currentBanner.headline.split('Handwritten')[0]}
-                        <span className="relative inline-block text-[#12A5B0] font-handwriting italic font-bold">
-                          Handwritten
-                          <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-                        </span>
-                        {currentBanner.headline.split('Handwritten')[1]}
-                      </>
-                    ) : (
-                      currentBanner.headline
-                    )
-                  ) : (
-                    <>
-                      Master Coding with Printed, Colourful{' '}
-                      <span className="relative inline-block text-[#12A5B0] font-handwriting italic font-bold">
-                        Handwritten
-                        <PenUnderlineSVG className="absolute left-0 right-0 -bottom-2 w-full h-3" color="#12A5B0" />
-                      </span>{' '}
-                      Notes.
-                    </>
-                  )}
-                </h1>
-
-                {/* One-Line Promise / Writeup */}
-                <p className="font-body text-base sm:text-lg text-[#486581] max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                  {currentBanner.writeup ||
-                    'Step-by-step algorithms, visual syntax trees, and color-coded memory traces on premium 100 GSM cream paper — built to crack semester exams and placement interviews without screen fatigue.'}
-                </p>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
-                  <a
-                    href={currentBanner.cta_link || '#subjects-grid'}
-                    className="w-full sm:w-auto px-8 py-4 bg-[#0B3561] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#132742] transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer group"
-                  >
-                    <span>{currentBanner.cta_text || 'Shop Notes'}</span>
-                    <span className="group-hover:translate-y-0.5 transition-transform">↓</span>
-                  </a>
-
-                  {currentBanner.secondary_cta_text && (
-                    <Link
-                      to={currentBanner.secondary_cta_link || '/bundles'}
-                      className="w-full sm:w-auto px-7 py-4 bg-white text-[#0B3561] border border-[#0B3561]/15 font-heading font-bold text-sm rounded-xl hover:bg-[#FAF7F0] transition shadow-xs flex items-center justify-center gap-2"
-                    >
-                      <span>{currentBanner.secondary_cta_text}</span>
-                    </Link>
-                  )}
-                </div>
-
-                {/* Micro Trust Points */}
-                <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-[#627D98] font-medium">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[#16A34A] font-bold">✓</span> Cash on Delivery
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[#16A34A] font-bold">✓</span> 2–4 Day Express Delivery
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-[#16A34A] font-bold">✓</span> Bleed-Proof 100 GSM
-                  </span>
-                </div>
-
-              </div>
-
-              {/* Right Column: Rotating Big Visual Artwork or 3D Mockups */}
-              <div className="lg:col-span-6 relative flex items-center justify-center">
-                {currentBanner.image ? (
-                  <div className="relative w-full max-w-xl mx-auto rounded-3xl overflow-hidden border border-[#0B3561]/10 shadow-2xl bg-white group">
-                    <img
-                      src={currentBanner.image}
-                      alt={currentBanner.headline}
-                      className="w-full h-80 sm:h-96 object-cover object-center group-hover:scale-102 transition duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white text-xs font-heading font-bold drop-shadow-md">
-                      <span className="bg-[#0B3561]/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                        100 GSM Handwritten Notes
-                      </span>
-                      <span className="bg-[#12A5B0]/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                        2026 Edition
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  /* Central Open Notebook with Floating Glossy Books */
-                  <div className="relative w-full">
-                    <div className="relative z-10 mx-auto max-w-lg sm:max-w-xl">
-                      <OpenNotebookVisual />
-                    </div>
-
-                    {/* Floating Glossy 3D Python Book (Left Bottom) */}
-                    <div className="hidden sm:block absolute -left-6 bottom-4 w-36 sm:w-44 z-20 animate-float-soft transform -rotate-6 filter drop-shadow-2xl">
-                      <BookCoverVisual
-                        slotId="subject_python"
-                        title="Python"
-                        subjectSlug="python"
-                        accentColor="#10B981"
-                        highlighterColor="green"
-                      />
-                    </div>
-
-                    {/* Floating Glossy 3D DSA Book (Right Top) */}
-                    <div
-                      className="hidden sm:block absolute -right-6 -top-6 w-36 sm:w-44 z-20 animate-float-soft transform rotate-6 filter drop-shadow-2xl"
-                      style={{ animationDelay: '1.5s' }}
-                    >
-                      <BookCoverVisual
-                        slotId="subject_dsa"
-                        title="DSA with Java"
-                        subjectSlug="dsa-with-java"
-                        accentColor="#12A5B0"
-                        highlighterColor="yellow"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
-
-            {/* Carousel Controls: Arrows & Indicators */}
-            {activeBanners.length > 1 && (
-              <div className="mt-8 pt-4 border-t border-[#0B3561]/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                {/* Dots / Pills */}
-                <div className="flex items-center gap-2">
-                  {activeBanners.map((banner, idx) => (
-                    <button
-                      key={banner.id || idx}
-                      onClick={() => setActiveBannerIdx(idx)}
-                      className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                        idx === activeBannerIdx
-                          ? 'w-8 bg-[#0B3561]'
-                          : 'w-2.5 bg-[#0B3561]/25 hover:bg-[#0B3561]/50'
-                      }`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                  <span className="text-[11px] font-mono text-[#627D98] ml-2">
-                    {activeBannerIdx + 1} / {activeBanners.length}
-                  </span>
-                </div>
-
-                {/* Previous & Next Buttons */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setActiveBannerIdx(prev => (prev === 0 ? activeBanners.length - 1 : prev - 1))}
-                    className="w-9 h-9 rounded-full bg-white border border-[#0B3561]/15 text-[#0B3561] hover:bg-[#0B3561] hover:text-white transition flex items-center justify-center font-bold text-sm shadow-2xs cursor-pointer"
-                    aria-label="Previous slide"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={() => setActiveBannerIdx(prev => (prev + 1) % activeBanners.length)}
-                    className="w-9 h-9 rounded-full bg-white border border-[#0B3561]/15 text-[#0B3561] hover:bg-[#0B3561] hover:text-white transition flex items-center justify-center font-bold text-sm shadow-2xs cursor-pointer"
-                    aria-label="Next slide"
-                  >
-                    ›
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </div>
-
-        </div>
-      </section>
+<HeroCarousel banners={activeBanners} />
 
       {/* =========================================================================
           SECTION 3: TRUST STRIP
@@ -740,24 +556,38 @@ export const HomePage: React.FC<HomePageProps> = ({
                 className="glossy-book-card p-5 rounded-2xl flex flex-col justify-between group"
               >
                 <div>
-                  {/* Glossy Book Cover */}
-                  <div
-                    onClick={() => navigate(`/product/${prod.slug}`)}
-                    className="cursor-pointer mb-4 relative"
-                  >
-                    <BookCoverVisual
-                      title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
-                      subjectSlug={prod.slug}
-                      imageUrl={prod.images && prod.images.length > 0 ? prod.images[0] : undefined}
-                      highlighterColor="yellow"
-                    />
 
-                    {savingsPercent > 0 && (
-                      <span className="absolute top-3 left-3 bg-[#12A5B0] text-white font-mono font-bold text-[10px] px-2.5 py-1 rounded shadow-sm z-20">
-                        SAVE {savingsPercent}%
-                      </span>
-                    )}
-                  </div>
+                {/* Glossy Book Cover */}
+                <div className="cursor-pointer mb-4 relative">
+                  <BookCoverVisual
+                    title={prod.title.replace(' Simplified Handwritten Notes', '').replace(' Handwritten Notes', '')}
+                    subjectSlug={prod.slug}
+                    imageUrl={prod.images && prod.images.length > 0 ? prod.images[0] : undefined}
+                    highlighterColor="yellow"
+                  />
+
+                  {savingsPercent > 0 && (
+                    <span className="absolute top-3 left-3 bg-[#12A5B0] text-white font-mono font-bold text-[10px] px-2.5 py-1 rounded shadow-sm z-20">
+                      SAVE {savingsPercent}%
+                    </span>
+                  )}
+                  
+                  {/* Heart Wishlist Icon */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleWishlist(prod.slug);
+                    }}
+                    className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 transition"
+                  >
+                    <svg 
+                      className={`w-5 h-5 ${wishlist.includes(prod.slug) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </button>
+                </div>
 
                   {/* Title & Short Description */}
                   <h3
@@ -895,6 +725,11 @@ export const HomePage: React.FC<HomePageProps> = ({
         )}
 
       </section>
+
+      {/* =========================================================================
+          SECTION 7: TESTIMONIALS
+         ========================================================================= */}
+      <TestimonialSection />
 
       {/* =========================================================================
           SECTION 7: OUR STORY

@@ -423,21 +423,16 @@ export interface SiteSettings {
   default_hsn: string;
   default_gst_rate_bp: number;
   tracking_url_template: string;
-  ga4_id: string;
-  meta_pixel_id: string;
-  hero_slides: { desktop_image: string; mobile_image?: string; link?: string; title?: string; subtitle?: string }[];
-  ticker_items: { label: string; icon: string }[];
-  trust_row: { title: string; desc: string; icon: string }[];
-  usp_blocks: { title: string; desc: string; icon: string }[];
-  featured_collection_count: number;
-  default_comparison_rows: ComparisonRow[];
-  result_stats: ResultStat[];
-  featured_on_logos: FeaturedLogo[];
-  show_total_orders_badge: boolean;
-  total_orders_badge_min: number;
-  show_low_stock_badge: boolean;
-  show_recent_buyers_strip: boolean;
   custom_logo_url?: string;
+  site_title?: string;
+  site_description?: string;
+  og_image?: string;
+  meta_keywords?: string;
+  twitter_handle?: string;
+  ga4_id?: string;
+  gtm_id?: string;
+  meta_pixel_id?: string;
+  enable_core_web_vitals?: boolean;
   hero_banners?: HeroBannerItem[];
 }
 
@@ -453,6 +448,11 @@ export interface HeroBannerItem {
   image?: string;
   accent_color?: string;
   active: boolean;
+}
+
+export interface Wishlist {
+  userId: string;
+  items: string[]; // product slugs
 }
 
 export interface HealthResponse {

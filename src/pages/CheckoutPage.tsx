@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Product, QuoteResponse, PaymentMethod } from '../types';
 import { quoteCart, createOrder, verifyPayment, fetchMyProfile, updateMyProfile } from '../lib/api';
 import { auth } from '../lib/firebase';
+import { trackBeginCheckout } from '../lib/analytics';
 
 interface CheckoutPageProps {
   cart: { slug: string; qty: number }[];
@@ -80,9 +81,19 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
       coupon_code: couponCode || undefined,
       payment_method: paymentMethod,
     })
-      .then(q => setQuote(q))
+      .then(q => {
+        setQuote(q);
+        const gaItems = q.lines.map(line => ({
+          item_id: line.slug,
+          item_name: line.title,
+          price: Number((line.unit_price_paise / 100).toFixed(2)),
+          quantity: line.qty,
+        }));
+        trackBeginCheckout(gaItems, q.total_paise / 100, couponCode);
+      })
       .catch(err => setErrorMsg(err.message));
   }, [cart, paymentMethod, couponCode]);
+
 
   const handlePincodeChange = async (val: string) => {
     setPincode(val);

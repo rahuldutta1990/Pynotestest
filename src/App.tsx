@@ -10,6 +10,8 @@ import { CartDrawer } from './components/CartDrawer';
 import { TestModeBanner } from './components/TestModeBanner';
 import { CookieBanner } from './components/CookieBanner';
 import { InnerPageLayout } from './components/InnerPageLayout';
+import { SEO } from './components/SEO';
+import { trackAddToCart, trackRemoveFromCart } from './lib/analytics';
 
 // Storefront Pages
 import { HomePage } from './pages/HomePage';
@@ -43,6 +45,7 @@ import { AdminStatusMappings } from './admin/AdminStatusMappings';
 import { AdminWebhookLogs } from './admin/AdminWebhookLogs';
 import { AdminLogisticsReports } from './admin/AdminLogisticsReports';
 import { AdminNotificationsPage } from './admin/AdminNotificationsPage';
+import { AdminEnvStatusPage } from './admin/AdminEnvStatusPage';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -130,6 +133,10 @@ export default function App() {
   }, []);
 
   const handleAddToCart = (slug: string, qty: number = 1) => {
+    const p = products.find(prod => prod.slug === slug);
+    if (p) {
+      trackAddToCart(p, qty);
+    }
     setCart(prev => {
       const existingIdx = prev.findIndex(item => item.slug === slug);
       if (existingIdx >= 0) {
@@ -151,8 +158,14 @@ export default function App() {
   };
 
   const handleRemoveCartItem = (slug: string) => {
+    const existing = cart.find(item => item.slug === slug);
+    const p = products.find(prod => prod.slug === slug);
+    if (p && existing) {
+      trackRemoveFromCart(p, existing.qty);
+    }
     setCart(prev => prev.filter(item => item.slug !== slug));
   };
+
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
@@ -182,10 +195,13 @@ export default function App() {
           <Route path="support" element={<AdminCMS section="support" />} />
           <Route path="reports" element={<AdminCMS section="reports" />} />
           <Route path="system-check" element={<AdminSystemCheck />} />
+          <Route path="env-status" element={<AdminEnvStatusPage />} />
           <Route path="subscriptions" element={<AdminCMS section="subscriptions" />} />
           <Route path="cancellations" element={<AdminCMS section="cancellations" />} />
           <Route path="offers" element={<AdminCMS section="offers" />} />
           <Route path="settings" element={<AdminCMS section="settings" />} />
+          <Route path="seo" element={<AdminCMS section="seo" />} />
+          <Route path="wishlists" element={<AdminCMS section="wishlists" />} />
           <Route path="logo" element={<AdminCMS section="logo" />} />
           <Route path="hero-banners" element={<AdminCMS section="hero-banners" />} />
           <Route path="announcements" element={<AdminCMS section="announcements" />} />
@@ -201,6 +217,7 @@ export default function App() {
           path="*"
           element={
             <div className="min-h-screen flex flex-col bg-[#F7FAFC] text-[#0B3561]">
+              <SEO siteSettings={settings} />
               <TestModeBanner isTestMode={health?.test_mode} />
               
               {settings && (

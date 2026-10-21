@@ -2,6 +2,8 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+dotenv.config();
 import crypto from 'crypto';
 import compression from 'compression';
 import helmet from 'helmet';
@@ -60,21 +62,26 @@ const TRIAL_DAYS = Number(process.env.TRIAL_DAYS || 7);
 const GRACE_DAYS = Number(process.env.GRACE_DAYS || 3);
 const CANCELLATION_ACCESS = process.env.CANCELLATION_ACCESS || 'until_end'; // 'until_end' or 'immediately'
 
-// In production, warn if secrets are missing but do not crash startup
-if (process.env.NODE_ENV === 'production') {
-  const missingSecrets: string[] = [];
-  if (!ORDER_TOKEN_SECRET) missingSecrets.push('ORDER_TOKEN_SECRET');
-  if (!OWNER_SETUP_CODE) missingSecrets.push('OWNER_SETUP_CODE');
-  if (!SHIPROCKET_WEBHOOK_TOKEN) missingSecrets.push('SHIPROCKET_WEBHOOK_TOKEN');
-  if (missingSecrets.length > 0) {
-    console.warn(`[WARNING] Missing production environment secrets: ${missingSecrets.join(', ')}. Using resilient generated fallbacks.`);
-  }
+// Required production environment secrets validation
+const requiredSecrets = {
+  ORDER_TOKEN_SECRET,
+  OWNER_SETUP_CODE,
+  SHIPROCKET_WEBHOOK_TOKEN,
+};
+
+const missingSecrets = Object.entries(requiredSecrets)
+  .filter(([key, val]) => !val || val.trim() === '')
+  .map(([key]) => key);
+
+if (missingSecrets.length > 0) {
+  const errorMsg = `[FATAL ERROR] Missing required environment secrets: ${missingSecrets.join(', ')}. Please configure these environment variables before starting the server.`;
+  console.error(errorMsg);
+  throw new Error(errorMsg);
 }
 
-// Fallbacks for secrets if empty
-const effectiveOrderTokenSecret = ORDER_TOKEN_SECRET || 'pynotes_order_secret_fallback_2026';
-const effectiveOwnerSetupCode = OWNER_SETUP_CODE || 'PYNOTES2026';
-const effectiveShiprocketWebhookToken = SHIPROCKET_WEBHOOK_TOKEN || 'shiprocket_token_fallback';
+const effectiveOrderTokenSecret = ORDER_TOKEN_SECRET;
+const effectiveOwnerSetupCode = OWNER_SETUP_CODE;
+const effectiveShiprocketWebhookToken = SHIPROCKET_WEBHOOK_TOKEN;
 
 // Background task to sweep expired reservations (every 5 mins)
 setInterval(async () => {
@@ -1436,6 +1443,31 @@ app.get('/api/orders/:no', async (req, res) => {
   res.json(doc.data());
 });
 
+// Wishlist
+app.get('/api/wishlist', authenticateUser, async (req, res) => {
+  const userId = req.user.uid;
+  const doc = await db.collection('wishlist').doc(userId).get();
+  res.json(doc.exists ? doc.data() : { items: [] });
+});
+
+app.post('/api/wishlist', authenticateUser, async (req, res) => {
+  const userId = req.user.uid;
+  const { slug } = req.body;
+  if (!slug) return res.status(400).json({ error: 'Missing slug' });
+
+  const docRef = db.collection('wishlist').doc(userId);
+  const doc = await docRef.get();
+  let items = doc.exists ? (doc.data()?.items || []) : [];
+
+  if (items.includes(slug)) {
+    items = items.filter(i => i !== slug);
+  } else {
+    items.push(slug);
+  }
+  await docRef.set({ items }, { merge: true });
+  res.json({ success: true, items });
+});
+
 // GET /api/invoice/:no (Printable GST Invoice)
 app.get('/api/invoice/:no', async (req, res) => {
   const orderNo = req.params.no;
@@ -2587,9 +2619,45 @@ app.get('/api/admin/settings', authenticateUser, async (req, res) => {
 });
 
 app.put('/api/admin/settings', authenticateUser, async (req, res) => {
-  await db.collection('settings').doc('site').set(req.body, { merge: true });
+  const settingsRef = db.collection('settings').doc('site');
+  const oldDoc = await settingsRef.get();
+  const oldData = oldDoc.exists ? oldDoc.data() : {};
+  
+  await settingsRef.set(req.body, { merge: true });
   clearCatalogCache();
-  res.json({ success: true });
+
+  // Log change in 2 places in Firestore DB (audit_logs collection & settings history subcollection or log doc)
+  const staffEmail = req.headers['x-staff-email'] || req.headers['x-user-email'] || 'admin@pynotes.in';
+  const logEntry = {
+    id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+    action: 'UPDATE_SETTINGS',
+    details: 'Updated site configuration / branding logo',
+    admin_email: staffEmail,
+    changes: req.body,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    // Place 1: Global audit_logs collection
+    await db.collection('audit_logs').doc(logEntry.id).set(logEntry);
+    // Place 2: Site settings history collection
+    await db.collection('settings_history').doc(logEntry.id).set(logEntry);
+  } catch (err) {
+    console.warn('Failed to write audit logs:', err);
+  }
+
+  res.json({ success: true, audit_log: logEntry });
+});
+
+// Admin Get Audit Logs
+app.get('/api/admin/audit-logs', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  try {
+    const snap = await db.collection('audit_logs').orderBy('timestamp', 'desc').limit(50).get();
+    res.json(snap.docs.map(d => d.data()));
+  } catch {
+    const snap = await db.collection('audit_logs').get();
+    res.json(snap.docs.map(d => d.data()));
+  }
 });
 
 // ----------------------------------------------------

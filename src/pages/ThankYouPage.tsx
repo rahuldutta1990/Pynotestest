@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Order } from '../types';
 import { fetchOrderDetails } from '../lib/api';
 import { CheckCircleIcon } from '../components/Icons';
+import { trackPurchase } from '../lib/analytics';
 
 export const ThankYouPage: React.FC = () => {
   const { orderNo } = useParams<{ orderNo: string }>();
@@ -22,12 +23,33 @@ export const ThankYouPage: React.FC = () => {
       .then(ord => {
         setOrder(ord);
         setLoading(false);
+
+        // GA4 Purchase Tracking
+        if (ord) {
+          const gaItems = (ord.items || []).map(item => ({
+            item_id: item.slug,
+            item_name: item.title,
+            price: Number((item.unit_price_paise / 100).toFixed(2)),
+            quantity: item.qty,
+          }));
+
+          trackPurchase({
+            transaction_id: ord.order_no,
+            value: ord.total_paise / 100,
+            currency: 'INR',
+            tax: (ord.tax_paise || 0) / 100,
+            shipping: (ord.shipping_paise || 0) / 100,
+            coupon: ord.coupon_code || '',
+            items: gaItems,
+          });
+        }
       })
       .catch(err => {
         setError(err.message || 'Order not found');
         setLoading(false);
       });
   }, [orderNo, token]);
+
 
   if (loading) {
     return (

@@ -4,6 +4,8 @@ import { Product, SiteSettings, Review, FAQ } from '../types';
 import { PlaceholderCover } from '../components/PlaceholderCover';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
 import { TruckIcon, CheckCircleIcon, CrossIcon } from '../components/Icons';
+import { trackViewItem } from '../lib/analytics';
+import { ReviewSection } from '../components/ReviewSection';
 
 interface ProductDetailPageProps {
   products: Product[];
@@ -30,6 +32,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [showStickyBar, setShowStickyBar] = useState(false);
 
   const buyBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product);
+    }
+  }, [product?.slug]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -368,6 +376,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
         </div>
       )}
+
+      {/* REVIEWS */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <ReviewSection productId={product.slug} />
+      </div>
 
     </div>
   );

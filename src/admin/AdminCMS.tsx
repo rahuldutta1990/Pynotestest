@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminFetch } from '../lib/api';
 import { SiteSettings, Coupon, Subject, FAQ, HeroBannerItem } from '../types';
 import { AdminOrders } from './AdminOrders';
+import { AdminReviews } from './AdminReviews';
 
 export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
@@ -9,11 +10,13 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [adminPlans, setAdminPlans] = useState<any[]>([]);
   const [adminSubscriptions, setAdminSubscriptions] = useState<any[]>([]);
   const [adminCancellations, setAdminCancellations] = useState<any[]>([]);
   const [adminWebhookEvents, setAdminWebhookEvents] = useState<any[]>([]);
   const [adminMetrics, setAdminMetrics] = useState<any>(null);
+  const [adminWishlists, setAdminWishlists] = useState<any[]>([]);
   const [adminPages, setAdminPages] = useState<any[]>([]);
   const [editingPage, setEditingPage] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -23,12 +26,15 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      if (section === 'settings' || section === 'logo' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders' || section === 'instagram' || section === 'payments' || section === 'payment-page' || section === 'subscriptions' || section === 'offers') {
+      if (section === 'settings' || section === 'seo' || section === 'logo' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders' || section === 'instagram' || section === 'payments' || section === 'payment-page' || section === 'subscriptions' || section === 'offers') {
         const res = await adminFetch('/settings');
         setSettings(res);
       } else if (section === 'coupons') {
         const res = await adminFetch('/coupons');
         setCoupons(res);
+      } else if (section === 'wishlists') {
+        const res = await adminFetch('/wishlists');
+        setAdminWishlists(res);
       } else if (section === 'subjects') {
         const res = await adminFetch('/subjects');
         setSubjects(res);
@@ -36,8 +42,12 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
         const res = await adminFetch('/faqs');
         setFaqs(res);
       } else if (section === 'users') {
-        const res = await adminFetch('/users');
-        setUsers(res);
+        const [usersRes, auditRes] = await Promise.all([
+          adminFetch('/users'),
+          adminFetch('/audit-logs').catch(() => [])
+        ]);
+        setUsers(usersRes || []);
+        setAuditLogs(auditRes || []);
       } else if (section === 'subscriptions') {
         const [plansRes, subsRes, metricsRes] = await Promise.all([
           adminFetch('/plans'),
@@ -125,6 +135,194 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
           Save Pricing Rules
         </button>
       </form>
+    );
+  }
+
+  if (section === 'seo') {
+    const handleOgFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file for OpenGraph preview.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image file size should be less than 5 MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setSettings(prev => ({ ...prev, og_image: event.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
+    };
+
+    return (
+      <div className="space-y-8 max-w-4xl text-xs">
+        <form onSubmit={handleSaveSettings} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6">
+          <div className="border-b border-[#0B3561]/10 pb-4">
+            <h3 className="font-heading font-bold text-xl text-[#0B3561]">SEO, GA4 & Core Web Vitals Manager</h3>
+            <p className="text-[#3C5D81] text-xs mt-1">
+              Dynamically update global meta tags, social sharing (OpenGraph/Twitter) cards, Google Analytics 4 tracking, and Real User Monitoring (RUM) for Web Vitals across the entire store.
+            </p>
+          </div>
+
+          {saveMsg && (
+            <div className="bg-[#DDF3F4] text-[#0B3561] font-bold p-3.5 rounded-2xl border border-[#12A5B0]/30 shadow-xs">
+              {saveMsg}
+            </div>
+          )}
+
+          {/* 1. Global Meta Tags */}
+          <div className="space-y-4">
+            <h4 className="font-heading font-bold text-sm text-[#0B3561] flex items-center gap-2">
+              <span>🔍</span> Search Engine Meta Tags
+            </h4>
+
+            <div>
+              <label className="block font-semibold mb-1 text-[#0B3561]">Global Site Title (`&lt;title&gt;` & `og:title`)</label>
+              <input
+                type="text"
+                value={settings.site_title || ''}
+                onChange={e => setSettings({ ...settings, site_title: e.target.value })}
+                placeholder="PyNotes - Printed Handwritten Coding Notes & Books"
+                className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-medium"
+              />
+              <p className="text-[10px] text-[#3C5D81] mt-1">Recommended length: 30 - 60 characters.</p>
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 text-[#0B3561]">Meta Description (`&lt;meta name="description"&gt;`)</label>
+              <textarea
+                rows={3}
+                value={settings.site_description || ''}
+                onChange={e => setSettings({ ...settings, site_description: e.target.value })}
+                placeholder="Learn. Write. Grow. Premium printed handwritten-style coding books and study bundles delivered across India."
+                className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-medium"
+              />
+              <p className="text-[10px] text-[#3C5D81] mt-1">Recommended length: 120 - 160 characters.</p>
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-1 text-[#0B3561]">Meta Keywords (`&lt;meta name="keywords"&gt;`)</label>
+              <input
+                type="text"
+                value={settings.meta_keywords || ''}
+                onChange={e => setSettings({ ...settings, meta_keywords: e.target.value })}
+                placeholder="PyNotes, coding books, handwritten notes, C, Java, Python, DSA"
+                className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-medium"
+              />
+              <p className="text-[10px] text-[#3C5D81] mt-1">Comma-separated target search keywords.</p>
+            </div>
+          </div>
+
+          {/* 2. OpenGraph & Social Media Cards */}
+          <div className="space-y-4 pt-4 border-t border-[#0B3561]/10">
+            <h4 className="font-heading font-bold text-sm text-[#0B3561] flex items-center gap-2">
+              <span>🖼️</span> Social Sharing Cards (OpenGraph / Twitter)
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold mb-1 text-[#0B3561]">OpenGraph Banner Image (`og:image`)</label>
+                <div className="space-y-2">
+                  <div className="border border-dashed border-[#12A5B0]/40 bg-[#F7FAFC] rounded-xl p-4 text-center cursor-pointer relative hover:bg-[#DDF3F4]/20 transition">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleOgFileUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    <p className="font-bold text-[#0B3561] text-xs">Upload OpenGraph Card Image</p>
+                    <p className="text-[10px] text-[#3C5D81]">1200 x 630 px recommended (PNG / JPG / WebP)</p>
+                  </div>
+                  <input
+                    type="text"
+                    value={settings.og_image || ''}
+                    onChange={e => setSettings({ ...settings, og_image: e.target.value })}
+                    placeholder="Or enter direct URL: https://pynotes.in/og-banner.png"
+                    className="w-full p-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1 text-[#0B3561]">Twitter / X Handle (`@username`)</label>
+                <input
+                  type="text"
+                  value={settings.twitter_handle || ''}
+                  onChange={e => setSettings({ ...settings, twitter_handle: e.target.value })}
+                  placeholder="@pynotes_in"
+                  className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-medium"
+                />
+                <p className="text-[10px] text-[#3C5D81] mt-1">Appears on shared Twitter cards (`twitter:site`).</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Analytics & Performance Tracking */}
+          <div className="space-y-4 pt-4 border-t border-[#0B3561]/10">
+            <h4 className="font-heading font-bold text-sm text-[#0B3561] flex items-center gap-2">
+              <span>📈</span> Analytics & Core Web Vitals Monitoring
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-semibold mb-1 text-[#0B3561]">Google Tag Manager Container ID</label>
+                <input
+                  type="text"
+                  value={settings.gtm_id || ''}
+                  onChange={e => setSettings({ ...settings, gtm_id: e.target.value })}
+                  placeholder="GTM-XXXXXXX"
+                  className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-mono text-xs"
+                />
+                <p className="text-[10px] text-[#3C5D81] mt-1">Injects GTM container script and iframe snippet.</p>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1 text-[#0B3561]">Google Analytics 4 Measurement ID</label>
+                <input
+                  type="text"
+                  value={settings.ga4_id || ''}
+                  onChange={e => setSettings({ ...settings, ga4_id: e.target.value })}
+                  placeholder="G-XXXXXXXXXX"
+                  className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-mono text-xs"
+                />
+                <p className="text-[10px] text-[#3C5D81] mt-1">Direct GA4 tracking tag injection.</p>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1 text-[#0B3561]">Meta / Facebook Pixel ID</label>
+                <input
+                  type="text"
+                  value={settings.meta_pixel_id || ''}
+                  onChange={e => setSettings({ ...settings, meta_pixel_id: e.target.value })}
+                  placeholder="123456789012345"
+                  className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl font-mono text-xs"
+                />
+                <p className="text-[10px] text-[#3C5D81] mt-1">Used for Meta ad tracking & conversions.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <input
+                type="checkbox"
+                id="enable_core_web_vitals"
+                checked={!!settings.enable_core_web_vitals}
+                onChange={e => setSettings({ ...settings, enable_core_web_vitals: e.target.checked })}
+                className="w-4 h-4 text-[#12A5B0] accent-[#12A5B0] rounded cursor-pointer"
+              />
+              <label htmlFor="enable_core_web_vitals" className="font-semibold text-xs text-[#0B3561] cursor-pointer">
+                Enable Core Web Vitals RUM Performance Tracking (LCP, CLS, FID/INP monitoring)
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" className="w-full bg-[#0B3561] text-white font-heading font-bold py-3.5 rounded-xl hover:bg-[#071E38] transition shadow-md">
+            Save SEO & Analytics Settings
+          </button>
+        </form>
+      </div>
     );
   }
 
@@ -483,6 +681,10 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
         <button className="bg-[#12A5B0] text-white p-2 rounded-xl">Add New Product</button>
       </div>
     );
+  }
+
+  if (section === 'reviews') {
+    return <AdminReviews />;
   }
 
   if (section === 'hero-banners') {
@@ -1495,52 +1697,103 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
 
   if (section === 'users') {
     return (
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6 text-xs">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-heading font-bold text-lg text-[#0B3561]">User Management</h3>
-            <p className="text-[#3C5D81]">View and manage all registered users, staff, and customers.</p>
+      <div className="space-y-8 text-xs">
+        {/* User Management Table */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-heading font-bold text-lg text-[#0B3561]">User Management</h3>
+              <p className="text-[#3C5D81]">View and manage all registered users, staff, and customers.</p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
+            <table className="w-full text-left">
+              <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
+                <tr>
+                  <th className="px-4 py-3">User / Name</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Joined On</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#0B3561]/5">
+                {users.map(u => (
+                  <tr key={u.uid} className="hover:bg-[#DDF3F4]/20 transition">
+                    <td className="px-4 py-3 font-bold text-[#0B3561]">{u.name || 'Student'}</td>
+                    <td className="px-4 py-3 text-[#3C5D81] font-mono">{u.email}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                        u.role === 'owner' ? 'bg-purple-100 text-purple-700' :
+                        u.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-[#9DAEC0]">
+                      {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {users.length === 0 && (
+              <div className="p-10 text-center text-[#3C5D81]">No users found in database.</div>
+            )}
           </div>
         </div>
 
-        <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
-          <table className="w-full text-left">
-            <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
-              <tr>
-                <th className="px-4 py-3">User / Name</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Joined On</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#0B3561]/5">
-              {users.map(u => (
-                <tr key={u.uid} className="hover:bg-[#DDF3F4]/20 transition">
-                  <td className="px-4 py-3 font-bold text-[#0B3561]">{u.name || 'Student'}</td>
-                  <td className="px-4 py-3 text-[#3C5D81] font-mono">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                      u.role === 'owner' ? 'bg-purple-100 text-purple-700' :
-                      u.role === 'manager' ? 'bg-blue-100 text-blue-700' :
-                      'bg-green-100 text-green-700'
-                    }`}>
-                      {u.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-[#9DAEC0]">
-                    {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
-                  </td>
+        {/* Audit Logs & Settings History Table */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6">
+          <div>
+            <h3 className="font-heading font-bold text-lg text-[#0B3561]">Settings & SEO Change Audit Trail</h3>
+            <p className="text-[#3C5D81]">Recorded in dual Firestore collections (`audit_logs` and `settings_history`).</p>
+          </div>
+
+          <div className="overflow-x-auto border border-[#0B3561]/10 rounded-2xl">
+            <table className="w-full text-left">
+              <thead className="bg-[#F7FAFC] text-[#3C5D81] font-bold uppercase tracking-wider border-b border-[#0B3561]/10">
+                <tr>
+                  <th className="px-4 py-3">Timestamp</th>
+                  <th className="px-4 py-3">Admin Email</th>
+                  <th className="px-4 py-3">Action</th>
+                  <th className="px-4 py-3">Details</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {users.length === 0 && (
-            <div className="p-10 text-center text-[#3C5D81]">No users found in database.</div>
-          )}
+              </thead>
+              <tbody className="divide-y divide-[#0B3561]/5">
+                {auditLogs.map(log => (
+                  <tr key={log.id} className="hover:bg-[#DDF3F4]/20 transition">
+                    <td className="px-4 py-3 font-mono text-[10px] text-[#3C5D81]">
+                      {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 font-bold text-[#0B3561]">{log.admin_email}</td>
+                    <td className="px-4 py-3">
+                      <span className="bg-[#DDF3F4] text-[#0B3561] px-2 py-0.5 rounded-full font-bold uppercase text-[9px]">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-[#3C5D81]">
+                      {log.details}
+                      {log.changes && (
+                        <div className="mt-1 font-mono text-[10px] bg-[#F7FAFC] p-2 rounded border text-[#0B3561] max-w-lg truncate">
+                          {JSON.stringify(log.changes)}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {auditLogs.length === 0 && (
+              <div className="p-10 text-center text-[#3C5D81]">No audit logs recorded yet.</div>
+            )}
+          </div>
         </div>
       </div>
     );
   }
+
 
   if (section === 'payment-page') {
     return (

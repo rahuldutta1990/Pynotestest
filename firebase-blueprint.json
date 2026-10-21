@@ -216,6 +216,21 @@
         "is_draft": { "type": "boolean" }
       },
       "required": ["slug", "title", "body_md"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Product review",
+      "type": "object",
+      "properties": {
+        "product_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "user_name": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["product_id", "user_id", "rating", "comment", "status"]
     }
   },
   "firestore": {
@@ -278,6 +293,10 @@
     "pages": {
       "schema": "Page",
       "description": "Content pages"
+    },
+    "reviews": {
+      "schema": "Review",
+      "description": "Product reviews"
     }
   }
 }

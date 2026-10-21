@@ -537,3 +537,21 @@ export async function cancelCustomerOrder(orderNo: string, reason?: string) {
   }
   return res.json();
 }
+
+export async function fetchWishlist(): Promise<string[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch('/api/wishlist', { headers });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.items || [];
+}
+
+export async function toggleWishlistItem(slug: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch('/api/wishlist', {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slug }),
+  });
+  if (!res.ok) throw new Error('Failed to update wishlist');
+}
