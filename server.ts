@@ -16,6 +16,7 @@ import Razorpay from 'razorpay';
 import nodemailer from 'nodemailer';
 import firebaseConfig from './firebase-applet-config.json';
 import { registerLogisticsRoutes, initLogisticsWorkers } from './server/logisticsModule';
+import { registerCouponRoutes } from './server/couponModule';
 import { createResilientFirestore } from './server/resilientDb';
 
 declare global {
@@ -405,6 +406,7 @@ function requireRole(roles: string[]) {
 
 // Initialize Shiprocket Logistics & Courier Webhook Subsystem
 registerLogisticsRoutes(app, db, authenticateUser, requireRole, mailTransporter, MAIL_FROM);
+registerCouponRoutes(app, db, authenticateUser, requireRole);
 if (!process.env.VERCEL) {
   try {
     initLogisticsWorkers(db, mailTransporter, MAIL_FROM);
