@@ -128,6 +128,7 @@ export const AdminLayout: React.FC = () => {
 
       throw new Error(data.error || 'Invalid credentials. Please enter your valid admin email and password.');
     } catch (err: any) {
+      console.error("[DEBUG] Admin login failed:", err);
       setLoginError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setSubmitting(false);

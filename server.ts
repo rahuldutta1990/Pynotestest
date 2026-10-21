@@ -1777,25 +1777,45 @@ app.post("/api/admin/login", async (req, res) => {
     console.log("[DEBUG] Querying Firestore for user:", cleanEmail);
     const userSnap = await db.collection("users").where("email", "==", cleanEmail).limit(1).get();
     console.log("[DEBUG] Query result size:", userSnap.size);
-    let userData = !userSnap.empty ? userSnap.docs[0].data() : null;
+    
+    let userData = null;
+    if (!userSnap.empty) {
+      try {
+        userData = userSnap.docs[0].data();
+        console.log("[DEBUG] User data found:", !!userData);
+      } catch (e) {
+        console.error("[DEBUG] Error accessing user data:", e);
+      }
+    }
 
     const isPreStored = preStoredAdminEmails.includes(cleanEmail);
     const isStaffRole = userData && ["owner", "manager", "editor"].includes(userData.role);
-
     console.log("[DEBUG] User authorized?", isPreStored || isStaffRole);
 
     if (!isPreStored && !isStaffRole) {
+      console.log("[DEBUG] Login failed: Not authorized (not in preStored and not staffRole)");
       return res.status(401).json({ error: "Invalid admin credentials or unauthorized email." });
+    }
+
+    // Explicitly check for admin role/flag if needed for higher-level access,
+    // though isStaffRole currently covers ['owner', 'manager', 'editor']
+    console.log("[DEBUG] User role authorized:", userData?.role);
+    if (userData && userData.role !== 'owner' && userData.role !== 'manager' && userData.role !== 'editor') {
+       console.log("[DEBUG] Login failed: Role is not authorized for admin panel");
+       return res.status(403).json({ error: "You do not have administrative permissions." });
     }
 
     // Password verification: require saved password, timing-safe verify, upgrade plaintext to scrypt hash
     const savedPassword = userData?.password;
+    console.log("[DEBUG] Saved password exists:", !!savedPassword);
     if (!savedPassword || typeof savedPassword !== 'string' || savedPassword.trim() === '') {
       console.log("[DEBUG] Login failed: No password configured");
       return res.status(401).json({ error: "No password has been configured for this account. Please use 'Forgot password' or contact the store owner." });
     }
 
+    console.log("[DEBUG] Calling verifyPassword");
     const { valid, needsRehash } = verifyPassword(password, savedPassword);
+    console.log("[DEBUG] verifyPassword result: valid=", valid, "needsRehash=", needsRehash);
     if (!valid) {
       console.log("[DEBUG] Login failed: Incorrect password");
       return res.status(401).json({ error: "Incorrect password. Please try again or use 'Forgot password'." });
@@ -1803,19 +1823,23 @@ app.post("/api/admin/login", async (req, res) => {
 
     // On successful login with legacy plaintext password, transparently upgrade to scrypt hash
     if (needsRehash) {
+      console.log("[DEBUG] Needs rehash, calling hashPassword");
       if (!userData) {
         console.log("[DEBUG] Login failed: userData is null during rehash");
         return res.status(401).json({ error: "User profile not found." });
       }
       const hashedPassword = hashPassword(password);
+      console.log("[DEBUG] Updating password in DB");
       await db.collection("users").doc(cleanEmail).update({
         password: hashedPassword,
         password_migrated_at: new Date().toISOString(),
       });
       userData.password = hashedPassword;
+      console.log("[DEBUG] Password updated");
     }
 
     if (!userData || userData.role !== "owner") {
+      console.log("[DEBUG] Initializing or updating user profile");
       const existingUser = userData;
       userData = {
         uid: cleanEmail,
@@ -1825,6 +1849,7 @@ app.post("/api/admin/login", async (req, res) => {
         created_at: existingUser?.created_at || new Date().toISOString(),
       };
       await db.collection("users").doc(cleanEmail).set(userData, { merge: true });
+      console.log("[DEBUG] Profile updated");
     }
 
     console.log("[DEBUG] Admin login successful for:", cleanEmail);
