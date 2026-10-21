@@ -7,13 +7,14 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const savedStaff = localStorage.getItem('pynotes_staff_user');
+  const savedStaff = sessionStorage.getItem('pynotes_admin_session') || localStorage.getItem('pynotes_staff_user');
   if (savedStaff) {
     try {
       const parsed = JSON.parse(savedStaff);
-      if (parsed.email) {
-        headers['x-staff-email'] = parsed.email;
-        headers['x-user-email'] = parsed.email;
+      const email = parsed.user ? parsed.user.email : parsed.email;
+      if (email) {
+        headers['x-staff-email'] = email;
+        headers['x-user-email'] = email;
       }
     } catch {}
   }

@@ -438,6 +438,21 @@ export interface SiteSettings {
   show_low_stock_badge: boolean;
   show_recent_buyers_strip: boolean;
   custom_logo_url?: string;
+  hero_banners?: HeroBannerItem[];
+}
+
+export interface HeroBannerItem {
+  id: string;
+  badge: string;
+  headline: string;
+  writeup: string;
+  cta_text: string;
+  cta_link: string;
+  secondary_cta_text?: string;
+  secondary_cta_link?: string;
+  image?: string;
+  accent_color?: string;
+  active: boolean;
 }
 
 export interface HealthResponse {
@@ -451,4 +466,32 @@ export interface HealthResponse {
     firebase: boolean;
   };
   test_mode: boolean;
+}
+
+export type NotificationType = 'new_order' | 'stock_out' | 'low_stock' | 'customer_inquiry';
+export type NotificationSeverity = 'critical' | 'warning' | 'info' | 'success';
+
+export interface AdminNotification {
+  id: string;
+  type: NotificationType;
+  severity: NotificationSeverity;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  link?: string;
+  actionLabel?: string;
+  metadata?: {
+    order_no?: string;
+    customer_name?: string;
+    total_paise?: number;
+    payment_method?: string;
+    product_slug?: string;
+    product_title?: string;
+    stock_qty?: number;
+    inquiry_id?: string;
+    sender_name?: string;
+    sender_email?: string;
+    sender_phone?: string;
+  };
 }

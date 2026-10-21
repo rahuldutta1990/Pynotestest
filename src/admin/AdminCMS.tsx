@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminFetch } from '../lib/api';
-import { SiteSettings, Coupon, Subject, FAQ } from '../types';
+import { SiteSettings, Coupon, Subject, FAQ, HeroBannerItem } from '../types';
 import { AdminOrders } from './AdminOrders';
 
 export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
@@ -18,6 +18,7 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [editingPage, setEditingPage] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [selectedBannerIdx, setSelectedBannerIdx] = useState(0);
 
   const loadAll = async () => {
     setLoading(true);
@@ -485,11 +486,534 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   }
 
   if (section === 'hero-banners') {
+    const defaultHeroBannersList: HeroBannerItem[] = [
+      {
+        id: 'banner_1',
+        badge: '✨ 2026 Revised Student Edition • 100 GSM Colour Print',
+        headline: 'Master Coding with Printed, Colourful Handwritten Notes.',
+        writeup: 'Step-by-step algorithms, visual syntax trees, and color-coded memory traces on premium 100 GSM cream paper — built to crack semester exams and placement interviews without screen fatigue.',
+        cta_text: 'Shop Notes',
+        cta_link: '#subjects-grid',
+        secondary_cta_text: 'Placement Bundles SAVE 50%',
+        secondary_cta_link: '/bundles',
+        image: '',
+        accent_color: '#0B3561',
+        active: true,
+      },
+      {
+        id: 'banner_2',
+        badge: '🚀 Complete Placement Prep • Visual DSA & Systems',
+        headline: 'Crack Tech Interviews with Diagrammatic Logic & Solved Problems.',
+        writeup: 'Over 850+ pages of handwritten problem breakdowns, visual recursion trees, Big-O proofs, and dynamic programming tabular patterns across Java, Python, and SQL.',
+        cta_text: 'Explore Placement Bundles',
+        cta_link: '/bundles',
+        secondary_cta_text: 'View All 12 Subjects',
+        secondary_cta_link: '/subjects',
+        image: '',
+        accent_color: '#12A5B0',
+        active: true,
+      },
+      {
+        id: 'banner_3',
+        badge: '📖 Bleed-Proof 100 GSM Archival Cream Sheets',
+        headline: 'Physical Notes Built for Long Study Sessions & Zero Glare.',
+        writeup: 'High-opacity, smudge-resistant cream paper designed for highlighters and pens. Annotate, trace algorithms, and study without blue-light screen headache.',
+        cta_text: 'Shop Notes',
+        cta_link: '#subjects-grid',
+        secondary_cta_text: 'Look Inside Pages',
+        secondary_cta_link: '#look-inside',
+        image: '',
+        accent_color: '#FFD54A',
+        active: true,
+      },
+      {
+        id: 'banner_4',
+        badge: '⚡ Pan-India Express Delivery • COD Available',
+        headline: 'Order with Cash on Delivery — Arrives in 2–4 Business Days.',
+        writeup: 'Dispatched in reinforced weather-proof packaging with live SMS and WhatsApp tracking so you can receive your books before semester test week.',
+        cta_text: 'Order with Cash on Delivery',
+        cta_link: '#subjects-grid',
+        secondary_cta_text: 'Track Existing Order',
+        secondary_cta_link: '/track',
+        image: '',
+        accent_color: '#10B981',
+        active: true,
+      },
+    ];
+
+    const currentBanners: HeroBannerItem[] = (settings.hero_banners && settings.hero_banners.length > 0)
+      ? settings.hero_banners
+      : defaultHeroBannersList;
+
+    const safeIdx = Math.min(selectedBannerIdx, currentBanners.length - 1);
+    const selectedBanner = currentBanners[safeIdx] || currentBanners[0];
+
+    const updateBannerField = (field: keyof HeroBannerItem, value: any) => {
+      const updated = currentBanners.map((b, i) => (i === safeIdx ? { ...b, [field]: value } : b));
+      setSettings(prev => ({ ...prev, hero_banners: updated }));
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file (PNG, JPG, WebP).');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image file size should be less than 5 MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Url = event.target?.result as string;
+        updateBannerField('image', base64Url);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const handleAddBanner = () => {
+      const newBanner: HeroBannerItem = {
+        id: `banner_${Date.now()}`,
+        badge: '✨ 2026 Student Edition • 100 GSM Colour Print',
+        headline: 'New Coding Notes Edition',
+        writeup: 'Color-coded visual explanations and exam questions printed on premium bleed-proof paper.',
+        cta_text: 'Shop Notes',
+        cta_link: '#subjects-grid',
+        secondary_cta_text: 'Placement Bundles SAVE 50%',
+        secondary_cta_link: '/bundles',
+        image: '',
+        accent_color: '#12A5B0',
+        active: true,
+      };
+      const updated = [...currentBanners, newBanner];
+      setSettings(prev => ({ ...prev, hero_banners: updated }));
+      setSelectedBannerIdx(updated.length - 1);
+    };
+
+    const handleDeleteBanner = (idx: number) => {
+      if (currentBanners.length <= 1) {
+        alert('You must have at least one hero banner.');
+        return;
+      }
+      if (!confirm('Are you sure you want to remove this hero banner slide?')) return;
+      const updated = currentBanners.filter((_, i) => i !== idx);
+      setSettings(prev => ({ ...prev, hero_banners: updated }));
+      setSelectedBannerIdx(Math.max(0, idx - 1));
+    };
+
+    const handleMoveBanner = (fromIdx: number, toIdx: number) => {
+      if (toIdx < 0 || toIdx >= currentBanners.length) return;
+      const updated = [...currentBanners];
+      const [moved] = updated.splice(fromIdx, 1);
+      updated.splice(toIdx, 0, moved);
+      setSettings(prev => ({ ...prev, hero_banners: updated }));
+      setSelectedBannerIdx(toIdx);
+    };
+
+    const handleResetToDefaults = async () => {
+      if (!confirm('Reset all hero banners back to the standard 2026 Student Edition slides?')) return;
+      setSettings(prev => ({ ...prev, hero_banners: defaultHeroBannersList }));
+      setSelectedBannerIdx(0);
+      try {
+        await adminFetch('/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...settings, hero_banners: defaultHeroBannersList }),
+        });
+        setSaveMsg('Hero banners reset to 2026 Student Edition defaults!');
+      } catch (err: any) {
+        alert(err.message || 'Failed to reset hero banners');
+      }
+    };
+
     return (
-      <div className="bg-white p-6 rounded-3xl border border-[#0B3561]/10 shadow-sm text-xs space-y-4">
-        <h3 className="font-heading font-bold text-lg text-[#0B3561] capitalize">Manage Hero Banners</h3>
-        <p className="text-[#3C5D81]">Upload and replace your hero banner images.</p>
-        <button className="bg-[#12A5B0] text-white p-2 rounded-xl">Upload New Banner</button>
+      <div className="space-y-6 max-w-5xl text-xs">
+        {/* Top Header Card */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🖼️</span>
+              <h3 className="font-heading font-black text-xl text-[#0B3561]">Hero Banners & Visual Carousel</h3>
+              <span className="bg-[#12A5B0]/15 text-[#0B3561] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {currentBanners.length} Slides Configured
+              </span>
+            </div>
+            <p className="text-[#3C5D81] text-xs mt-1 max-w-2xl">
+              Control the top hero banners rotating on the homepage. Change the student edition badges, headlines, write-ups, buttons, and upload big visual images. Changes are published live to students immediately upon saving.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleResetToDefaults}
+              className="px-3.5 py-2 bg-gray-100 text-[#0B3561] font-semibold rounded-xl hover:bg-gray-200 transition text-xs"
+            >
+              Reset to 2026 Defaults
+            </button>
+            <button
+              type="button"
+              onClick={handleAddBanner}
+              className="px-4 py-2 bg-[#12A5B0] text-[#071E38] font-heading font-bold rounded-xl hover:brightness-105 shadow-xs transition text-xs"
+            >
+              + Add New Slide
+            </button>
+          </div>
+        </div>
+
+        {saveMsg && (
+          <div className="bg-[#DDF3F4] text-[#0B3561] font-bold p-3.5 rounded-2xl border border-[#12A5B0]/30 flex items-center justify-between">
+            <span>✓ {saveMsg}</span>
+            <button onClick={() => setSaveMsg(null)} className="text-[#0B3561]/60 hover:text-[#0B3561]">✕</button>
+          </div>
+        )}
+
+        {/* Slide Selection Bar */}
+        <div className="bg-white p-3 rounded-2xl border border-[#0B3561]/10 shadow-xs flex items-center gap-2 overflow-x-auto">
+          {currentBanners.map((banner, idx) => {
+            const isSelected = idx === safeIdx;
+            return (
+              <button
+                key={banner.id || idx}
+                type="button"
+                onClick={() => setSelectedBannerIdx(idx)}
+                className={`px-4 py-2.5 rounded-xl font-heading text-xs font-bold flex items-center gap-2 transition flex-shrink-0 cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#0B3561] text-white shadow-xs'
+                    : 'bg-[#F7FAFC] text-[#3C5D81] hover:bg-[#DDF3F4]/50'
+                }`}
+              >
+                <span>Slide {idx + 1}</span>
+                <span className={`w-2 h-2 rounded-full ${banner.active !== false ? 'bg-emerald-400' : 'bg-gray-300'}`} />
+                {isSelected && <span className="text-[10px] text-[#FFD54A]">● Editing</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Live Preview Card */}
+        <div className="bg-[#071E38] text-white p-6 sm:p-8 rounded-3xl border border-white/10 shadow-lg space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#12A5B0] flex items-center gap-2">
+              <span>👁️</span> Live Storefront Preview (Slide {safeIdx + 1} of {currentBanners.length})
+            </span>
+            <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
+              selectedBanner.active !== false ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'
+            }`}>
+              {selectedBanner.active !== false ? 'Active on Storefront' : 'Disabled / Hidden'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-7 space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FEF3C7] text-[#92400E] text-[10px] font-bold">
+                <span>{selectedBanner.badge || '✨ 2026 Revised Student Edition • 100 GSM Colour Print'}</span>
+              </div>
+              <h2 className="font-heading font-black text-2xl sm:text-3xl text-white tracking-tight leading-snug">
+                {selectedBanner.headline || 'Master Coding with Printed, Colourful Handwritten Notes.'}
+              </h2>
+              <p className="text-xs text-[#DDF3F4]/80 leading-relaxed max-w-xl">
+                {selectedBanner.writeup || 'Step-by-step algorithms, visual syntax trees, and color-coded memory traces on premium 100 GSM cream paper...'}
+              </p>
+              <div className="flex items-center gap-3 pt-2">
+                <span className="px-5 py-2.5 bg-[#12A5B0] text-[#071E38] font-heading font-bold rounded-xl text-xs">
+                  {selectedBanner.cta_text || 'Shop Notes'} ↓
+                </span>
+                {selectedBanner.secondary_cta_text && (
+                  <span className="px-4 py-2.5 bg-white/10 text-white font-heading font-bold rounded-xl text-xs border border-white/20">
+                    {selectedBanner.secondary_cta_text}
+                  </span>
+                )}
+              </div>
+              <div className="pt-2 flex flex-wrap items-center gap-3 text-[10px] text-[#DDF3F4]/70">
+                <span>✓ Cash on Delivery</span>
+                <span>✓ 2–4 Day Express Delivery</span>
+                <span>✓ Bleed-Proof 100 GSM</span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 flex items-center justify-center">
+              {selectedBanner.image ? (
+                <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 shadow-xl max-h-52 w-full">
+                  <img
+                    src={selectedBanner.image}
+                    alt={selectedBanner.headline}
+                    className="w-full h-52 object-cover object-center"
+                  />
+                  <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[9px] px-2 py-0.5 rounded-md font-mono">
+                    Custom Artwork
+                  </span>
+                </div>
+              ) : (
+                <div className="bg-[#0B3561] border border-white/10 rounded-2xl p-6 text-center space-y-2 w-full">
+                  <span className="text-4xl block">📖</span>
+                  <span className="font-heading font-bold text-xs text-[#DDF3F4] block">
+                    Default 3D Open Notebook Visual
+                  </span>
+                  <p className="text-[10px] text-[#DDF3F4]/60">
+                    Displays interactive 3D notes mockups with floating subject books on the storefront.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Editor Form for Selected Banner */}
+        <form onSubmit={handleSaveSettings} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-xs space-y-6">
+          <div className="flex items-center justify-between border-b border-[#0B3561]/10 pb-4">
+            <div>
+              <h4 className="font-heading font-bold text-base text-[#0B3561]">
+                Editing Slide {safeIdx + 1} Details
+              </h4>
+              <p className="text-xs text-[#3C5D81] mt-0.5">
+                Update texts, links, badges, and big artwork for this slide.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={safeIdx === 0}
+                onClick={() => handleMoveBanner(safeIdx, safeIdx - 1)}
+                className="px-2.5 py-1.5 border border-[#0B3561]/20 rounded-lg text-xs font-bold disabled:opacity-30 hover:bg-[#F7FAFC]"
+                title="Move Slide Earlier"
+              >
+                ← Earlier
+              </button>
+              <button
+                type="button"
+                disabled={safeIdx === currentBanners.length - 1}
+                onClick={() => handleMoveBanner(safeIdx, safeIdx + 1)}
+                className="px-2.5 py-1.5 border border-[#0B3561]/20 rounded-lg text-xs font-bold disabled:opacity-30 hover:bg-[#F7FAFC]"
+                title="Move Slide Later"
+              >
+                Later →
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteBanner(safeIdx)}
+                className="px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg border border-red-200 hover:bg-red-100 text-xs"
+              >
+                Delete Slide
+              </button>
+            </div>
+          </div>
+
+          {/* Active Status Switch */}
+          <div className="flex items-center justify-between p-4 bg-[#F7FAFC] rounded-2xl border border-[#0B3561]/10">
+            <div>
+              <label className="font-heading font-bold text-xs text-[#0B3561] block">
+                Slide Visibility
+              </label>
+              <span className="text-[11px] text-[#3C5D81]">
+                When enabled, this slide appears in the homepage rotating carousel.
+              </span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedBanner.active !== false}
+                onChange={e => updateBannerField('active', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#12A5B0]"></div>
+            </label>
+          </div>
+
+          {/* Badge & Accent Color */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block font-semibold mb-1 text-[#0B3561]">
+                Badge / Tagline (Appears Above Headline)
+              </label>
+              <input
+                type="text"
+                value={selectedBanner.badge || ''}
+                onChange={e => updateBannerField('badge', e.target.value)}
+                placeholder="e.g. ✨ 2026 Revised Student Edition • 100 GSM Colour Print"
+                className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs font-medium focus:outline-none focus:border-[#12A5B0]"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1 text-[#0B3561]">
+                Accent Highlight Color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={selectedBanner.accent_color || '#0B3561'}
+                  onChange={e => updateBannerField('accent_color', e.target.value)}
+                  className="w-10 h-10 p-0 border border-[#0B3561]/20 rounded-xl cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={selectedBanner.accent_color || '#0B3561'}
+                  onChange={e => updateBannerField('accent_color', e.target.value)}
+                  className="flex-1 p-2.5 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Main Headline */}
+          <div>
+            <label className="block font-semibold mb-1 text-[#0B3561]">
+              Main Headline (Big Title)
+            </label>
+            <input
+              type="text"
+              value={selectedBanner.headline || ''}
+              onChange={e => updateBannerField('headline', e.target.value)}
+              placeholder="e.g. Master Coding with Printed, Colourful Handwritten Notes."
+              className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-sm font-heading font-bold text-[#0B3561] focus:outline-none focus:border-[#12A5B0]"
+            />
+          </div>
+
+          {/* Write-up */}
+          <div>
+            <label className="block font-semibold mb-1 text-[#0B3561]">
+              Write-up / One-Line Promise Description
+            </label>
+            <textarea
+              rows={3}
+              value={selectedBanner.writeup || ''}
+              onChange={e => updateBannerField('writeup', e.target.value)}
+              placeholder="Step-by-step algorithms, visual syntax trees, and color-coded memory traces on premium 100 GSM cream paper — built to crack semester exams and placement interviews without screen fatigue."
+              className="w-full p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs leading-relaxed focus:outline-none focus:border-[#12A5B0]"
+            />
+          </div>
+
+          {/* Buttons & Links */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 bg-[#F7FAFC] rounded-2xl border border-[#0B3561]/10 space-y-3">
+              <span className="font-heading font-bold text-xs text-[#0B3561] block">
+                Primary Button
+              </span>
+              <div>
+                <label className="block font-semibold mb-1 text-[#3C5D81] text-[11px]">Button Label</label>
+                <input
+                  type="text"
+                  value={selectedBanner.cta_text || ''}
+                  onChange={e => updateBannerField('cta_text', e.target.value)}
+                  placeholder="Shop Notes"
+                  className="w-full p-2.5 bg-white border border-[#0B3561]/20 rounded-xl text-xs font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1 text-[#3C5D81] text-[11px]">Link Destination</label>
+                <input
+                  type="text"
+                  value={selectedBanner.cta_link || ''}
+                  onChange={e => updateBannerField('cta_link', e.target.value)}
+                  placeholder="#subjects-grid or /subjects"
+                  className="w-full p-2.5 bg-white border border-[#0B3561]/20 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 bg-[#F7FAFC] rounded-2xl border border-[#0B3561]/10 space-y-3">
+              <span className="font-heading font-bold text-xs text-[#0B3561] block">
+                Secondary Button (Optional)
+              </span>
+              <div>
+                <label className="block font-semibold mb-1 text-[#3C5D81] text-[11px]">Button Label</label>
+                <input
+                  type="text"
+                  value={selectedBanner.secondary_cta_text || ''}
+                  onChange={e => updateBannerField('secondary_cta_text', e.target.value)}
+                  placeholder="Placement Bundles SAVE 50%"
+                  className="w-full p-2.5 bg-white border border-[#0B3561]/20 rounded-xl text-xs font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1 text-[#3C5D81] text-[11px]">Link Destination</label>
+                <input
+                  type="text"
+                  value={selectedBanner.secondary_cta_link || ''}
+                  onChange={e => updateBannerField('secondary_cta_link', e.target.value)}
+                  placeholder="/bundles or /subjects"
+                  className="w-full p-2.5 bg-white border border-[#0B3561]/20 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Banner Big Image Artwork */}
+          <div className="p-4 sm:p-6 bg-[#F7FAFC] rounded-2xl border border-[#0B3561]/10 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="font-heading font-bold text-xs text-[#0B3561] block">
+                  Big Hero Artwork / Photo (Right Side of Slide)
+                </label>
+                <p className="text-[11px] text-[#3C5D81] mt-0.5">
+                  Upload an image (PNG, JPG, WebP) or enter an image URL. If left empty, the interactive 3D open notebook visual is displayed.
+                </p>
+              </div>
+              {selectedBanner.image && (
+                <button
+                  type="button"
+                  onClick={() => updateBannerField('image', '')}
+                  className="px-3 py-1 bg-red-100 text-red-700 font-bold rounded-lg hover:bg-red-200 text-[11px]"
+                >
+                  Clear Image (Use 3D Visual)
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+              <div>
+                <label className="block font-semibold mb-1 text-[11px] text-[#3C5D81]">Upload Image File</label>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  onChange={handleFileUpload}
+                  className="w-full p-2 bg-white border border-[#0B3561]/20 rounded-xl text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#0B3561] file:text-white hover:file:bg-[#071E38] cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1 text-[11px] text-[#3C5D81]">Or Paste Image URL</label>
+                <input
+                  type="url"
+                  value={selectedBanner.image || ''}
+                  onChange={e => updateBannerField('image', e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full p-2.5 bg-white border border-[#0B3561]/20 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            {selectedBanner.image && (
+              <div className="p-3 bg-white rounded-xl border border-[#0B3561]/10 flex items-center gap-4">
+                <img
+                  src={selectedBanner.image}
+                  alt="Slide preview"
+                  className="h-16 w-28 object-cover rounded-lg border border-[#0B3561]/10"
+                />
+                <div className="text-xs">
+                  <span className="font-bold text-[#0B3561] block">Active Visual Artwork Attached</span>
+                  <span className="text-[11px] text-[#3C5D81]">This artwork will display proudly beside the text on this slide.</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Save Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#0B3561]/10">
+            <span className="text-xs text-[#3C5D81]">
+              All changes to hero banner slides will be saved into the central store settings.
+            </span>
+            <button
+              type="submit"
+              className="w-full sm:w-auto px-8 py-3.5 bg-[#0B3561] text-white font-heading font-bold text-sm rounded-xl hover:bg-[#071E38] shadow-md hover:shadow-lg transition cursor-pointer"
+            >
+              Save All Hero Banners
+            </button>
+          </div>
+        </form>
       </div>
     );
   }

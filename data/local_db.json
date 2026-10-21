@@ -1,0 +1,803 @@
+{
+  "subscriptions": {},
+  "status_mapping": {
+    "OUT FOR PICKUP": {
+      "raw_status": "OUT FOR PICKUP",
+      "internal_status": "ready_to_ship",
+      "notify_customer": false,
+      "is_exception": false
+    },
+    "PICKED UP": {
+      "raw_status": "PICKED UP",
+      "internal_status": "picked_up",
+      "notify_customer": true,
+      "is_exception": false
+    },
+    "IN TRANSIT": {
+      "raw_status": "IN TRANSIT",
+      "internal_status": "in_transit",
+      "notify_customer": false,
+      "is_exception": false
+    },
+    "REACHED AT DESTINATION": {
+      "raw_status": "REACHED AT DESTINATION",
+      "internal_status": "in_transit",
+      "notify_customer": false,
+      "is_exception": false
+    },
+    "OUT FOR DELIVERY": {
+      "raw_status": "OUT FOR DELIVERY",
+      "internal_status": "out_for_delivery",
+      "notify_customer": true,
+      "is_exception": false
+    },
+    "DELIVERED": {
+      "raw_status": "DELIVERED",
+      "internal_status": "delivered",
+      "notify_customer": true,
+      "is_exception": false
+    },
+    "UNDELIVERED": {
+      "raw_status": "UNDELIVERED",
+      "internal_status": "attempt_failed",
+      "notify_customer": true,
+      "is_exception": true
+    },
+    "ATTEMPT FAILED": {
+      "raw_status": "ATTEMPT FAILED",
+      "internal_status": "attempt_failed",
+      "notify_customer": true,
+      "is_exception": true
+    },
+    "RTO INITIATED": {
+      "raw_status": "RTO INITIATED",
+      "internal_status": "rto_initiated",
+      "notify_customer": true,
+      "is_exception": true
+    },
+    "RTO DELIVERED": {
+      "raw_status": "RTO DELIVERED",
+      "internal_status": "rto_delivered",
+      "notify_customer": true,
+      "is_exception": true
+    },
+    "CANCELLED": {
+      "raw_status": "CANCELLED",
+      "internal_status": "cancelled",
+      "notify_customer": true,
+      "is_exception": false
+    }
+  },
+  "shipments": {},
+  "orders": {},
+  "subjects": {
+    "c": {
+      "slug": "c",
+      "name": "C Programming",
+      "menu_label": "C",
+      "accent_color": "#0B3561",
+      "sort_order": 1,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for C Programming"
+    },
+    "c-plus-plus": {
+      "slug": "c-plus-plus",
+      "name": "C++ Programming",
+      "menu_label": "C++",
+      "accent_color": "#0B3561",
+      "sort_order": 2,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for C++ Programming"
+    },
+    "java": {
+      "slug": "java",
+      "name": "Java Programming",
+      "menu_label": "Java",
+      "accent_color": "#12A5B0",
+      "sort_order": 3,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for Java Programming"
+    },
+    "python": {
+      "slug": "python",
+      "name": "Python Programming",
+      "menu_label": "Python",
+      "accent_color": "#12A5B0",
+      "sort_order": 4,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for Python Programming"
+    },
+    "dsa-with-java": {
+      "slug": "dsa-with-java",
+      "name": "DSA with Java",
+      "menu_label": "DSA with Java",
+      "parent": "dsa",
+      "accent_color": "#FFD54A",
+      "sort_order": 5,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for DSA with Java"
+    },
+    "dsa-with-python": {
+      "slug": "dsa-with-python",
+      "name": "DSA with Python",
+      "menu_label": "DSA with Python",
+      "parent": "dsa",
+      "accent_color": "#FFD54A",
+      "sort_order": 6,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for DSA with Python"
+    },
+    "data-science": {
+      "slug": "data-science",
+      "name": "Data Science",
+      "menu_label": "Data Science",
+      "accent_color": "#12A5B0",
+      "sort_order": 7,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for Data Science"
+    },
+    "sql": {
+      "slug": "sql",
+      "name": "SQL & Database Design",
+      "menu_label": "SQL",
+      "accent_color": "#0B3561",
+      "sort_order": 8,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for SQL & Database Design"
+    },
+    "dbms": {
+      "slug": "dbms",
+      "name": "DBMS",
+      "menu_label": "DBMS",
+      "accent_color": "#0B3561",
+      "sort_order": 9,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for DBMS"
+    },
+    "operating-system": {
+      "slug": "operating-system",
+      "name": "Operating System",
+      "menu_label": "Operating System",
+      "accent_color": "#12A5B0",
+      "sort_order": 10,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for Operating System"
+    },
+    "html": {
+      "slug": "html",
+      "name": "HTML5",
+      "menu_label": "HTML",
+      "accent_color": "#0B3561",
+      "sort_order": 11,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for HTML5"
+    },
+    "css": {
+      "slug": "css",
+      "name": "CSS3",
+      "menu_label": "CSS",
+      "accent_color": "#12A5B0",
+      "sort_order": 12,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for CSS3"
+    },
+    "javascript": {
+      "slug": "javascript",
+      "name": "JavaScript",
+      "menu_label": "JavaScript",
+      "accent_color": "#FFD54A",
+      "sort_order": 13,
+      "is_active": true,
+      "seo_intro": "Simplified handwritten notes for JavaScript"
+    }
+  },
+  "pages": {
+    "privacy-policy": {
+      "slug": "privacy-policy",
+      "title": "Privacy Policy",
+      "body_md": "# Privacy Policy\n\nAt PyNotes, we are committed to protecting your privacy. This policy explains how we collect, use, and safeguard your information.\n\n### Information We Collect\nWe collect your name, email address, phone number, and shipping address when you place an order. We also collect usage data through cookies to improve our website.\n\n### How We Use Your Information\nYour information is used solely to process your orders, provide support, and send updates about our services.\n\n### Data Security\nWe use industry-standard security measures to protect your data. Your payment information is handled securely by Razorpay and is never stored on our servers.",
+      "is_draft": true,
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "terms-of-service": {
+      "slug": "terms-of-service",
+      "title": "Terms of Service",
+      "body_md": "# Terms of Service\n\nWelcome to PyNotes. By using our website, you agree to comply with the following terms and conditions.\n\n### Use of Service\nYou agree to use PyNotes for lawful purposes and in a way that does not infringe the rights of others.\n\n### Intellectual Property\nAll content on this site, including handwritten notes, images, and logos, is the property of PyNotes and is protected by copyright laws.\n\n### Limitation of Liability\nPyNotes is not liable for any damages arising from the use of our products or website.",
+      "is_draft": true,
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "refund-policy": {
+      "slug": "refund-policy",
+      "title": "Return & Refund Policy",
+      "body_md": "# Return & Refund Policy\n\nWe want you to be satisfied with your purchase. If you receive a damaged or incorrect book, please follow these guidelines.\n\n### Returns\nYou can request a return within 48 hours of delivery for damaged or wrong items. Please provide photo proof through your account dashboard.\n\n### Refunds\nOnce your return is verified, we will initiate a refund to your original payment method. Razorpay refunds typically take 5-7 working days.",
+      "is_draft": true,
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "shipping-policy": {
+      "slug": "shipping-policy",
+      "title": "Shipping Policy",
+      "body_md": "# Shipping Policy\n\nWe ship our printed books across India using express courier partners like Shiprocket and Bluedart.\n\n### Processing Time\nOrders are processed within 1-2 business days. You will receive a tracking ID via email once shipped.\n\n### Delivery Time\nStandard delivery takes 3-7 business days depending on your location. Prepaid orders get priority express shipping.",
+      "is_draft": true,
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "cancellation-policy": {
+      "slug": "cancellation-policy",
+      "title": "Cancellation Policy",
+      "body_md": "# Cancellation Policy\n\n### One-time Orders\nYou can cancel your book order anytime before it is shipped. Once shipped, the order cannot be cancelled.\n\n### Subscriptions\nYou can cancel your subscription anytime through the 'My Account' page. If you cancel during the 7-day free trial, you will not be charged. Post-trial cancellations will stop the next recurring debit.",
+      "is_draft": true,
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "contact-info": {
+      "slug": "contact-info",
+      "title": "Contact Information",
+      "body_md": "# Contact Information\n\nIf you have any questions or need support, please reach out to us.\n\n**Email:** support@pynotes.in\n**WhatsApp:** +91 98765 43210\n**Address:** PyNotes India Ltd, Tech Park, Mumbai, Maharashtra.",
+      "is_draft": true,
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    }
+  },
+  "products": {
+    "c": {
+      "type": "book",
+      "subject_id": "c",
+      "slug": "c",
+      "sku": "PN-BK-C",
+      "title": "C Programming Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for C Programming with color-coded syntax and exam questions.",
+      "description": "C Programming handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 39900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 1,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "c-plus-plus": {
+      "type": "book",
+      "subject_id": "c-plus-plus",
+      "slug": "c-plus-plus",
+      "sku": "PN-BK-C-PLUS-PLUS",
+      "title": "C++ Programming Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for C++ Programming with color-coded syntax and exam questions.",
+      "description": "C++ Programming handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 2,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "java": {
+      "type": "book",
+      "subject_id": "java",
+      "slug": "java",
+      "sku": "PN-BK-JAVA",
+      "title": "Java Programming Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for Java Programming with color-coded syntax and exam questions.",
+      "description": "Java Programming handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 3,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "python": {
+      "type": "book",
+      "subject_id": "python",
+      "slug": "python",
+      "sku": "PN-BK-PYTHON",
+      "title": "Python Programming Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for Python Programming with color-coded syntax and exam questions.",
+      "description": "Python Programming handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 4,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "dsa-with-java": {
+      "type": "book",
+      "subject_id": "dsa-with-java",
+      "slug": "dsa-with-java",
+      "sku": "PN-BK-DSA-WITH-JAVA",
+      "title": "DSA with Java Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for DSA with Java with color-coded syntax and exam questions.",
+      "description": "DSA with Java handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 59900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 5,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "dsa-with-python": {
+      "type": "book",
+      "subject_id": "dsa-with-python",
+      "slug": "dsa-with-python",
+      "sku": "PN-BK-DSA-WITH-PYTHON",
+      "title": "DSA with Python Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for DSA with Python with color-coded syntax and exam questions.",
+      "description": "DSA with Python handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 59900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 6,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "data-science": {
+      "type": "book",
+      "subject_id": "data-science",
+      "slug": "data-science",
+      "sku": "PN-BK-DATA-SCIENCE",
+      "title": "Data Science Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for Data Science with color-coded syntax and exam questions.",
+      "description": "Data Science handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 7,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "sql": {
+      "type": "book",
+      "subject_id": "sql",
+      "slug": "sql",
+      "sku": "PN-BK-SQL",
+      "title": "SQL & Database Design Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for SQL & Database Design with color-coded syntax and exam questions.",
+      "description": "SQL & Database Design handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 8,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "dbms": {
+      "type": "book",
+      "subject_id": "dbms",
+      "slug": "dbms",
+      "sku": "PN-BK-DBMS",
+      "title": "DBMS Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for DBMS with color-coded syntax and exam questions.",
+      "description": "DBMS handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 9,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "operating-system": {
+      "type": "book",
+      "subject_id": "operating-system",
+      "slug": "operating-system",
+      "sku": "PN-BK-OPERATING-SYSTEM",
+      "title": "Operating System Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for Operating System with color-coded syntax and exam questions.",
+      "description": "Operating System handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 10,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "html": {
+      "type": "book",
+      "subject_id": "html",
+      "slug": "html",
+      "sku": "PN-BK-HTML",
+      "title": "HTML5 Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for HTML5 with color-coded syntax and exam questions.",
+      "description": "HTML5 handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 11,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "css": {
+      "type": "book",
+      "subject_id": "css",
+      "slug": "css",
+      "sku": "PN-BK-CSS",
+      "title": "CSS3 Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for CSS3 with color-coded syntax and exam questions.",
+      "description": "CSS3 handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 12,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "javascript": {
+      "type": "book",
+      "subject_id": "javascript",
+      "slug": "javascript",
+      "sku": "PN-BK-JAVASCRIPT",
+      "title": "JavaScript Simplified Handwritten Notes",
+      "short_desc": "Complete printed handwritten book for JavaScript with color-coded syntax and exam questions.",
+      "description": "JavaScript handwritten notes printed on high quality paper. Covers full semester syllabus, visual diagrams, code outputs, and interview preparation.",
+      "mrp_paise": 79900,
+      "price_paise": 49900,
+      "badge_text": "HOT SELLER",
+      "stock_qty": 50,
+      "low_stock_threshold": 5,
+      "weight_g": 450,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "sort_order": 13,
+      "images": [],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z",
+      "is_sample": false
+    },
+    "python-java": {
+      "type": "bundle",
+      "slug": "python-java",
+      "sku": "PN-BDL-PYTHON-JAVA",
+      "title": "Python + Java Combo Bundle",
+      "short_desc": "Save extra with our curated Python + Java Combo Bundle printed book set.",
+      "description": "Complete multi-book combo pack shipped together in one parcel with free express shipping across India.",
+      "mrp_paise": 159800,
+      "price_paise": 89900,
+      "badge_text": "BEST VALUE",
+      "stock_qty": 0,
+      "low_stock_threshold": 5,
+      "weight_g": 1200,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "bundle_items": [
+        {
+          "book_slug": "python",
+          "qty": 1
+        },
+        {
+          "book_slug": "java",
+          "qty": 1
+        }
+      ],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "c-cplus-python": {
+      "type": "bundle",
+      "slug": "c-cplus-python",
+      "sku": "PN-BDL-C-CPLUS-PYTHON",
+      "title": "C + C++ + Python Starter Bundle",
+      "short_desc": "Save extra with our curated C + C++ + Python Starter Bundle printed book set.",
+      "description": "Complete multi-book combo pack shipped together in one parcel with free express shipping across India.",
+      "mrp_paise": 239700,
+      "price_paise": 119900,
+      "badge_text": "BEST VALUE",
+      "stock_qty": 0,
+      "low_stock_threshold": 5,
+      "weight_g": 1200,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "bundle_items": [
+        {
+          "book_slug": "c",
+          "qty": 1
+        },
+        {
+          "book_slug": "c-plus-plus",
+          "qty": 1
+        },
+        {
+          "book_slug": "python",
+          "qty": 1
+        }
+      ],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "cplus-java-python": {
+      "type": "bundle",
+      "slug": "cplus-java-python",
+      "sku": "PN-BDL-CPLUS-JAVA-PYTHON",
+      "title": "C++ + Java + Python Placement Bundle",
+      "short_desc": "Save extra with our curated C++ + Java + Python Placement Bundle printed book set.",
+      "description": "Complete multi-book combo pack shipped together in one parcel with free express shipping across India.",
+      "mrp_paise": 239700,
+      "price_paise": 129900,
+      "badge_text": "BEST VALUE",
+      "stock_qty": 0,
+      "low_stock_threshold": 5,
+      "weight_g": 1200,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "bundle_items": [
+        {
+          "book_slug": "c-plus-plus",
+          "qty": 1
+        },
+        {
+          "book_slug": "java",
+          "qty": 1
+        },
+        {
+          "book_slug": "python",
+          "qty": 1
+        }
+      ],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    },
+    "c-cplus-java-python": {
+      "type": "bundle",
+      "slug": "c-cplus-java-python",
+      "sku": "PN-BDL-C-CPLUS-JAVA-PYTHON",
+      "title": "Ultimate 4-Language Master Bundle",
+      "short_desc": "Save extra with our curated Ultimate 4-Language Master Bundle printed book set.",
+      "description": "Complete multi-book combo pack shipped together in one parcel with free express shipping across India.",
+      "mrp_paise": 319600,
+      "price_paise": 159900,
+      "badge_text": "BEST VALUE",
+      "stock_qty": 0,
+      "low_stock_threshold": 5,
+      "weight_g": 1200,
+      "hsn_code": "4901",
+      "gst_rate_bp": 0,
+      "status": "active",
+      "bundle_items": [
+        {
+          "book_slug": "c",
+          "qty": 1
+        },
+        {
+          "book_slug": "c-plus-plus",
+          "qty": 1
+        },
+        {
+          "book_slug": "java",
+          "qty": 1
+        },
+        {
+          "book_slug": "python",
+          "qty": 1
+        }
+      ],
+      "created_at": "2026-10-21T04:26:56.961Z",
+      "updated_at": "2026-10-21T04:26:56.961Z"
+    }
+  },
+  "coupons": {
+    "PY10": {
+      "code": "PY10",
+      "kind": "percent",
+      "value": 10,
+      "min_subtotal_paise": 0,
+      "applies_to": "any",
+      "used_count": 0,
+      "is_active": true
+    }
+  },
+  "settings": {
+    "site": {
+      "announcement_messages": [
+        {
+          "text": "LIMITED PRINT COPIES AVAILABLE ACROSS INDIA",
+          "highlight": "LIMITED STOCK"
+        },
+        {
+          "text": "FREE EXPRESS SHIPPING ON ALL PREPAID ORDERS",
+          "highlight": "FREE DELIVERY"
+        },
+        {
+          "text": "USE CODE PY10 FOR 10% EXTRA DISCOUNT AT CHECKOUT",
+          "highlight": "OFFER"
+        },
+        {
+          "text": "HANDWRITTEN COLOURFUL FORMAT FOR RAPID REVISION",
+          "highlight": "EXAM READY"
+        }
+      ],
+      "prepaid_discount_percent": 10,
+      "stack_prepaid_with_coupon": true,
+      "cod_enabled": true,
+      "cod_fee_paise": 4900,
+      "cod_max_total_paise": 0,
+      "free_shipping_threshold_paise": 0,
+      "flat_shipping_paise": 6900,
+      "hold_minutes": 30,
+      "shiprocket_pickup_location": "Primary",
+      "default_weight_g": 450,
+      "parcel_dims_cm": "25x19x3",
+      "processing_days_min": 1,
+      "processing_days_max": 2,
+      "delivery_days_min": 3,
+      "delivery_days_max": 7,
+      "return_window_hours": 48,
+      "prepaid_offer_text": "Free delivery and extra 10% instant off on prepaid orders.",
+      "whatsapp_number": "+919876543210",
+      "support_email": "support@pynotes.in",
+      "footer_about": "PyNotes blends the art of handwritten learning with modern coding. We make programming simple, visual, and human-friendly through clean notes and structured printed books.",
+      "legal_name": "PyNotes India Ltd.",
+      "gstin": "27AAAAA0000A1Z5",
+      "invoice_prefix": "PYN",
+      "default_hsn": "4901",
+      "default_gst_rate_bp": 0,
+      "featured_collection_count": 8,
+      "show_recent_buyers_strip": true,
+      "result_stats": [
+        {
+          "value": "90%",
+          "label": "Felt better concept clarity after using PyNotes",
+          "is_sample": true
+        },
+        {
+          "value": "88%",
+          "label": "Said revision became faster and easier before exams",
+          "is_sample": true
+        },
+        {
+          "value": "85%",
+          "label": "Reported improved confidence in practical coding tests",
+          "is_sample": true
+        },
+        {
+          "value": "97%",
+          "label": "Found handwritten visual format easier to remember",
+          "is_sample": true
+        }
+      ]
+    }
+  },
+  "faqs": {
+    "1": {
+      "id": "1",
+      "question": "Are these books printed or digital PDFs?",
+      "answer": "PyNotes sells 100% physical printed handwritten-style books delivered directly to your home address across India.",
+      "sort_order": 1,
+      "is_active": true
+    },
+    "2": {
+      "id": "2",
+      "question": "How long does delivery take?",
+      "answer": "Orders are processed in 1-2 business days and delivered within 3-7 business days across India.",
+      "sort_order": 2,
+      "is_active": true
+    },
+    "3": {
+      "id": "3",
+      "question": "Is Cash on Delivery (COD) available?",
+      "answer": "Yes! Cash on Delivery is available across all major PIN codes in India.",
+      "sort_order": 3,
+      "is_active": true
+    },
+    "4": {
+      "id": "4",
+      "question": "What if I receive a damaged or wrong book?",
+      "answer": "You can report any damage within 48 hours of delivery with photo proof via your Account page for immediate replacement.",
+      "sort_order": 4,
+      "is_active": true
+    }
+  },
+  "users": {
+    "devrd720@gmail.com": {
+      "uid": "devrd720@gmail.com",
+      "email": "devrd720@gmail.com",
+      "name": "devrd720",
+      "role": "owner",
+      "password": "Admin@123",
+      "password_updated_at": "2026-10-21T04:49:43.217Z"
+    }
+  },
+  "password_resets": {
+    "devrd720@gmail.com": {
+      "email": "devrd720@gmail.com",
+      "code": "970175",
+      "expires_at": 1792559083152,
+      "used": true,
+      "created_at": "2026-10-21T04:49:43.152Z",
+      "updated_at": "2026-10-21T04:49:43.217Z"
+    }
+  }
+}

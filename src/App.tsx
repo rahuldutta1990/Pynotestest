@@ -42,6 +42,7 @@ import { AdminCMS } from './admin/AdminCMS';
 import { AdminStatusMappings } from './admin/AdminStatusMappings';
 import { AdminWebhookLogs } from './admin/AdminWebhookLogs';
 import { AdminLogisticsReports } from './admin/AdminLogisticsReports';
+import { AdminNotificationsPage } from './admin/AdminNotificationsPage';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -164,11 +165,13 @@ export default function App() {
         <Route path="/admin/setup" element={<AdminSetupPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="status-mappings" element={<AdminStatusMappings />} />
           <Route path="logistics-reports" element={<AdminLogisticsReports />} />
           <Route path="courier-webhooks" element={<AdminWebhookLogs />} />
           <Route path="products" element={<AdminProducts />} />
+          <Route path="product-list" element={<AdminProducts />} />
           <Route path="inventory" element={<AdminInventory />} />
           <Route path="subjects" element={<AdminCMS section="subjects" />} />
           <Route path="coupons" element={<AdminCMS section="coupons" />} />
@@ -184,6 +187,8 @@ export default function App() {
           <Route path="offers" element={<AdminCMS section="offers" />} />
           <Route path="settings" element={<AdminCMS section="settings" />} />
           <Route path="logo" element={<AdminCMS section="logo" />} />
+          <Route path="hero-banners" element={<AdminCMS section="hero-banners" />} />
+          <Route path="announcements" element={<AdminCMS section="announcements" />} />
           <Route path="instagram" element={<AdminCMS section="instagram" />} />
           <Route path="payments" element={<AdminCMS section="payments" />} />
           <Route path="payment-page" element={<AdminCMS section="payment-page" />} />
