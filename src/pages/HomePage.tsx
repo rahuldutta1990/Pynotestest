@@ -6,7 +6,7 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { BookCoverVisual } from '../components/BookCoverVisual';
 import { EditorialVisual } from '../components/EditorialVisual';
 import { TestimonialSection } from '../components/TestimonialSection';
-import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, CartIcon } from '../components/Icons';
+import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, CartIcon, HeartIcon } from '../components/Icons';
 import { postContactMessage, fetchWishlist, toggleWishlistItem } from '../lib/api';
 import { auth } from '../lib/firebase';
 
@@ -568,12 +568,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     }}
                     className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 transition"
                   >
-                    <svg 
-                      className={`w-5 h-5 ${wishlist.includes(prod.slug) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
+                    <HeartIcon className={`w-5 h-5 ${wishlist.includes(prod.slug) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                   </button>
                 </div>
 

@@ -592,7 +592,7 @@ async function seedDefaultCatalogIfNeeded() {
         cta_link: "#subjects-grid",
         secondary_cta_text: "Placement Bundles SAVE 50%",
         secondary_cta_link: "/bundles",
-        image: "",
+        image: "/assets/aistudio/image_b26d4892.png",
         accent_color: "#0B3561",
         active: true,
       },
@@ -605,7 +605,7 @@ async function seedDefaultCatalogIfNeeded() {
         cta_link: "/bundles",
         secondary_cta_text: "View All 13 Subjects",
         secondary_cta_link: "/subjects",
-        image: "",
+        image: "/assets/aistudio/image_eea2d0cc.png",
         accent_color: "#12A5B0",
         active: true,
       },
@@ -618,7 +618,7 @@ async function seedDefaultCatalogIfNeeded() {
         cta_link: "/subjects",
         secondary_cta_text: "Look Inside Pages",
         secondary_cta_link: "#look-inside",
-        image: "",
+        image: "/assets/aistudio/image_b26d4892.png",
         accent_color: "#FFD54A",
         active: true,
       },
@@ -631,7 +631,7 @@ async function seedDefaultCatalogIfNeeded() {
         cta_link: "#subjects-grid",
         secondary_cta_text: "Check PIN Code ETA",
         secondary_cta_link: "/track",
-        image: "",
+        image: "/assets/aistudio/image_eea2d0cc.png",
         accent_color: "#10B981",
         active: true,
       },
@@ -1752,8 +1752,10 @@ app.post('/api/issues', authenticateUser, async (req, res) => {
 
 // Pre-Stored Admin Login Endpoint with Password Verification
 app.post("/api/admin/login", async (req, res) => {
+  console.log("[DEBUG] Admin login request received for email:", req.body.email);
   const { email, password } = req.body;
   if (!email || !password) {
+    console.log("[DEBUG] Login failed: email or password missing");
     return res.status(400).json({ error: "Email and password are required" });
   }
 
@@ -1767,53 +1769,65 @@ app.post("/api/admin/login", async (req, res) => {
     "devrd14190@gmail.com"
   ];
 
-  const userSnap = await db.collection("users").where("email", "==", cleanEmail).limit(1).get();
-  let userData = !userSnap.empty ? userSnap.docs[0].data() : null;
+  try {
+    console.log("[DEBUG] Querying Firestore for user:", cleanEmail);
+    const userSnap = await db.collection("users").where("email", "==", cleanEmail).limit(1).get();
+    console.log("[DEBUG] Query result size:", userSnap.size);
+    let userData = !userSnap.empty ? userSnap.docs[0].data() : null;
 
-  const isPreStored = preStoredAdminEmails.includes(cleanEmail);
-  const isStaffRole = userData && ["owner", "manager", "editor"].includes(userData.role);
+    const isPreStored = preStoredAdminEmails.includes(cleanEmail);
+    const isStaffRole = userData && ["owner", "manager", "editor"].includes(userData.role);
 
-  if (!isPreStored && !isStaffRole) {
-    return res.status(401).json({ error: "Invalid admin credentials or unauthorized email." });
-  }
+    console.log("[DEBUG] User authorized?", isPreStored || isStaffRole);
 
-  // Password verification: require saved password, timing-safe verify, upgrade plaintext to scrypt hash
-  const savedPassword = userData?.password;
-  if (!savedPassword || typeof savedPassword !== 'string' || savedPassword.trim() === '') {
-    return res.status(401).json({ error: "No password has been configured for this account. Please use 'Forgot password' or contact the store owner." });
-  }
+    if (!isPreStored && !isStaffRole) {
+      return res.status(401).json({ error: "Invalid admin credentials or unauthorized email." });
+    }
 
-  const { valid, needsRehash } = verifyPassword(password, savedPassword);
-  if (!valid) {
-    return res.status(401).json({ error: "Incorrect password. Please try again or use 'Forgot password'." });
-  }
+    // Password verification: require saved password, timing-safe verify, upgrade plaintext to scrypt hash
+    const savedPassword = userData?.password;
+    if (!savedPassword || typeof savedPassword !== 'string' || savedPassword.trim() === '') {
+      console.log("[DEBUG] Login failed: No password configured");
+      return res.status(401).json({ error: "No password has been configured for this account. Please use 'Forgot password' or contact the store owner." });
+    }
 
-  // On successful login with legacy plaintext password, transparently upgrade to scrypt hash
-  if (needsRehash) {
-    const hashedPassword = hashPassword(password);
-    await db.collection("users").doc(cleanEmail).update({
-      password: hashedPassword,
-      password_migrated_at: new Date().toISOString(),
+    const { valid, needsRehash } = verifyPassword(password, savedPassword);
+    if (!valid) {
+      console.log("[DEBUG] Login failed: Incorrect password");
+      return res.status(401).json({ error: "Incorrect password. Please try again or use 'Forgot password'." });
+    }
+
+    // On successful login with legacy plaintext password, transparently upgrade to scrypt hash
+    if (needsRehash) {
+      const hashedPassword = hashPassword(password);
+      await db.collection("users").doc(cleanEmail).update({
+        password: hashedPassword,
+        password_migrated_at: new Date().toISOString(),
+      });
+      userData.password = hashedPassword;
+    }
+
+    if (!userData || userData.role !== "owner") {
+      userData = {
+        uid: cleanEmail,
+        email: cleanEmail,
+        name: cleanEmail.split("@")[0],
+        role: userData?.role || "owner",
+        created_at: new Date().toISOString(),
+      };
+      await db.collection("users").doc(cleanEmail).set(userData, { merge: true });
+    }
+
+    console.log("[DEBUG] Admin login successful for:", cleanEmail);
+    return res.json({
+      success: true,
+      user: userData,
+      message: "Admin authentication successful",
     });
-    userData.password = hashedPassword;
+  } catch (err) {
+    console.error("[ERROR] Admin login crashed:", err);
+    return res.status(500).json({ error: "Internal server error during login." });
   }
-
-  if (!userData || userData.role !== "owner") {
-    userData = {
-      uid: cleanEmail,
-      email: cleanEmail,
-      name: cleanEmail.split("@")[0],
-      role: userData?.role || "owner",
-      created_at: new Date().toISOString(),
-    };
-    await db.collection("users").doc(cleanEmail).set(userData, { merge: true });
-  }
-
-  return res.json({
-    success: true,
-    user: userData,
-    message: "Admin authentication successful",
-  });
 });
 
 // Admin Forgot Password - Generate & Send OTP Code

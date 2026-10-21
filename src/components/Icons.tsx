@@ -123,3 +123,9 @@ export const PenUnderlineSVG: React.FC<{ className?: string; color?: string }> =
     <path d="M3 8C45 3 110 2 197 9C155 11 80 11 12 7" stroke={color} strokeWidth="3.5" strokeLinecap="round" />
   </svg>
 );
+
+export const HeartIcon: React.FC<IconProps> = ({ className = 'w-6 h-6', navyColor = '#0B3561' }) => (
+  <svg viewBox="0 0 48 48" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 18C12 13 16 9 20 9C24 9 26 12 26 14C26 12 28 9 32 9C36 9 40 13 40 18C40 24 34 31 26 39L24 41L22 39C14 31 8 24 8 18C8 14 10 12 12 12Z" stroke={navyColor} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
