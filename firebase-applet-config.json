@@ -1,10 +1,12 @@
 {
+  "projectId": "pynotes-store",
+  "appId": "1:770886242033:web:86cc5b4483ac9d064fa350",
   "apiKey": "AIzaSyCF0NBXbSX_vxxyrA9UCRTQ2itNBKX-r0A",
   "authDomain": "pynotes-store.firebaseapp.com",
-  "projectId": "pynotes-store",
+  "firestoreDatabaseId": "ai-studio-c4879885-e2a9-4a8f-b6fb-8a1b0bc4d139",
   "storageBucket": "pynotes-store.firebasestorage.app",
   "messagingSenderId": "770886242033",
-  "appId": "1:770886242033:web:f3f752a7e7514b754fa350",
-  "measurementId": "G-FKPYLCC2F7",
-  "firestoreDatabaseId": "(default)"
+  "measurementId": "",
+  "oAuthClientId": "770886242033-cnsg44cs2rk05hjfloi4cva1qp4i0v0s.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }
