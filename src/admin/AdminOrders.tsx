@@ -78,7 +78,7 @@ export const AdminOrders: React.FC = () => {
     setActionLoading(true);
     setActionMsg(null);
     try {
-      const res = await adminFetch(`/admin/orders/${selectedOrderNo}/create-shipment`, {
+      const res = await adminFetch(`/orders/${selectedOrderNo}/create-shipment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -99,7 +99,7 @@ export const AdminOrders: React.FC = () => {
   const handleSyncShipment = async (shipmentId: string) => {
     setActionLoading(true);
     try {
-      const res = await adminFetch(`/admin/shipments/${shipmentId}/sync`, {
+      const res = await adminFetch(`/shipments/${shipmentId}/sync`, {
         method: 'POST',
       });
       setActionMsg(`Tracking synced: ${res.synced_scans} scan(s) ingested. Status: ${res.current_status}`);
@@ -115,7 +115,7 @@ export const AdminOrders: React.FC = () => {
     if (!confirm('Are you sure you want to cancel this shipment? This will call Shiprocket Cancel API first.')) return;
     setActionLoading(true);
     try {
-      await adminFetch(`/admin/shipments/${shipmentId}/cancel`, {
+      await adminFetch(`/shipments/${shipmentId}/cancel`, {
         method: 'POST',
       });
       setActionMsg('Shipment cancelled successfully via Shiprocket API.');
@@ -135,7 +135,7 @@ export const AdminOrders: React.FC = () => {
     }
     setActionLoading(true);
     try {
-      await adminFetch(`/admin/orders/${selectedOrderNo}/deliver`, {
+      await adminFetch(`/orders/${selectedOrderNo}/deliver`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: overrideReason }),
@@ -159,7 +159,7 @@ export const AdminOrders: React.FC = () => {
     }
     setActionLoading(true);
     try {
-      const res = await adminFetch(`/admin/orders/${selectedOrderNo}/replacement`, {
+      const res = await adminFetch(`/orders/${selectedOrderNo}/replacement`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: replacementReason }),

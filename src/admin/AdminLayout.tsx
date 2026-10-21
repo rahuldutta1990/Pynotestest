@@ -206,16 +206,31 @@ export const AdminLayout: React.FC = () => {
     { label: 'Razorpay Payments', path: '/admin/payments', roles: ['owner'] },
     { label: 'Payment Page & QR', path: '/admin/payment-page', roles: ['owner', 'manager'] },
     { label: 'Webhook Log', path: '/admin/webhook-log', roles: ['owner'] },
+    { label: 'Store Logo & Branding', path: '/admin/logo', roles: ['owner', 'manager', 'editor'] },
     { label: 'Settings', path: '/admin/settings', roles: ['owner'] },
     { label: 'Users & Audit', path: '/admin/users', roles: ['owner'] },
   ];
+
+  const handleSignOut = async () => {
+    localStorage.removeItem('pynotes_staff_user');
+    sessionStorage.clear();
+    setProfile(null);
+    try {
+      await signOutUser();
+    } catch {}
+    navigate('/admin');
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-[#F7FAFC] text-[#0B3561] flex flex-col md:flex-row">
       {/* Mobile Top Bar */}
       <div className="md:hidden bg-[#071E38] text-white p-4 flex items-center justify-between border-b border-white/10">
-        <span className="font-heading font-bold text-sm text-[#12A5B0]">PyNotes Admin</span>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 border border-white/20 rounded-lg text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-display font-black text-lg text-white">Py<span className="text-[#12A5B0]">Notes</span></span>
+          <span className="bg-[#12A5B0]/20 text-[#12A5B0] text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Admin</span>
+        </div>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="px-3 py-1.5 bg-white/10 rounded-lg text-xs font-semibold">
           Menu
         </button>
       </div>
@@ -232,7 +247,7 @@ export const AdminLayout: React.FC = () => {
             </span>
           </div>
 
-          <nav className="space-y-1 font-heading text-xs font-semibold">
+          <nav className="space-y-1 font-heading text-xs font-semibold max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
             {menuItems
               .filter(item => item.roles.includes(role))
               .map(item => (
@@ -257,16 +272,45 @@ export const AdminLayout: React.FC = () => {
             View Live Storefront ↗
           </Link>
           <button
-            onClick={() => signOutUser().then(() => window.location.reload())}
-            className="w-full text-left text-xs font-bold text-[#C0392B] hover:underline"
+            onClick={handleSignOut}
+            className="w-full text-left text-xs font-bold text-[#FF6B6B] hover:text-red-400 transition cursor-pointer flex items-center gap-1.5"
           >
-            Sign Out Staff
+            <span>🚪</span> Sign Out Staff
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 sm:p-10 overflow-y-auto">
+      <main className="flex-1 p-6 sm:p-10 overflow-y-auto min-h-screen bg-[#F7FAFC]">
+        {/* Admin Top Header Bar */}
+        <div className="bg-white p-4 sm:px-6 sm:py-3.5 rounded-2xl border border-[#0B3561]/10 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <span className="bg-[#0B3561]/10 text-[#0B3561] font-heading font-bold px-3 py-1 rounded-xl uppercase tracking-wider text-[11px]">
+              {location.pathname.replace('/admin/', '').replace('/admin', 'Dashboard') || 'Dashboard'}
+            </span>
+            <span className="text-[#3C5D81] hidden sm:inline">•</span>
+            <span className="text-[#3C5D81] text-[11px]">
+              Logged in as <strong className="text-[#0B3561]">{profile?.email}</strong> ({profile?.role})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <Link
+              to="/"
+              target="_blank"
+              className="text-[11px] font-bold text-[#12A5B0] hover:underline bg-[#DDF3F4]/50 px-3 py-1.5 rounded-xl border border-[#12A5B0]/20"
+            >
+              Storefront Preview ↗
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="px-3 py-1.5 bg-red-50 text-red-700 font-bold rounded-xl border border-red-200 hover:bg-red-100 transition cursor-pointer text-[11px]"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+
         <Outlet context={{ profile, role }} />
       </main>
     </div>

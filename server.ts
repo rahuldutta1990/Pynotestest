@@ -1394,7 +1394,8 @@ app.post("/api/admin/login", async (req, res) => {
     "admin@pynotes.in",
     "shimadutta62@gmail.com",
     "owner@pynotes.in",
-    "pynotes.in@gmail.com"
+    "pynotes.in@gmail.com",
+    "devrd14190@gmail.com"
   ];
 
   const userDoc = await db.collection("users").doc(cleanEmail).get();

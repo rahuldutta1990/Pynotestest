@@ -183,6 +183,7 @@ export default function App() {
           <Route path="cancellations" element={<AdminCMS section="cancellations" />} />
           <Route path="offers" element={<AdminCMS section="offers" />} />
           <Route path="settings" element={<AdminCMS section="settings" />} />
+          <Route path="logo" element={<AdminCMS section="logo" />} />
           <Route path="instagram" element={<AdminCMS section="instagram" />} />
           <Route path="payments" element={<AdminCMS section="payments" />} />
           <Route path="payment-page" element={<AdminCMS section="payment-page" />} />

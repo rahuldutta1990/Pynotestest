@@ -22,7 +22,7 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      if (section === 'settings' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders' || section === 'instagram' || section === 'payments' || section === 'payment-page' || section === 'subscriptions' || section === 'offers') {
+      if (section === 'settings' || section === 'logo' || section === 'pricing' || section === 'content' || section === 'announcements' || section === 'products' || section === 'hero-banners' || section === 'orders' || section === 'instagram' || section === 'payments' || section === 'payment-page' || section === 'subscriptions' || section === 'offers') {
         const res = await adminFetch('/settings');
         setSettings(res);
       } else if (section === 'coupons') {
@@ -124,6 +124,174 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
           Save Pricing Rules
         </button>
       </form>
+    );
+  }
+
+  if (section === 'logo') {
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file (PNG, JPG, SVG, WebP).');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image file size should be less than 5 MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Url = event.target?.result as string;
+        setSettings(prev => ({ ...prev, custom_logo_url: base64Url }));
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const handleResetLogo = async () => {
+      if (!confirm('Reset store logo back to official PyNotes primary logo?')) return;
+      const updated = { ...settings, custom_logo_url: '' };
+      setSettings(updated);
+      try {
+        await adminFetch('/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated),
+        });
+        setSaveMsg('Store logo reset to default official PyNotes logo!');
+      } catch (err: any) {
+        alert(err.message || 'Failed to reset logo');
+      }
+    };
+
+    const currentLogo = settings.custom_logo_url || '/PyNotes_Primary-Stacked_FullColor.png';
+
+    return (
+      <div className="space-y-8 max-w-3xl text-xs">
+        <form onSubmit={handleSaveSettings} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#0B3561]/10 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#0B3561]/10 pb-4 gap-3">
+            <div>
+              <h3 className="font-heading font-bold text-xl text-[#0B3561]">Store Logo & Branding Management</h3>
+              <p className="text-[#3C5D81] text-xs mt-1">
+                Upload your official brand logo. Automatically published across header navigation, mobile drawer, checkout, and footer.
+              </p>
+            </div>
+            {settings.custom_logo_url && (
+              <button
+                type="button"
+                onClick={handleResetLogo}
+                className="px-3.5 py-2 bg-red-50 text-red-700 font-semibold rounded-xl border border-red-200 hover:bg-red-100 transition-all cursor-pointer self-start sm:self-auto"
+              >
+                Reset to Default Logo
+              </button>
+            )}
+          </div>
+
+          {saveMsg && <div className="bg-[#DDF3F4] text-[#0B3561] font-bold p-3.5 rounded-2xl border border-[#12A5B0]/30 shadow-xs">{saveMsg}</div>}
+
+          {/* 1. Drag & Drop File Upload Card */}
+          <div className="space-y-2">
+            <label className="block font-heading font-bold text-sm text-[#0B3561]">Upload Logo File (Image Picker)</label>
+            <div className="border-2 border-dashed border-[#12A5B0]/50 bg-[#F7FAFC] hover:bg-[#DDF3F4]/30 rounded-2xl p-6 text-center transition-all relative cursor-pointer group">
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/webp, image/svg+xml, image/gif"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="space-y-2 pointer-events-none">
+                <div className="w-12 h-12 rounded-full bg-[#12A5B0]/15 text-[#12A5B0] flex items-center justify-center mx-auto text-xl font-bold group-hover:scale-110 transition-transform">
+                  📁
+                </div>
+                <p className="font-heading font-bold text-[#0B3561] text-sm">
+                  Click to Upload Logo File or Drag & Drop Here
+                </p>
+                <p className="text-[11px] text-[#3C5D81]">
+                  Supports PNG, JPG, WebP, SVG (Transparent PNG or SVG recommended) • Max 5MB
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Direct Image URL Input */}
+          <div className="space-y-2">
+            <label className="block font-semibold text-xs text-[#0B3561]">Or Enter Direct Custom Image URL</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={settings.custom_logo_url || ''}
+                onChange={e => setSettings({ ...settings, custom_logo_url: e.target.value })}
+                placeholder="https://your-domain.com/assets/my-logo.png"
+                className="flex-1 p-3 bg-[#F7FAFC] border border-[#0B3561]/20 rounded-xl text-xs font-mono"
+              />
+              {settings.custom_logo_url && (
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, custom_logo_url: '' })}
+                  className="px-3 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-semibold hover:bg-gray-200 cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <p className="text-[10px] text-[#3C5D81]">
+              Leave blank to use the default official PyNotes handwritten logo.
+            </p>
+          </div>
+
+          {/* 3. Live Surface Preview Box */}
+          <div className="space-y-3 pt-4 border-t border-[#0B3561]/10">
+            <h4 className="font-heading font-bold text-sm text-[#0B3561]">Live Storefront Logo Preview</h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Light Surface View (Header) */}
+              <div className="bg-[#F7FAFC] border border-[#0B3561]/15 p-4 rounded-2xl space-y-2">
+                <span className="text-[10px] font-bold text-[#3C5D81] uppercase tracking-wider block">
+                  Header & Light Navigation View
+                </span>
+                <div className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-center min-h-[90px]">
+                  <img
+                    src={currentLogo}
+                    alt="Logo Preview Light"
+                    className="max-h-16 w-auto object-contain block drop-shadow-xs"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Dark Surface View (Footer & Mobile Bar) */}
+              <div className="bg-[#071E38] p-4 rounded-2xl space-y-2 text-white">
+                <span className="text-[10px] font-bold text-[#12A5B0] uppercase tracking-wider block">
+                  Footer & Dark Capsule View
+                </span>
+                <div className="bg-[#0B3561] p-4 rounded-xl border border-white/10 flex items-center justify-center min-h-[90px]">
+                  <div className="inline-flex items-center bg-white px-3.5 py-2 rounded-2xl border border-white/30 shadow-md">
+                    <img
+                      src={currentLogo}
+                      alt="Logo Preview Dark"
+                      className="max-h-16 w-auto object-contain block"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-[#12A5B0] text-[#071E38] font-heading font-bold py-3.5 rounded-xl hover:brightness-105 shadow-md cursor-pointer text-sm"
+          >
+            Save & Publish Store Logo
+          </button>
+        </form>
+      </div>
     );
   }
 
