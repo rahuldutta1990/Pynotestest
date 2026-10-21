@@ -85,18 +85,59 @@ export interface Product {
   is_sample?: boolean;
 }
 
+export type CouponStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'EXPIRED';
+export type CouponDiscountType = 'PERCENTAGE' | 'FIXED_AMOUNT';
+export type CouponScope = 'ALL_PRODUCTS' | 'SPECIFIC_PRODUCTS' | 'SPECIFIC_CATEGORIES';
+
 export interface Coupon {
+  id: string;
   code: string;
-  kind: 'percent' | 'flat';
-  value: number; // percentage (e.g. 10) or paise (e.g. 5000)
-  min_subtotal_paise: number;
-  max_discount_paise?: number;
-  applies_to: 'any' | 'prepaid' | 'cod';
-  usage_limit?: number;
-  used_count: number;
+  description: string;
+  discount_type: CouponDiscountType;
+  discount_value: number; // percentage or paise
+  max_discount_amount?: number; // paise
+  min_order_amount?: number; // paise
+  applies_to: CouponScope;
   starts_at?: string;
-  ends_at?: string;
-  is_active: boolean;
+  expires_at?: string;
+  total_usage_limit?: number;
+  per_user_usage_limit?: number;
+  used_count: number;
+  is_stackable: boolean;
+  status: CouponStatus;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CouponProduct {
+  coupon_id: string;
+  product_id: string;
+}
+
+export interface CouponCategory {
+  coupon_id: string;
+  category_id: string;
+}
+
+export interface CouponRedemption {
+  id: string;
+  coupon_id: string;
+  user_id: string;
+  order_id: string;
+  discount_amount: number; // paise
+  status: 'APPLIED' | 'REVERSED';
+  created_at: string;
+}
+
+export interface CouponAuditLog {
+  id: string;
+  coupon_id: string;
+  admin_id: string;
+  action: string;
+  old_value?: any;
+  new_value?: any;
+  created_at: string;
 }
 
 export type OrderStatus =

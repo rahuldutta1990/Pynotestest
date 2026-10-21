@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from './lib/firebase';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { fetchCatalog, fetchHealth } from './lib/api';
+import { fetchCatalog, fetchHealth, fetchWishlist, toggleWishlistItem } from './lib/api';
 import { Subject, Product, SiteSettings, FAQ, Review, HealthResponse } from './types';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -167,6 +167,24 @@ export default function App() {
   };
 
 
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (auth.currentUser) {
+      fetchWishlist().then(setWishlist);
+    }
+  }, [auth.currentUser]);
+
+  const handleToggleWishlist = async (slug: string) => {
+    if (!auth.currentUser) {
+      // Need to handle redirection, might need to import navigate or use auth state.
+      // For now, let's assume this will be called from a component that has access to navigate.
+      return;
+    }
+    await toggleWishlistItem(slug);
+    setWishlist(prev => prev.includes(slug) ? prev.filter(i => i !== slug) : [...prev, slug]);
+  };
+
   const totalCartCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
   return (
@@ -228,6 +246,7 @@ export default function App() {
                 subjects={subjects}
                 products={products}
                 cartCount={totalCartCount}
+                wishlistCount={wishlist.length}
                 onOpenCart={() => setIsCartOpen(true)}
                 customLogoUrl={settings?.custom_logo_url}
                 whatsappNumber={settings?.whatsapp_number}
@@ -244,6 +263,8 @@ export default function App() {
                         settings={settings!}
                         reviews={reviews}
                         faqs={faqs}
+                        wishlist={wishlist}
+                        onToggleWishlist={handleToggleWishlist}
                         onAddToCart={handleAddToCart}
                       />
                     }
@@ -268,6 +289,8 @@ export default function App() {
                           reviews={reviews}
                           faqs={faqs}
                           onAddToCart={handleAddToCart}
+                          wishlist={wishlist}
+                          onToggleWishlist={handleToggleWishlist}
                         />
                       }
                     />

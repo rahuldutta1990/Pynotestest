@@ -3,6 +3,7 @@ import { adminFetch } from '../lib/api';
 import { SiteSettings, Coupon, Subject, FAQ, HeroBannerItem } from '../types';
 import { AdminOrders } from './AdminOrders';
 import { AdminReviews } from './AdminReviews';
+import { AdminCoupons } from './AdminCoupons';
 
 export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
@@ -685,6 +686,10 @@ export const AdminCMS: React.FC<{ section: string }> = ({ section }) => {
 
   if (section === 'reviews') {
     return <AdminReviews />;
+  }
+
+  if (section === 'coupons') {
+    return <AdminCoupons />;
   }
 
   if (section === 'hero-banners') {

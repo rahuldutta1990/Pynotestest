@@ -4,6 +4,7 @@ import { Subject, Product, SiteSettings, Review, FAQ, HeroBannerItem } from '../
 import { FeatureStrip } from '../components/FeatureStrip';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { BookCoverVisual } from '../components/BookCoverVisual';
+import { EditorialVisual } from '../components/EditorialVisual';
 import { TestimonialSection } from '../components/TestimonialSection';
 import { PenUnderlineSVG, CheckCircleIcon, CrossIcon, CartIcon } from '../components/Icons';
 import { postContactMessage, fetchWishlist, toggleWishlistItem } from '../lib/api';
@@ -15,6 +16,8 @@ interface HomePageProps {
   settings: SiteSettings;
   reviews?: Review[];
   faqs?: FAQ[];
+  wishlist: string[];
+  onToggleWishlist: (slug: string) => void;
   onAddToCart: (slug: string, qty: number) => void;
 }
 
@@ -24,30 +27,15 @@ export const HomePage: React.FC<HomePageProps> = ({
   settings,
   reviews = [],
   faqs = [],
+  wishlist,
+  onToggleWishlist,
   onAddToCart,
 }) => {
   const navigate = useNavigate();
 
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [activeSampleIdx, setActiveSampleIdx] = useState(0);
-
-  useEffect(() => {
-    if (auth.currentUser) {
-      fetchWishlist().then(setWishlist);
-    }
-  }, []);
-
-  const handleToggleWishlist = async (slug: string) => {
-    if (!auth.currentUser) {
-      navigate('/auth');
-      return;
-    }
-    await toggleWishlistItem(slug);
-    setWishlist(prev => prev.includes(slug) ? prev.filter(i => i !== slug) : [...prev, slug]);
-  };
-
   // FAQ accordion state
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [activeSampleIdx, setActiveSampleIdx] = useState(0);
 
   // Hero Banner Carousel State & Fallbacks
 
@@ -576,7 +564,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleToggleWishlist(prod.slug);
+                      onToggleWishlist(prod.slug);
                     }}
                     className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 transition"
                   >

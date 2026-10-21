@@ -27,8 +27,8 @@ export const AdminReviews: React.FC = () => {
       <h2 className="text-xl font-bold">Review Management</h2>
       {reviews.map(r => (
         <div key={r.id} className="p-4 border rounded shadow-sm">
-          <div className="font-bold">{r.user_name} ({r.rating}/5)</div>
-          <div className="text-sm">{r.comment}</div>
+          <div className="font-bold">{r.display_name} ({r.rating}/5)</div>
+          <div className="text-sm">{r.body}</div>
           <div className="text-xs text-gray-500">Status: {r.status}</div>
           <div className="flex gap-2 mt-2">
             {r.status !== 'approved' && (

@@ -28,7 +28,7 @@ export const TestimonialSection: React.FC = () => {
         {testimonials.slice(0, 3).map(t => (
           <div key={t.id} className="p-6 border rounded-xl shadow-sm bg-white">
             <p className="italic text-gray-700">"{t.body}"</p>
-            <div className="font-bold mt-4 text-[#0B3561]">- {t.user_name}</div>
+            <div className="font-bold mt-4 text-[#0B3561]">- {t.display_name}</div>
             <div className="text-xs text-gray-500">Rating: {t.rating}/5</div>
           </div>
         ))}

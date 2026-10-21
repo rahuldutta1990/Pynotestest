@@ -16,6 +16,10 @@ service cloud.firestore {
       return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+    }
+
     // Default Deny Catch-All
     match /{document=**} {
       allow read, write: if false;
@@ -26,80 +30,95 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /products/{productId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /subjects/{subjectId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /faqs/{faqId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /pages/{slug} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /reviews/{reviewId} {
-      allow read: if resource.data.status == 'approved' || (isSignedIn() && resource.data.user_id == request.auth.uid);
+      allow read: if resource.data.status == 'approved' || (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-      allow update, delete: if false;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
     // User Profiles & Addresses (Owner Read/Write, Server Managed)
     // -------------------------------------------------------------------------
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
     // -------------------------------------------------------------------------
     // Orders & Subscriptions (Owner Read, Server Managed Writes)
     // -------------------------------------------------------------------------
     match /orders/{orderId} {
-      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow write: if false;
+      allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow write: if isAdmin();
     }
 
     match /subscriptions/{subscriptionId} {
-      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow write: if false;
+      allow read: if (isSignedIn() && resource.data.user_id == request.auth.uid) || isAdmin();
+      allow write: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
     // Internal Logistics & Courier Systems (Strictly Server-Only)
     // -------------------------------------------------------------------------
     match /shipments/{shipmentId} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
 
     match /tracking_events/{eventId} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
 
     match /status_mapping/{rawStatus} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
 
     match /webhook_log/{logId} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
 
     match /notifications_log/{logId} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
 
     match /order_status_audit/{auditId} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
+    
+    // NEW: Coupons
+    match /coupons/{couponId} {
+      allow read: if isSignedIn(); // Or refine: if resource.data.status == 'ACTIVE' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /coupon_redemptions/{redemptionId} {
+      allow read, write: if isAdmin();
+    }
+    match /coupon_audit_logs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
   }
 }

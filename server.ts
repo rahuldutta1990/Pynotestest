@@ -18,6 +18,14 @@ import firebaseConfig from './firebase-applet-config.json';
 import { registerLogisticsRoutes, initLogisticsWorkers } from './server/logisticsModule';
 import { createResilientFirestore } from './server/resilientDb';
 
+declare global {
+  namespace Express {
+    interface Request {
+      user: any;
+    }
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -2649,8 +2657,58 @@ app.put('/api/admin/settings', authenticateUser, async (req, res) => {
   res.json({ success: true, audit_log: logEntry });
 });
 
+// GET /api/admin/coupons
+app.get('/api/admin/coupons', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  try {
+    const snap = await db.collection('coupons').get();
+    const coupons = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(coupons);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/coupons
+app.post('/api/admin/coupons', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+  try {
+    const { code, discount_type, discount_value, applies_to, ...rest } = req.body;
+    
+    // Server-side validation
+    if (!code || !discount_type || discount_value === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const normalizedCode = code.trim().toUpperCase();
+    
+    // Check for duplicate code
+    const existing = await db.collection('coupons').where('code', '==', normalizedCode).get();
+    if (!existing.empty) {
+      return res.status(400).json({ error: 'Coupon code already exists' });
+    }
+
+    const couponData = {
+      code: normalizedCode,
+      discount_type,
+      discount_value,
+      applies_to,
+      ...rest,
+      status: rest.status || 'DRAFT',
+      used_count: 0,
+      created_by: (req as any).user.uid,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const docRef = await db.collection('coupons').add(couponData);
+    res.json({ id: docRef.id, ...couponData });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin Get Audit Logs
 app.get('/api/admin/audit-logs', authenticateUser, requireRole(['owner', 'manager']), async (req, res) => {
+
   try {
     const snap = await db.collection('audit_logs').orderBy('timestamp', 'desc').limit(50).get();
     res.json(snap.docs.map(d => d.data()));

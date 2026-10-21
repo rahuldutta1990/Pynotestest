@@ -42,7 +42,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
     await addDoc(collection(db, 'reviews'), {
       product_id: productId,
       user_id: auth.currentUser.uid,
-      user_name: auth.currentUser.displayName || 'Anonymous',
+      display_name: auth.currentUser.displayName || 'Anonymous',
       rating: newReview.rating,
       title: newReview.title,
       body: newReview.body,
@@ -84,7 +84,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
           <div key={review.id} className="p-4 border rounded">
             <h3 className="font-bold">{review.title} ({review.rating}/5)</h3>
             <p>{review.body}</p>
-            <small>By {review.user_name} on {new Date(review.created_at).toLocaleDateString()}</small>
+            <small>By {review.display_name} on {new Date(review.created_at).toLocaleDateString()}</small>
           </div>
         ))}
       </div>
